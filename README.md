@@ -476,3 +476,7 @@ Server configuration files are provided as-is for community use. AssettoServer a
 **Note**: This repository contains only configuration files. You need to download AssettoServer, track content, and car mods separately.
 
 Enjoy the drive! 🏁
+
+---
+
+<sub>Special thanks to @gaulven for the late-night debugging sessions and helping bring this project to life. Your patience and expertise made all the difference. 🙏</sub>

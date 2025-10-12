@@ -58,6 +58,10 @@ IgnoreConfigurationErrors:
   MissingTrackParams: true
   WrongServerDetails: true
   UnsafeAdminWhitelist: false
+# Allow players with missing or mismatched car data files (like data.acd)
+IgnoreMissingCarData: true
+# Allow players with slightly different car physics
+IgnoreCarPhysicsMismatch: true
 # Enable CSP client messages feature. Requires CSP 0.1.77+
 EnableClientMessages: false
 # Enable CSP UDP client messages feature. Required for VR head/hand syncing. Requires CSP 0.1.80+

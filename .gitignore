@@ -1,0 +1,69 @@
+# Sensitive Files - DO NOT COMMIT
+admins.txt
+blacklist.txt
+whitelist.txt
+
+# Server Executables & Binaries
+acServer
+acServer.exe
+acServer.bat
+acServerManager.exe
+acServerManager.pdb
+*.so
+*.dll
+*.dylib
+
+# Large Content Files
+content/
+AssettoServer/
+AssettoServer-linux-x64.tar.gz
+cache/
+*.kn5
+*.acd
+
+# Proton/Steam Files
+proton
+proton_3.7_tracked_files
+steam_appid.txt
+steampipe_fixups.json
+steampipe_fixups.py
+toolmanifest.vdf
+user_settings.sample.py
+version
+VERSIONS.txt
+mtree.txt.gz
+PATENTS.AV1
+filelock.py
+libcsp_xxhash3.so
+libsteam_api.so
+_v2-entry-point
+
+# Steam Directory
+steamapps/
+pressure-vessel/
+sniper_platform_3.0.20250826.159138/
+files/
+system/
+var/
+
+# Runtime Files
+logs/
+results/
+setups/
+*.log
+*.txt
+
+# Backup Files
+*.backup
+*.bak
+*.old
+
+# Keep only config-related documentation
+!cfg/*.ini
+!cfg/*.yml
+!cfg/*.yaml
+!README.md
+!AUTOMATIC_WEATHER_WORKING.md
+!BEAUTIFUL_WEATHER_GUIDE.md
+!SERVER_MANAGEMENT.md
+!*.sh

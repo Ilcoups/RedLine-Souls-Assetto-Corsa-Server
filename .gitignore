@@ -2,6 +2,7 @@
 admins.txt
 blacklist.txt
 whitelist.txt
+cfg/server_cfg.ini
 
 # Server Executables & Binaries
 acServer

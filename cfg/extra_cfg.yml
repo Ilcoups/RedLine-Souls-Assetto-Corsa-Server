@@ -43,8 +43,8 @@ ServerDescription: |-
 EnableRealTime: false
 # Enable new CSP weather handling. Allows rain and smooth weather transitions. Requires CSP 0.1.76+
 EnableWeatherFx: true
-# Lock server date to real date. DISABLED so time multiplier works properly
-LockServerDate: false
+# Lock server date to real date. TRUE so time progresses and varies on restart!
+LockServerDate: true
 # Reduce track grip when the track is wet. This is much worse than proper CSP rain physics but allows you to run clients with public/Patreon CSP at the same time
 RainTrackGripReductionPercent: 0
 # Enable AI traffic

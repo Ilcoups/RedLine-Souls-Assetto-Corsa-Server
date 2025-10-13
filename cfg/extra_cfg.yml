@@ -138,9 +138,10 @@ AiParams:
   # Maximum time an AI car will stop/slow down after a collision
   MaxCollisionStopTimeSeconds: 2
   # Default maximum AI speed. This is not an absolute maximum and can be overridden with RightLaneOffsetKph and MaxSpeedVariationPercent
+  # Base 95 kph + 18 right lane offset = 113 kph MAX (not 120!)
   MaxSpeedKph: 95
-  # Speed offset for right lanes. Will be added to MaxSpeedKph
-  RightLaneOffsetKph: 15
+  # Speed offset for right lanes. Will be added to MaxSpeedKph - gives us 113 kph max
+  RightLaneOffsetKph: 18
   # Maximum speed variation - less aggressive speed differences
   MaxSpeedVariationPercent: 0.15
   # Soft player limit, the server will stop accepting new players when this many players are reached. Use this to ensure a minimum amount of AI cars. 0 to disable.
@@ -171,16 +172,26 @@ AiParams:
   # AI cars inside these areas will ignore all player obstacles
   IgnorePlayerObstacleSpheres: 
   # Override some settings for newly spawned cars based on the number of lanes
-  # 3-lane highways PACKED, 2-lane roads lighter traffic
+  # 3-lane highways PACKED, 2-lane moderate density, 1-lane fast & light
   LaneCountSpecificOverrides:
+    1:
+      # Single lane roads (touge, mountain) - faster, lighter traffic
+      MinAiSafetyDistanceMeters: 25
+      MaxAiSafetyDistanceMeters: 80
+      MaxSpeedKph: 100
+      RightLaneOffsetKph: 13
     2:
-      # Less traffic on 2-lane roads (C1, city) - more space to breathe
-      MinAiSafetyDistanceMeters: 14
-      MaxAiSafetyDistanceMeters: 55
+      # 2-lane roads (C1, city) - moderate density, need to brake enough
+      MinAiSafetyDistanceMeters: 10
+      MaxAiSafetyDistanceMeters: 40
+      MaxSpeedKph: 90
+      RightLaneOffsetKph: 18
     3:
       # EXTREMELY DENSE on 3-lane highways (Wangan, Yokohane) - NO full throttle runs!
       MinAiSafetyDistanceMeters: 5
       MaxAiSafetyDistanceMeters: 25
+      MaxSpeedKph: 95
+      RightLaneOffsetKph: 18
       # Aggressive spawning for constant traffic flow
       MinSpawnProtectionTimeSeconds: 20
       MaxSpawnProtectionTimeSeconds: 40

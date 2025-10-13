@@ -136,13 +136,13 @@ AiParams:
   # Minimum time an AI car will stop/slow down after a collision
   MinCollisionStopTimeSeconds: 1
   # Maximum time an AI car will stop/slow down after a collision
-  MaxCollisionStopTimeSeconds: 3
+  MaxCollisionStopTimeSeconds: 2
   # Default maximum AI speed. This is not an absolute maximum and can be overridden with RightLaneOffsetKph and MaxSpeedVariationPercent
-  MaxSpeedKph: 105
-  # Speed offset for right lanes. Will be added to MaxSpeedKph - more variation!
-  RightLaneOffsetKph: 25
-  # Maximum speed variation - MORE variety in speeds makes traffic interesting!
-  MaxSpeedVariationPercent: 0.25
+  MaxSpeedKph: 95
+  # Speed offset for right lanes. Will be added to MaxSpeedKph
+  RightLaneOffsetKph: 15
+  # Maximum speed variation - less aggressive speed differences
+  MaxSpeedVariationPercent: 0.15
   # Soft player limit, the server will stop accepting new players when this many players are reached. Use this to ensure a minimum amount of AI cars. 0 to disable.
   MaxPlayerCount: 35
   # Hide AI car nametags and make them invisible on the minimap. Broken on CSP versions < 0.1.78
@@ -155,8 +155,8 @@ AiParams:
   WrongWayTraffic: true
   # Name prefix for AI cars. Names will be in the form of '<NamePrefix> <SessionId>'
   NamePrefix: Traffic
-  # Ignore obstacles for some time if the AI car is stopped for longer than x seconds
-  IgnoreObstaclesAfterSeconds: 3
+  # Ignore obstacles for some time if the AI car is stopped for longer than x seconds - FASTER recovery to prevent jams
+  IgnoreObstaclesAfterSeconds: 2
   # Dynamic (hourly) traffic density. List must have exactly 24 entries in the format [0.2, 0.5, 1, 0.7, ...]
   # Subtle variations: Current level = 1.0 (baseline), Day slightly more (1.1-1.15), Night still busy (0.95-1.0)
   # 00=1.0, 01=0.95, 02=0.95, 03=0.95, 04=0.95, 05=1.0, 06=1.0, 07=1.05, 08=1.1, 09=1.15, 10=1.15, 11=1.1
@@ -178,12 +178,12 @@ AiParams:
       MinAiSafetyDistanceMeters: 14
       MaxAiSafetyDistanceMeters: 55
     3:
-      # VERY DENSE on 3-lane highways (Wangan, Yokohane) - packed!
-      MinAiSafetyDistanceMeters: 8
-      MaxAiSafetyDistanceMeters: 35
+      # EXTREMELY DENSE on 3-lane highways (Wangan, Yokohane) - NO full throttle runs!
+      MinAiSafetyDistanceMeters: 5
+      MaxAiSafetyDistanceMeters: 25
       # Aggressive spawning for constant traffic flow
-      MinSpawnProtectionTimeSeconds: 15
-      MaxSpawnProtectionTimeSeconds: 30
+      MinSpawnProtectionTimeSeconds: 20
+      MaxSpawnProtectionTimeSeconds: 40
   # Override some settings for specific car models
   CarSpecificOverrides:
   - # Car model to match for these overrides
@@ -233,10 +233,10 @@ AiParams:
     - Left
     - Middle
     - Right
-  # Default AI car deceleration for obstacle/collision detection (m/s^2)
-  DefaultDeceleration: 8.5
-  # Default AI car acceleration for obstacle/collision detection (m/s^2)
-  DefaultAcceleration: 3.5
+  # Default AI car deceleration for obstacle/collision detection (m/s^2) - smoother braking
+  DefaultDeceleration: 7
+  # Default AI car acceleration for obstacle/collision detection (m/s^2) - faster recovery
+  DefaultAcceleration: 4
   # Maximum AI car target count for AI slot overbooking. This is not an absolute maximum and might be slightly higher
   MaxAiTargetCount: 250
   # Number of AI cars per player the server will try to keep - INCREASED for more traffic

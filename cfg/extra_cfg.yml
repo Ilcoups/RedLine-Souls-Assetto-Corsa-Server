@@ -71,9 +71,9 @@ DebugClientMessages: false
 # Enable CSP custom position updates. This is an improved version of batched position updates, reducing network traffic even further. CSP 0.1.77+ required
 EnableCustomUpdate: true
 # Maximum time a player can spend on the loading screen before being disconnected
-PlayerLoadingTimeoutMinutes: 15
+PlayerLoadingTimeoutMinutes: 5
 # Maximum time the server will wait for a checksum response before disconnecting the player
-PlayerChecksumTimeoutSeconds: 60
+PlayerChecksumTimeoutSeconds: 40
 # Port to control the server using Source RCON protocol. 0 to disable.
 RconPort: 0
 # Dump contents of welcome message and CSP extra options to a file. For debug purposes only.
@@ -155,9 +155,10 @@ AiParams:
   # Ignore obstacles for some time if the AI car is stopped for longer than x seconds
   IgnoreObstaclesAfterSeconds: 3
   # Dynamic (hourly) traffic density. List must have exactly 24 entries in the format [0.2, 0.5, 1, 0.7, ...]
-  HourlyTrafficDensity: 
+  # Tokyo traffic pattern: Midnight=0.5, 5AM=0.6, 8AM rush=0.95, Midday=0.8, 6PM rush=1.0, Late evening=0.7
+  HourlyTrafficDensity: [0.5, 0.5, 0.5, 0.5, 0.55, 0.6, 0.75, 0.9, 0.95, 0.85, 0.8, 0.8, 0.8, 0.8, 0.8, 0.85, 0.9, 0.95, 1.0, 0.9, 0.8, 0.7, 0.6, 0.55]
   # Apply some smoothing to AI spline camber
-  SmoothCamber: false
+  SmoothCamber: true
   # Show debug overlay for AI cars
   Debug: false
   # Update interval for AI spawn point finder

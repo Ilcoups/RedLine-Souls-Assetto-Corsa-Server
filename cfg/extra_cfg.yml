@@ -255,9 +255,9 @@ AiParams:
   # Default AI car acceleration for obstacle/collision detection (m/s^2) - faster recovery
   DefaultAcceleration: 4
   # Maximum AI car target count for AI slot overbooking. This is not an absolute maximum and might be slightly higher
-  MaxAiTargetCount: 250
-  # Number of AI cars per player the server will try to keep - INCREASED for more traffic
-  AiPerPlayerTargetCount: 20
+  MaxAiTargetCount: 300
+  # Number of AI cars per player the server will try to keep - MUCH INCREASED to fill the longer spawn distance!
+  AiPerPlayerTargetCount: 40
   # AI spline height offset. Use this if the AI spline is too close to the ground
   SplineHeightOffsetMeters: 0
   # AI cornering speed factor. Lower = AI cars will drive slower around corners.

@@ -292,9 +292,9 @@ WeatherWeights:
   Hot: 0.0
   Windy: 0.0
   Hail: 0.0
-# Each restart picks new random weather - keeps it fresh!
-MinWeatherDurationMinutes: 999999
-MaxWeatherDurationMinutes: 999999
+# Each restart picks new random weather and keeps it for hours
+MinWeatherDurationMinutes: 720
+MaxWeatherDurationMinutes: 1440
 # Smooth transitions at startup
 MinTransitionDurationSeconds: 60
 MaxTransitionDurationSeconds: 120

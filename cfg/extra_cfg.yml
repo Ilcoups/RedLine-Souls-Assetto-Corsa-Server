@@ -82,7 +82,7 @@ PlayerLoadingTimeoutMinutes: 10
 # Maximum time the server will wait for a checksum response before disconnecting the player (INCREASED for debugging)
 PlayerChecksumTimeoutSeconds: 120
 # Port to control the server using Source RCON protocol. 0 to disable.
-RconPort: 0
+RconPort: 27015
 # Dump contents of welcome message and CSP extra options to a file. For debug purposes only.
 DebugWelcomeMessage: true
 # Anonymize player IP addresses in outputs

@@ -256,12 +256,12 @@ AiParams:
 
 ---
 !RandomWeatherConfiguration
-# Only beautiful weather - changes every 20-30 minutes for variety
+# Only 4 beautiful weathers - changes every 8-15 minutes for lots of variety!
 WeatherWeights:
-  Clear: 3.0
-  FewClouds: 3.0
-  ScatteredClouds: 2.0
-  BrokenClouds: 2.0
+  Clear: 1.0              # Sunny
+  FewClouds: 1.0          # Light clouds
+  ScatteredClouds: 1.0    # Medium clouds
+  BrokenClouds: 1.0       # More clouds
   # Everything else disabled
   OvercastClouds: 0.0
   Fog: 0.0
@@ -292,7 +292,7 @@ WeatherWeights:
   Hot: 0.0
   Windy: 0.0
   Hail: 0.0
-MinWeatherDurationMinutes: 20
-MaxWeatherDurationMinutes: 30
-MinTransitionDurationSeconds: 120
-MaxTransitionDurationSeconds: 180
+MinWeatherDurationMinutes: 8
+MaxWeatherDurationMinutes: 15
+MinTransitionDurationSeconds: 90
+MaxTransitionDurationSeconds: 150

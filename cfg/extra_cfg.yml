@@ -113,18 +113,18 @@ CorsAllowedOrigins:
 # Allow a user group to execute specific admin commands
 UserGroupCommandPermissions: 
 AiParams:
-  # Radius around a player in which AI cars won't despawn
-  PlayerRadiusMeters: 600
+  # Radius around a player in which AI cars won't despawn - INCREASED so you don't see them disappear
+  PlayerRadiusMeters: 800
   # Offset the player radius in direction of the velocity of the player so AI cars will despawn earlier behind a player
-  PlayerPositionOffsetMeters: 300
+  PlayerPositionOffsetMeters: 400
   # AFK timeout for players. Players who are AFK longer than this won't spawn AI cars
   PlayerAfkTimeoutSeconds: 10
   # Maximum distance to the AI spline for a player to spawn AI cars. This helps with parts of the map without traffic so AI cars won't spawn far away from players
-  MaxPlayerDistanceToAiSplineMeters: 150
-  # Minimum amount of spline points in front of a player where AI cars will spawn
-  MinSpawnDistancePoints: 50
-  # Maximum amount of spline points in front of a player where AI cars will spawn
-  MaxSpawnDistancePoints: 800
+  MaxPlayerDistanceToAiSplineMeters: 200
+  # Minimum amount of spline points in front of a player where AI cars will spawn - INCREASED to spawn further ahead
+  MinSpawnDistancePoints: 100
+  # Maximum amount of spline points in front of a player where AI cars will spawn - INCREASED for more advance spawning
+  MaxSpawnDistancePoints: 1200
   # Minimum distance between AI cars - tight but enough to prevent clipping
   MinAiSafetyDistanceMeters: 15
   # Maximum distance between AI cars - moderate for flow without clipping
@@ -133,8 +133,8 @@ AiParams:
   StateSpawnDistanceMeters: 1200
   # Minimum distance between AI states of the same car slot. If states get closer than this one of them will be forced to despawn
   MinStateDistanceMeters: 300
-  # Minimum spawn distance to players - REDUCED to see traffic sooner
-  SpawnSafetyDistanceToPlayerMeters: 100
+  # Minimum spawn distance to players - INCREASED so you don't see cars spawning in front of you
+  SpawnSafetyDistanceToPlayerMeters: 200
   # Minimum time in which a newly spawned AI car cannot despawn
   MinSpawnProtectionTimeSeconds: 10
   # Maximum time in which a newly spawned AI car cannot despawn

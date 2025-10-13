@@ -1,5 +1,5 @@
 # Enable Steam ticket validation. Requires CSP 0.1.75+ and a recent version of Content Manager
-UseSteamAuth: false
+UseSteamAuth: true
 # List of DLC App IDs that are required to join. Steam auth must be enabled. Possible values: https://steamdb.info/app/244210/dlc/
 ValidateDlcOwnership: []
 # Enable protection against cheats/hacks. 0 = No protection. 1 = Block all public cheats as of 2023-11-18 (ClientSecurityPlugin and CSP 0.2.0+ required)
@@ -57,7 +57,7 @@ IgnoreConfigurationErrors:
   MissingCarChecksums: true
   MissingTrackParams: true
   WrongServerDetails: true
-  UnsafeAdminWhitelist: false
+  UnsafeAdminWhitelist: true
 # Allow players with missing or mismatched car data files (like data.acd)
 IgnoreMissingCarData: true
 # Allow players with slightly different car physics
@@ -158,8 +158,10 @@ AiParams:
   # Ignore obstacles for some time if the AI car is stopped for longer than x seconds
   IgnoreObstaclesAfterSeconds: 3
   # Dynamic (hourly) traffic density. List must have exactly 24 entries in the format [0.2, 0.5, 1, 0.7, ...]
-  # Tokyo traffic pattern: Midnight=0.5, 5AM=0.6, 8AM rush=0.95, Midday=0.8, 6PM rush=1.0, Late evening=0.7
-  HourlyTrafficDensity: [0.5, 0.5, 0.5, 0.5, 0.55, 0.6, 0.75, 0.9, 0.95, 0.85, 0.8, 0.8, 0.8, 0.8, 0.8, 0.85, 0.9, 0.95, 1.0, 0.9, 0.8, 0.7, 0.6, 0.55]
+  # Subtle variations: Current level = 1.0 (baseline), Day slightly more (1.1-1.15), Night still busy (0.95-1.0)
+  # 00=1.0, 01=0.95, 02=0.95, 03=0.95, 04=0.95, 05=1.0, 06=1.0, 07=1.05, 08=1.1, 09=1.15, 10=1.15, 11=1.1
+  # 12=1.1, 13=1.1, 14=1.1, 15=1.1, 16=1.1, 17=1.15, 18=1.15, 19=1.1, 20=1.05, 21=1.0, 22=1.0, 23=1.0
+  HourlyTrafficDensity: [1.0, 0.95, 0.95, 0.95, 0.95, 1.0, 1.0, 1.05, 1.1, 1.15, 1.15, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.15, 1.15, 1.1, 1.05, 1.0, 1.0, 1.0]
   # Apply some smoothing to AI spline camber
   SmoothCamber: true
   # Show debug overlay for AI cars
@@ -226,7 +228,7 @@ AiParams:
   # Maximum AI car target count for AI slot overbooking. This is not an absolute maximum and might be slightly higher
   MaxAiTargetCount: 200
   # Number of AI cars per player the server will try to keep
-  AiPerPlayerTargetCount: 12
+  AiPerPlayerTargetCount: 16
   # AI spline height offset. Use this if the AI spline is too close to the ground
   SplineHeightOffsetMeters: 0
   # AI cornering speed factor. Lower = AI cars will drive slower around corners.

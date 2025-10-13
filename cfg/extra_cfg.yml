@@ -154,8 +154,8 @@ AiParams:
   MaxPlayerCount: 35
   # Hide AI car nametags and make them invisible on the minimap. Broken on CSP versions < 0.1.78
   HideAiCars: true
-  # Lane width for adjacent lane detection
-  LaneWidthMeters: 2.2
+  # Lane width for adjacent lane detection - INCREASED so AI stays centered in lane, less wiggling!
+  LaneWidthMeters: 3.5
   # Enable two way traffic. This will allow AI cars to spawn in lanes with the opposite direction of travel to the player.
   TwoWayTraffic: false
   # Enable traffic spawning if the player is driving the wrong way. Only takes effect when TwoWayTraffic is set to false.
@@ -255,9 +255,9 @@ AiParams:
   # Default AI car acceleration for obstacle/collision detection (m/s^2) - faster recovery
   DefaultAcceleration: 4
   # Maximum AI car target count for AI slot overbooking. This is not an absolute maximum and might be slightly higher
-  MaxAiTargetCount: 250
-  # Number of AI cars per player the server will try to keep - balanced for all road types
-  AiPerPlayerTargetCount: 25
+  MaxAiTargetCount: 200
+  # Number of AI cars per player the server will try to keep - reduced for better balance
+  AiPerPlayerTargetCount: 20
   # AI spline height offset. Use this if the AI spline is too close to the ground
   SplineHeightOffsetMeters: 0
   # AI cornering speed factor. Lower = AI cars will drive slower around corners.

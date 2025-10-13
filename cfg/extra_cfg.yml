@@ -119,10 +119,10 @@ AiParams:
   MinSpawnDistancePoints: 50
   # Maximum amount of spline points in front of a player where AI cars will spawn
   MaxSpawnDistancePoints: 800
-  # Minimum distance between AI cars - REDUCED for denser traffic
-  MinAiSafetyDistanceMeters: 12
-  # Maximum distance between AI cars - REDUCED for denser traffic
-  MaxAiSafetyDistanceMeters: 50
+  # Minimum distance between AI cars - tight but enough to prevent clipping
+  MinAiSafetyDistanceMeters: 15
+  # Maximum distance between AI cars - moderate for flow without clipping
+  MaxAiSafetyDistanceMeters: 55
   # Minimum spawn distance for AI states of the same car slot. If you set this too low you risk AI states despawning or AI states becoming invisible for some players when multiple states are close together
   StateSpawnDistanceMeters: 1200
   # Minimum distance between AI states of the same car slot. If states get closer than this one of them will be forced to despawn
@@ -133,10 +133,10 @@ AiParams:
   MinSpawnProtectionTimeSeconds: 10
   # Maximum time in which a newly spawned AI car cannot despawn
   MaxSpawnProtectionTimeSeconds: 20
-  # Minimum time an AI car will stop/slow down after a collision - VERY SHORT to prevent traffic jams
-  MinCollisionStopTimeSeconds: 0
-  # Maximum time an AI car will stop/slow down after a collision - VERY SHORT to prevent traffic jams
-  MaxCollisionStopTimeSeconds: 1
+  # Minimum time an AI car will stop/slow down after a collision - short but not zero
+  MinCollisionStopTimeSeconds: 1
+  # Maximum time an AI car will stop/slow down after a collision - quick recovery
+  MaxCollisionStopTimeSeconds: 2
   # Default maximum AI speed. This is not an absolute maximum and can be overridden with RightLaneOffsetKph and MaxSpeedVariationPercent
   # Base 95 kph + 18 right lane offset = 113 kph MAX (not 120!)
   MaxSpeedKph: 95
@@ -156,8 +156,8 @@ AiParams:
   WrongWayTraffic: true
   # Name prefix for AI cars. Names will be in the form of '<NamePrefix> <SessionId>'
   NamePrefix: Traffic
-  # Ignore obstacles for some time if the AI car is stopped for longer than x seconds - VERY FAST to ignore slow cars ahead
-  IgnoreObstaclesAfterSeconds: 1
+  # Ignore obstacles for some time if the AI car is stopped for longer than x seconds - helps with stuck AI but not too aggressive
+  IgnoreObstaclesAfterSeconds: 3
   # Dynamic (hourly) traffic density. List must have exactly 24 entries in the format [0.2, 0.5, 1, 0.7, ...]
   # Subtle variations: Current level = 1.0 (baseline), Day slightly more (1.1-1.15), Night still busy (0.95-1.0)
   # 00=1.0, 01=0.95, 02=0.95, 03=0.95, 04=0.95, 05=1.0, 06=1.0, 07=1.05, 08=1.1, 09=1.15, 10=1.15, 11=1.1
@@ -181,15 +181,15 @@ AiParams:
       MaxSpeedKph: 100
       RightLaneOffsetKph: 13
     2:
-      # 2-lane roads (C1, city) - moderate density, need to brake enough
-      MinAiSafetyDistanceMeters: 10
-      MaxAiSafetyDistanceMeters: 40
+      # 2-lane roads (C1, city) - moderate density, need to brake enough but no clipping
+      MinAiSafetyDistanceMeters: 12
+      MaxAiSafetyDistanceMeters: 45
       MaxSpeedKph: 90
       RightLaneOffsetKph: 18
     3:
-      # EXTREMELY DENSE on 3-lane highways (Wangan, Yokohane) - NO full throttle runs!
-      MinAiSafetyDistanceMeters: 5
-      MaxAiSafetyDistanceMeters: 25
+      # VERY DENSE on 3-lane highways (Wangan, Yokohane) - packed but no clipping through each other
+      MinAiSafetyDistanceMeters: 8
+      MaxAiSafetyDistanceMeters: 30
       MaxSpeedKph: 95
       RightLaneOffsetKph: 18
       # Aggressive spawning for constant traffic flow

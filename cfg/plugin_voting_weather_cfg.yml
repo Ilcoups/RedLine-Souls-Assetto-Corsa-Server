@@ -1,2 +1,14 @@
-WeatherDurationMinutes: 30
+WeatherDurationMinutes: 45
 VotingDurationMinutes: 5
+WeatherWeights:
+  Clear: 1.0
+  FewClouds: 1.0
+  ScatteredClouds: 1.0
+  BrokenClouds: 1.0
+  OvercastClouds: 0.0
+  Fog: 0.0
+  Mist: 0.0
+  Thunderstorm: 0.0
+  Rain: 0.0
+  Snow: 0.0
+  Sleet: 0.0

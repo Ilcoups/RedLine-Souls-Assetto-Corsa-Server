@@ -51,7 +51,7 @@ RainTrackGripReductionPercent: 0
 EnableAi: true
 # List of plugins to enable
 EnablePlugins:
-- VotingWeatherPlugin
+- RandomWeatherPlugin
 # Ignore some common configuration errors. More info: https://assettoserver.org/docs/common-configuration-errors
 IgnoreConfigurationErrors:
   MissingCarChecksums: true
@@ -253,3 +253,46 @@ AiParams:
   TrafficDensity: 1
   # Tyre diameter of AI cars in meters, shouldn't have to be changed unless some cars are creating lots of smoke.
   TyreDiameterMeters: 0.65
+
+---
+!RandomWeatherConfiguration
+# Only beautiful weather - changes every 20-30 minutes for variety
+WeatherWeights:
+  Clear: 3.0
+  FewClouds: 3.0
+  ScatteredClouds: 2.0
+  BrokenClouds: 2.0
+  # Everything else disabled
+  OvercastClouds: 0.0
+  Fog: 0.0
+  Mist: 0.0
+  LightThunderstorm: 0.0
+  Thunderstorm: 0.0
+  HeavyThunderstorm: 0.0
+  LightDrizzle: 0.0
+  Drizzle: 0.0
+  HeavyDrizzle: 0.0
+  LightRain: 0.0
+  Rain: 0.0
+  HeavyRain: 0.0
+  LightSnow: 0.0
+  Snow: 0.0
+  HeavySnow: 0.0
+  LightSleet: 0.0
+  Sleet: 0.0
+  HeavySleet: 0.0
+  Smoke: 0.0
+  Haze: 0.0
+  Sand: 0.0
+  Dust: 0.0
+  Squalls: 0.0
+  Tornado: 0.0
+  Hurricane: 0.0
+  Cold: 0.0
+  Hot: 0.0
+  Windy: 0.0
+  Hail: 0.0
+MinWeatherDurationMinutes: 20
+MaxWeatherDurationMinutes: 30
+MinTransitionDurationSeconds: 120
+MaxTransitionDurationSeconds: 180

@@ -193,9 +193,9 @@ AiParams:
       MaxSpeedKph: 90
       RightLaneOffsetKph: 18
     3:
-      # VERY DENSE on 3-lane highways (Wangan, Yokohane) - packed but no clipping through each other
-      MinAiSafetyDistanceMeters: 8
-      MaxAiSafetyDistanceMeters: 30
+      # EXTREMELY DENSE on 3-lane highways (Wangan, Yokohane) - INSANE traffic density!
+      MinAiSafetyDistanceMeters: 6
+      MaxAiSafetyDistanceMeters: 25
       MaxSpeedKph: 95
       RightLaneOffsetKph: 18
       # Aggressive spawning for constant traffic flow

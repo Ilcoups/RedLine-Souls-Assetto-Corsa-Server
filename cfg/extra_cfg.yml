@@ -26,19 +26,25 @@ OutsideNetworkBubbleRefreshRateHz: 4
 EnableServerDetails: true
 # Server description shown in Content Manager
 ServerDescription: |-
-  Welcome to my passion project! 
+  ⚠️ MINIMUM REQUIREMENTS ⚠️
+  CSP 0.1.78+ REQUIRED (AI traffic won't work on older versions!)
+  Update your CSP: https://acstuff.ru/patch/
   
-  I've created this high-speed traffic server on Shuto Revival Project for all of you who love the thrill of street racing in beautiful conditions.
+  Welcome to RedLine Souls - High-Speed Traffic Server!
   
-  What you'll find here:
-  Dynamic AI traffic (up to 200 cars) that scales with players
-  Only gorgeous weather - clear skies and stunning sunsets
-  Fast day/night cycles so you catch those breathtaking golden hours
-  Real Tokyo atmosphere with authentic time and smooth weather transitions
+  🚗 Features:
+  • Dense AI traffic (up to 250 cars) - 3-lane highways PACKED!
+  • Beautiful weather only (Clear, FewClouds, ScatteredClouds, BrokenClouds)
+  • Dynamic day/night cycle (4x speed)
+  • 113 km/h AI max speed - challenging but fair
+  • Lane-specific traffic density (highways vs city roads)
   
-  This is my hobby and I'm sharing it with the community - come enjoy the drive!
+  📋 Rules:
+  • Drive safely - AI won't clip through you!
+  • Respect other players
+  • Have fun and enjoy the drive!
   
-  Join my Discord: https://discord.gg/YJJEGAhf 💬
+  💬 Discord: https://discord.gg/YJJEGAhf
 # Link server time to real map time. DISABLED so we can control day/night cycle
 EnableRealTime: false
 # Enable new CSP weather handling. Allows rain and smooth weather transitions. Requires CSP 0.1.76+

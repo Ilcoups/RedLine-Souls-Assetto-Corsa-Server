@@ -1,0 +1,17 @@
+⚠️ IMPORTANT: CSP 0.1.78+ REQUIRED ⚠️
+
+If you're experiencing issues (invisible AI traffic, crashes, or connection problems):
+➤ Update your Content Shaders Patch to version 0.1.78 or newer
+➤ Download from: https://acstuff.ru/patch/
+
+This server uses advanced CSP features:
+✓ WeatherFX (dynamic weather)
+✓ AI traffic system (hidden AI nametags)
+✓ Steam authentication
+
+Older CSP versions are NOT compatible and may cause:
+✗ AI traffic not visible
+✗ Immediate disconnections
+✗ Poor performance
+
+Update CSP and rejoin! See you on the track! 🏁

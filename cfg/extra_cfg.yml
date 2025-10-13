@@ -171,7 +171,15 @@ AiParams:
   # AI cars inside these areas will ignore all player obstacles
   IgnorePlayerObstacleSpheres: 
   # Override some settings for newly spawned cars based on the number of lanes
-  LaneCountSpecificOverrides: {}
+  # Higher density on 3-lane highways (Wangan, Yokohane) without affecting 2-lane roads
+  LaneCountSpecificOverrides:
+    3:
+      # Increase spawn density on 3-lane roads (highways)
+      MinAiSafetyDistanceMeters: 12
+      MaxAiSafetyDistanceMeters: 45
+      # Allow more aggressive spawning on wide highways
+      MinSpawnProtectionTimeSeconds: 20
+      MaxSpawnProtectionTimeSeconds: 40
   # Override some settings for specific car models
   CarSpecificOverrides:
   - # Car model to match for these overrides

@@ -171,10 +171,14 @@ AiParams:
   # AI cars inside these areas will ignore all player obstacles
   IgnorePlayerObstacleSpheres: 
   # Override some settings for newly spawned cars based on the number of lanes
-  # Higher density on 3-lane highways (Wangan, Yokohane) without affecting 2-lane roads
+  # Higher density on 3-lane highways (Wangan, Yokohane) and slightly denser 2-lane roads (C1, city)
   LaneCountSpecificOverrides:
+    2:
+      # Slightly more traffic on 2-lane roads (small but noticeable)
+      MinAiSafetyDistanceMeters: 13
+      MaxAiSafetyDistanceMeters: 55
     3:
-      # Increase spawn density on 3-lane roads (highways)
+      # Even denser on 3-lane roads (highways)
       MinAiSafetyDistanceMeters: 12
       MaxAiSafetyDistanceMeters: 45
       # Allow more aggressive spawning on wide highways
@@ -252,7 +256,7 @@ AiParams:
 
 ---
 !RandomWeatherConfiguration
-# Only beautiful, photogenic weather - perfect for racing and screenshots!
+# Only beautiful, photogenic weather - changes every server restart for variety!
 WeatherWeights:
   Clear: 5.0              # Perfect sunny days - most common
   FewClouds: 4.0          # Beautiful clouds for dynamic skies
@@ -288,9 +292,9 @@ WeatherWeights:
   Hot: 0.0
   Windy: 0.0
   Hail: 0.0
-# Longer weather duration for more stable beautiful conditions
-MinWeatherDurationMinutes: 30
-MaxWeatherDurationMinutes: 60
-# Slow, beautiful transitions for cinematic effect
-MinTransitionDurationSeconds: 180
-MaxTransitionDurationSeconds: 360
+# Each restart picks new random weather - keeps it fresh!
+MinWeatherDurationMinutes: 999999
+MaxWeatherDurationMinutes: 999999
+# Smooth transitions at startup
+MinTransitionDurationSeconds: 60
+MaxTransitionDurationSeconds: 120

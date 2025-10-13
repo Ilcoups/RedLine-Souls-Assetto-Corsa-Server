@@ -207,4 +207,4 @@ Enjoy the drive! 🏁
 
 ---
 
-<sub>Special thanks to @gaulven for the late-night debugging sessions and helping bring this project to life. Your patience and expertise made all the difference. 🙏</sub>.
+<sub>Special thanks to @gaulven for the late-night debugging sessions on his server and helping bring this project to life. Your patience and expertise made all the difference. 🙏</sub>.

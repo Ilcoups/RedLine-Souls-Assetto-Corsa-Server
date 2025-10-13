@@ -171,12 +171,12 @@ AiParams:
   # AI cars inside these areas will ignore all player obstacles
   IgnorePlayerObstacleSpheres: 
   # Override some settings for newly spawned cars based on the number of lanes
-  # Make 3-lane highways SUPER busy, keep 2-lane moderate
+  # 3-lane highways PACKED, 2-lane roads lighter traffic
   LaneCountSpecificOverrides:
     2:
-      # Moderate density on 2-lane roads (C1, city)
-      MinAiSafetyDistanceMeters: 11
-      MaxAiSafetyDistanceMeters: 48
+      # Less traffic on 2-lane roads (C1, city) - more space to breathe
+      MinAiSafetyDistanceMeters: 14
+      MaxAiSafetyDistanceMeters: 55
     3:
       # VERY DENSE on 3-lane highways (Wangan, Yokohane) - packed!
       MinAiSafetyDistanceMeters: 8

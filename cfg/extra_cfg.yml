@@ -67,7 +67,7 @@ EnableClientMessages: false
 # Enable CSP UDP client messages feature. Required for VR head/hand syncing. Requires CSP 0.1.80+
 EnableUdpClientMessages: false
 # Log unknown CSP Lua client messages / online events
-DebugClientMessages: false
+DebugClientMessages: true
 # Enable CSP custom position updates. This is an improved version of batched position updates, reducing network traffic even further. CSP 0.1.77+ required
 EnableCustomUpdate: true
 # Maximum time a player can spend on the loading screen before being disconnected
@@ -78,6 +78,8 @@ PlayerChecksumTimeoutSeconds: 40
 RconPort: 0
 # Dump contents of welcome message and CSP extra options to a file. For debug purposes only.
 DebugWelcomeMessage: true
+# Anonymize player IP addresses in outputs
+RedactIpAddresses: false
 # Force clients to use track params (coordinates, time zone) specified on the server. CSP 0.1.79+ required
 ForceServerTrackParams: false
 # Allow cars to have multiple data checksums. Instead of a single checksummed data.acd, you can have multiple data*.acd files in the car folder and players can join with any of these files
@@ -160,7 +162,7 @@ AiParams:
   # Apply some smoothing to AI spline camber
   SmoothCamber: true
   # Show debug overlay for AI cars
-  Debug: false
+  Debug: true
   # Update interval for AI spawn point finder
   AiBehaviorUpdateIntervalHz: 2
   # AI cars inside these areas will ignore all player obstacles

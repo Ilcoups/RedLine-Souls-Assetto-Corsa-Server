@@ -86,11 +86,9 @@ def get_player_stats(steam_id, period="all_time"):
             "collisions": 0,
             "playtime": 0,  # seconds
             "max_speed": 0,
-            "speeds": [],  # Store last 100 speeds for average calculation
             "join_count": 0,
             "last_seen": None,
             "checksum_fails": 0,
-            "distance_traveled": 0,  # meters (if we can track it)
         }
     return stats[period][steam_id]
 
@@ -105,19 +103,21 @@ def record_collision(steam_id, speed=None):
     for period in ["all_time", "daily"]:
         player = get_player_stats(steam_id, period)
         player["collisions"] += 1
-        if speed:
-            player["speeds"].append(speed)
-            player["speeds"] = player["speeds"][-100:]  # Keep last 100
+        # Only record speed if it's meaningful (above 60 km/h)
+        if speed and speed >= 60:
             if speed > player["max_speed"]:
                 player["max_speed"] = speed
     save_stats()
 
 def record_speed(steam_id, speed):
-    """Record a speed measurement"""
+    """Record a speed measurement (only if above 60 km/h)"""
+    if speed < 60:
+        return
     for period in ["all_time", "daily"]:
         player = get_player_stats(steam_id, period)
-        player["speeds"].append(speed)
-        player["speeds"] = player["speeds"][-100:]  # Keep last 100
+        if speed > player["max_speed"]:
+            player["max_speed"] = speed
+    save_stats()
         if speed > player["max_speed"]:
             player["max_speed"] = speed
     save_stats()
@@ -156,12 +156,6 @@ def record_checksum_fail(steam_id, name):
         player["checksum_fails"] += 1
         player["last_seen"] = datetime.now(timezone.utc).isoformat()
     save_stats()
-
-def calculate_avg_speed(speeds):
-    """Calculate average speed from list"""
-    if not speeds:
-        return 0
-    return sum(speeds) / len(speeds)
 
 def format_time(seconds):
     """Format seconds into readable time"""
@@ -311,23 +305,26 @@ def generate_leaderboard():
     if not daily_stats:
         return None
     
-    # Sort by different categories
-    by_playtime = sorted(daily_stats.items(), key=lambda x: x[1].get("playtime", 0), reverse=True)[:10]
-    by_collisions = sorted(daily_stats.items(), key=lambda x: x[1].get("collisions", 0), reverse=True)[:10]
-    by_max_speed = sorted(daily_stats.items(), key=lambda x: x[1].get("max_speed", 0), reverse=True)[:10]
+    # Filter out short sessions (less than 3 minutes = 180 seconds)
+    MIN_SESSION_TIME = 180
+    filtered_stats = {k: v for k, v in daily_stats.items() if v.get("playtime", 0) >= MIN_SESSION_TIME}
     
-    # Calculate cleanest drivers (fewest collisions per hour)
+    if not filtered_stats:
+        return None
+    
+    # Sort by different categories (using filtered stats)
+    by_playtime = sorted(filtered_stats.items(), key=lambda x: x[1].get("playtime", 0), reverse=True)[:10]
+    by_collisions = sorted(filtered_stats.items(), key=lambda x: x[1].get("collisions", 0), reverse=True)[:10]
+    by_max_speed = sorted(filtered_stats.items(), key=lambda x: x[1].get("max_speed", 0), reverse=True)[:10]
+    
+    # Calculate cleanest drivers (fewest collisions per hour, min 30 minutes playtime)
     cleanest = []
-    for steam_id, data in daily_stats.items():
+    for steam_id, data in filtered_stats.items():
         playtime_hours = data.get("playtime", 0) / 3600
         if playtime_hours >= 0.5:  # At least 30 minutes
             collisions_per_hour = data.get("collisions", 0) / playtime_hours if playtime_hours > 0 else 999
-            avg_speed = calculate_avg_speed(data.get("speeds", []))
-            cleanest.append((steam_id, data, collisions_per_hour, avg_speed))
+            cleanest.append((steam_id, data, collisions_per_hour))
     cleanest = sorted(cleanest, key=lambda x: x[2])[:10]
-    
-    # Most aggressive (most collisions per hour)
-    aggressive = sorted(cleanest, key=lambda x: x[2], reverse=True)[:5]
     
     # Build embed
     embed = {
@@ -355,15 +352,14 @@ def generate_leaderboard():
             "inline": False
         })
     
-    # Speed Demons (max speed)
+    # Speed Demons (max speed only)
     if by_max_speed:
         field_value = ""
         for i, (steam_id, data) in enumerate(by_max_speed, 1):
             name = data.get("name", "Unknown")
             max_speed = data.get("max_speed", 0)
-            avg_speed = calculate_avg_speed(data.get("speeds", []))
             steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
-            field_value += f"**{i}.** {steam_link} - {max_speed:.0f} km/h (avg: {avg_speed:.0f})\n"
+            field_value += f"**{i}.** {steam_link} - {max_speed:.0f} km/h\n"
         embed["fields"].append({
             "name": "🚀 Speed Demons",
             "value": field_value or "No data",
@@ -373,7 +369,7 @@ def generate_leaderboard():
     # Cleanest Drivers (fewest collisions per hour)
     if cleanest:
         field_value = ""
-        for i, (steam_id, data, cph, avg_speed) in enumerate(cleanest, 1):
+        for i, (steam_id, data, cph) in enumerate(cleanest, 1):
             name = data.get("name", "Unknown")
             playtime = format_time(data.get("playtime", 0))
             steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"

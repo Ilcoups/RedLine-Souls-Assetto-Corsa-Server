@@ -236,14 +236,27 @@ def process_line(line):
         return
     
     # Collision
-    # Example: [INF] Collision: PlayerName (76561198XXXXXXXXX) at 89 km/h
-    match = re.search(r'\[INF\].*?[Cc]ollision.*?([\w\s\-_]+?)\s*\((\d{17})\)', line)
+    # Example: [INF] Collision between PlayerName (15) and environment, rel. speed 130km/h
+    match = re.search(r'\[INF\]\s+Collision between ([\w\s\-_]+?)\s+\(\d+\) and .+?, rel\. speed (\d+)km/h', line)
     if match:
         name = match.group(1).strip()
-        steam_id = match.group(2)
-        speed = parse_speed(line)
-        record_collision(steam_id, speed)
-        print(f"📊 Collision: {name} ({steam_id}) @ {speed} km/h" if speed else f"📊 Collision: {name}")
+        speed = int(match.group(2))
+        
+        # Find steam_id by name from active sessions or stats
+        steam_id = None
+        for sid in list(active_sessions.keys()):
+            if sid in stats.get("daily", {}) and stats["daily"][sid].get("name") == name:
+                steam_id = sid
+                break
+        if not steam_id:
+            for sid, data in stats.get("daily", {}).items():
+                if data.get("name") == name:
+                    steam_id = sid
+                    break
+        
+        if steam_id:
+            record_collision(steam_id, speed)
+            print(f"📊 Collision: {name} @ {speed} km/h")
         return
     
     # Checksum failure
@@ -334,7 +347,8 @@ def generate_leaderboard():
         for i, (steam_id, data) in enumerate(by_playtime, 1):
             name = data.get("name", "Unknown")
             playtime = format_time(data.get("playtime", 0))
-            field_value += f"**{i}.** {name} - {playtime}\n"
+            steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
+            field_value += f"**{i}.** {steam_link} - {playtime}\n"
         embed["fields"].append({
             "name": "⏱️ Most Active Drivers",
             "value": field_value or "No data",
@@ -348,7 +362,8 @@ def generate_leaderboard():
             name = data.get("name", "Unknown")
             max_speed = data.get("max_speed", 0)
             avg_speed = calculate_avg_speed(data.get("speeds", []))
-            field_value += f"**{i}.** {name} - {max_speed:.0f} km/h (avg: {avg_speed:.0f})\n"
+            steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
+            field_value += f"**{i}.** {steam_link} - {max_speed:.0f} km/h (avg: {avg_speed:.0f})\n"
         embed["fields"].append({
             "name": "🚀 Speed Demons",
             "value": field_value or "No data",
@@ -361,7 +376,8 @@ def generate_leaderboard():
         for i, (steam_id, data, cph, avg_speed) in enumerate(cleanest, 1):
             name = data.get("name", "Unknown")
             playtime = format_time(data.get("playtime", 0))
-            field_value += f"**{i}.** {name} - {cph:.1f} crashes/hr ({playtime})\n"
+            steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
+            field_value += f"**{i}.** {steam_link} - {cph:.1f} crashes/hr ({playtime})\n"
         embed["fields"].append({
             "name": "🧼 Cleanest Drivers",
             "value": field_value or "No data",
@@ -374,25 +390,38 @@ def generate_leaderboard():
         for i, (steam_id, data) in enumerate(by_collisions[:5], 1):
             name = data.get("name", "Unknown")
             collisions = data.get("collisions", 0)
-            field_value += f"**{i}.** {name} - {collisions} collisions\n"
+            steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
+            field_value += f"**{i}.** {steam_link} - {collisions} collisions\n"
         embed["fields"].append({
             "name": "💥 Most Crashes",
             "value": field_value or "No data",
             "inline": False
         })
     
-    # Fun stats
+    # Fun stats with more details
     total_collisions = sum(d.get("collisions", 0) for d in daily_stats.values())
     total_playtime = sum(d.get("playtime", 0) for d in daily_stats.values())
     unique_players = len(daily_stats)
+    total_joins = sum(d.get("join_count", 0) for d in daily_stats.values())
     
     fun_stats = f"**Total Players:** {unique_players}\n"
+    fun_stats += f"**Total Sessions:** {total_joins}\n"
     fun_stats += f"**Total Crashes:** {total_collisions}\n"
     fun_stats += f"**Total Playtime:** {format_time(total_playtime)}\n"
     
     if by_max_speed:
-        fastest = by_max_speed[0][1]
-        fun_stats += f"**Fastest Speed:** {fastest.get('max_speed', 0):.0f} km/h by {fastest.get('name', 'Unknown')}\n"
+        fastest = by_max_speed[0]
+        fastest_name = fastest[1].get('name', 'Unknown')
+        fastest_speed = fastest[1].get('max_speed', 0)
+        fastest_link = f"[{fastest_name}](https://steamcommunity.com/profiles/{fastest[0]})"
+        fun_stats += f"**Fastest Speed:** {fastest_speed:.0f} km/h by {fastest_link}\n"
+    
+    # Average stats
+    if unique_players > 0:
+        avg_playtime = total_playtime / unique_players
+        avg_collisions = total_collisions / unique_players
+        fun_stats += f"**Avg Playtime/Player:** {format_time(avg_playtime)}\n"
+        fun_stats += f"**Avg Crashes/Player:** {avg_collisions:.1f}\n"
     
     embed["fields"].append({
         "name": "📊 Server Stats",

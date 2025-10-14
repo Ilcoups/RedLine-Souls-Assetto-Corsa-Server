@@ -69,7 +69,7 @@ IgnoreMissingCarData: true
 # Allow players with slightly different car physics
 IgnoreCarPhysicsMismatch: true
 # Enable CSP client messages feature. Requires CSP 0.1.77+
-EnableClientMessages: false
+EnableClientMessages: true
 # Enable CSP UDP client messages feature. Required for VR head/hand syncing. Requires CSP 0.1.80+
 EnableUdpClientMessages: false
 # Log unknown CSP Lua client messages / online events

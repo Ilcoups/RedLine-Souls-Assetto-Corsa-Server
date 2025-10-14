@@ -16,7 +16,7 @@ from collections import defaultdict
 # Configuration
 LOG_DIR = Path("/home/acserver/server/logs")
 STATS_FILE = Path("/home/acserver/server/player_stats.json")
-DISCORD_STATS_WEBHOOK = "https://discord.com/api/webhooks/1427443975425364018/8KIkIU-vjxSMEQuMhaiQ3gia-EIFMF48s_98xMTngfthM_A8eW2aDD0M_TjrfOVwJ0ah"
+DISCORD_STATS_WEBHOOK = "https://discord.com/api/webhooks/1427462778075218015/QRjTkpivsX_UgX7NhPP6-i3l4p5gPIMuYTCgqflG0Y5XF-PTpbpm0tZ_WY6lFex8jH3l"  # Chat channel
 CHECK_INTERVAL = 1.0
 LEADERBOARD_TIME = "23:59"  # Post leaderboard at 11:59 PM
 
@@ -202,22 +202,37 @@ def process_line(line):
     """Process a single log line and update stats"""
     
     # Player connection
-    # Example: [INF] 76561198XXXXXXXXX PlayerName connected
-    match = re.search(r'\[INF\].*?(\d{17}).*?([\w\s\-_]+?)(?:\s+connected)', line)
+    # Example: [INF] il (76561199185532445, 26 (ferrari_f40_s3-02_black/ADAn)) has connected
+    match = re.search(r'\[INF\]\s+([\w\s\-_]+?)\s+\((\d{17}),.*?\)\s+has connected', line)
     if match:
-        steam_id = match.group(1)
-        name = match.group(2).strip()
+        name = match.group(1).strip()
+        steam_id = match.group(2)
         record_join(steam_id, name)
         print(f"📊 Join: {name} ({steam_id})")
         return
     
-    # Player disconnection
-    match = re.search(r'\[INF\].*?(\d{17}).*?([\w\s\-_]+?)(?:\s+disconnected)', line)
+    # Player disconnection - need to track by name and lookup steam_id from active sessions or previous data
+    # Example: [INF] il has disconnected
+    match = re.search(r'\[INF\]\s+([\w\s\-_]+?)\s+has disconnected', line)
     if match:
-        steam_id = match.group(1)
-        name = match.group(2).strip()
-        record_leave(steam_id)
-        print(f"📊 Leave: {name} ({steam_id})")
+        name = match.group(1).strip()
+        # Find steam_id from active_sessions or stats by name
+        steam_id = None
+        for sid, timestamp in list(active_sessions.items()):
+            if sid in stats.get("daily", {}) and stats["daily"][sid].get("name") == name:
+                steam_id = sid
+                break
+        if not steam_id:
+            for sid, data in stats.get("daily", {}).items():
+                if data.get("name") == name:
+                    steam_id = sid
+                    break
+        
+        if steam_id:
+            record_leave(steam_id)
+            print(f"📊 Leave: {name} ({steam_id})")
+        else:
+            print(f"⚠️ Leave: {name} (Steam ID not found)")
         return
     
     # Collision

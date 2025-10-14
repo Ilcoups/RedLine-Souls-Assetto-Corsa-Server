@@ -1,0 +1,33 @@
+{
+  "all_time": {
+    "76561199185532445": {
+      "name": "il",
+      "collisions": 5,
+      "playtime": 5679.133350849152,
+      "max_speed": 197,
+      "speeds": [
+        75
+      ],
+      "join_count": 14,
+      "last_seen": "2025-10-14T11:49:18.204206+00:00",
+      "checksum_fails": 0,
+      "distance_traveled": 0
+    }
+  },
+  "daily": {
+    "76561199185532445": {
+      "name": "il",
+      "collisions": 5,
+      "playtime": 5679.133350849152,
+      "max_speed": 197,
+      "speeds": [
+        75
+      ],
+      "join_count": 14,
+      "last_seen": "2025-10-14T11:49:18.204227+00:00",
+      "checksum_fails": 0,
+      "distance_traveled": 0
+    }
+  },
+  "last_reset": "2025-10-14T07:20:48.946558+00:00"
+}

@@ -73,7 +73,7 @@ EnableClientMessages: true
 # Enable CSP UDP client messages feature. Required for VR head/hand syncing. Requires CSP 0.1.80+
 EnableUdpClientMessages: false
 # Log unknown CSP Lua client messages / online events
-DebugClientMessages: true
+DebugClientMessages: false
 # Enable CSP custom position updates. This is an improved version of batched position updates, reducing network traffic even further. CSP 0.1.77+ required
 # DISABLED for maximum compatibility - allows CSP 0.1.60+ users to join
 EnableCustomUpdate: false

@@ -17,7 +17,7 @@ LOG_DIR = Path("/home/acserver/server/logs")
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1427443975425364018/8KIkIU-vjxSMEQuMhaiQ3gia-EIFMF48s_98xMTngfthM_A8eW2aDD0M_TjrfOVwJ0ah"
 DISCORD_CHAT_WEBHOOK = "https://discord.com/api/webhooks/1427462778075218015/QRjTkpivsX_UgX7NhPP6-i3l4p5gPIMuYTCgqflG0Y5XF-PTpbpm0tZ_WY6lFex8jH3l"  # For all in-game chat
 UDP_PLUGIN_HOST = "127.0.0.1"
-UDP_PLUGIN_PORT = 12001  # Must send to UDP_PLUGIN_ADDRESS port, not LOCAL_PORT  # Default AssettoServer UDP plugin port
+UDP_PLUGIN_PORT = 12000  # Must send to UDP_PLUGIN_ADDRESS port, not LOCAL_PORT  # AssettoServer UDP plugin port (server listens on 12000)
 CHECK_INTERVAL = 0.5
 
 # UDP Plugin Protocol Commands
@@ -66,6 +66,12 @@ def send_chat(message):
         # Send to server
         udp_socket.sendto(packet, (UDP_PLUGIN_HOST, UDP_PLUGIN_PORT))
         print(f"✓ Chat: {message}")
+        # Also write to a log file for easier debugging when running under nohup
+        try:
+            with open('udp_announcer.log', 'a', encoding='utf-8') as lf:
+                lf.write(f"{datetime.now().isoformat()} SENT: {message}\n")
+        except Exception:
+            pass
         return True
         
     except Exception as e:
@@ -288,7 +294,21 @@ def process_line(line):
             message = match.group(2).strip()
             
             # Skip CSP internal messages (start with $CSP)
-            if not message.startswith('$CSP'):
+            if message.startswith('$CSP'):
+                # CSP client internal message - indicates client finished loading.
+                # Send audio tags now so the client (and others) can play the welcome audio
+                try:
+                    send_chat("[AUDIO]/content/sfx/RedLineSoulsIntro.ogg")
+                    time.sleep(0.05)
+                    send_chat("[AUDIO]content/sfx/RedLineSoulsIntro.ogg")
+                    time.sleep(0.05)
+                    send_chat("[AUDIO]sfx/RedLineSoulsIntro.ogg")
+                    # Optionally announce join in chat
+                    time.sleep(0.05)
+                    send_chat(f"{player_name} joined the server")
+                except Exception as e:
+                    print(f"Error sending CSP-ready audio: {e}")
+            else:
                 # Send ONLY actual player chat to chat webhook
                 send_chat_to_discord(message, player_name)
 

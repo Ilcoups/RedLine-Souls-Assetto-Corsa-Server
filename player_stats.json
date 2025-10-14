@@ -3,30 +3,120 @@
     "76561199185532445": {
       "name": "il",
       "collisions": 5,
-      "playtime": 5746.170883893967,
+      "playtime": 6322.493330001831,
       "max_speed": 197,
       "speeds": [
         75
       ],
-      "join_count": 15,
-      "last_seen": "2025-10-14T11:54:59.398104+00:00",
+      "join_count": 21,
+      "last_seen": "2025-10-14T13:24:55.333883+00:00",
       "checksum_fails": 0,
       "distance_traveled": 0
+    },
+    "76561199468478424": {
+      "name": "MateoPeso",
+      "collisions": 31,
+      "playtime": 272.1770586967468,
+      "max_speed": 82,
+      "join_count": 2,
+      "last_seen": "2025-10-14T12:07:12.847544+00:00",
+      "checksum_fails": 0
+    },
+    "76561199807720503": {
+      "name": "ApexGameCenter",
+      "collisions": 0,
+      "playtime": 50.03142476081848,
+      "max_speed": 0,
+      "join_count": 4,
+      "last_seen": "2025-10-14T12:21:06.175127+00:00",
+      "checksum_fails": 0
+    },
+    "76561199999999999": {
+      "name": "TestUser",
+      "collisions": 0,
+      "playtime": 0,
+      "max_speed": 0,
+      "join_count": 1,
+      "last_seen": "2025-10-14T12:18:04.065895+00:00",
+      "checksum_fails": 0
+    },
+    "76561199999988888": {
+      "name": "AnotherTester",
+      "collisions": 0,
+      "playtime": 0,
+      "max_speed": 0,
+      "join_count": 1,
+      "last_seen": "2025-10-14T12:19:49.126599+00:00",
+      "checksum_fails": 0
+    },
+    "76561199666677777": {
+      "name": "InjectorBot",
+      "collisions": 0,
+      "playtime": 0,
+      "max_speed": 0,
+      "join_count": 1,
+      "last_seen": "2025-10-14T12:22:41.227942+00:00",
+      "checksum_fails": 0
     }
   },
   "daily": {
     "76561199185532445": {
       "name": "il",
       "collisions": 5,
-      "playtime": 5746.170883893967,
+      "playtime": 6322.493330001831,
       "max_speed": 197,
       "speeds": [
         75
       ],
-      "join_count": 15,
-      "last_seen": "2025-10-14T11:54:59.398125+00:00",
+      "join_count": 21,
+      "last_seen": "2025-10-14T13:24:55.333905+00:00",
       "checksum_fails": 0,
       "distance_traveled": 0
+    },
+    "76561199468478424": {
+      "name": "MateoPeso",
+      "collisions": 31,
+      "playtime": 272.1770586967468,
+      "max_speed": 82,
+      "join_count": 2,
+      "last_seen": "2025-10-14T12:07:12.847612+00:00",
+      "checksum_fails": 0
+    },
+    "76561199807720503": {
+      "name": "ApexGameCenter",
+      "collisions": 0,
+      "playtime": 50.03142476081848,
+      "max_speed": 0,
+      "join_count": 4,
+      "last_seen": "2025-10-14T12:21:06.175147+00:00",
+      "checksum_fails": 0
+    },
+    "76561199999999999": {
+      "name": "TestUser",
+      "collisions": 0,
+      "playtime": 0,
+      "max_speed": 0,
+      "join_count": 1,
+      "last_seen": "2025-10-14T12:18:04.065909+00:00",
+      "checksum_fails": 0
+    },
+    "76561199999988888": {
+      "name": "AnotherTester",
+      "collisions": 0,
+      "playtime": 0,
+      "max_speed": 0,
+      "join_count": 1,
+      "last_seen": "2025-10-14T12:19:49.126619+00:00",
+      "checksum_fails": 0
+    },
+    "76561199666677777": {
+      "name": "InjectorBot",
+      "collisions": 0,
+      "playtime": 0,
+      "max_speed": 0,
+      "join_count": 1,
+      "last_seen": "2025-10-14T12:22:41.227959+00:00",
+      "checksum_fails": 0
     }
   },
   "last_reset": "2025-10-14T07:20:48.946558+00:00"

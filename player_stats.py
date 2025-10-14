@@ -60,6 +60,7 @@ def load_stats():
             initialize_stats()
     else:
         initialize_stats()
+    return stats
 
 def initialize_stats():
     """Initialize empty stats structure"""
@@ -116,9 +117,6 @@ def record_speed(steam_id, speed):
         return
     for period in ["all_time", "daily"]:
         player = get_player_stats(steam_id, period)
-        if speed > player["max_speed"]:
-            player["max_speed"] = speed
-    save_stats()
         if speed > player["max_speed"]:
             player["max_speed"] = speed
     save_stats()

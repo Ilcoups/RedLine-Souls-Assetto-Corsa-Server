@@ -115,14 +115,14 @@ CorsAllowedOrigins:
 # Allow a user group to execute specific admin commands
 UserGroupCommandPermissions: 
 AiParams:
-  PlayerRadiusMeters: 600
+  PlayerRadiusMeters: 650
   PlayerPositionOffsetMeters: 300
   PlayerAfkTimeoutSeconds: 10
   MaxPlayerDistanceToAiSplineMeters: 200
   MinSpawnDistancePoints: 80
-  MaxSpawnDistancePoints: 800
-  MinAiSafetyDistanceMeters: 15
-  MaxAiSafetyDistanceMeters: 55
+  MaxSpawnDistancePoints: 900
+  MinAiSafetyDistanceMeters: 12
+  MaxAiSafetyDistanceMeters: 50
   StateSpawnDistanceMeters: 1200
   MinStateDistanceMeters: 300
   SpawnSafetyDistanceToPlayerMeters: 150
@@ -132,7 +132,7 @@ AiParams:
   MaxCollisionStopTimeSeconds: 2
   MaxSpeedKph: 95
   RightLaneOffsetKph: 18
-  MaxSpeedVariationPercent: 0.15
+  MaxSpeedVariationPercent: 0.2
   MaxPlayerCount: 35
   HideAiCars: true
   LaneWidthMeters: 2.8
@@ -153,12 +153,7 @@ AiParams:
   IgnoreObstaclesAfterSeconds: 3
   # Ignore stationary players (speed < 5 km/h) as obstacles - prevents AI reacting to players in elevated pit stops
   IgnoreStationaryPlayers: true
-  # Dynamic (hourly) traffic density. List must have exactly 24 entries in the format [0.2, 0.5, 1, 0.7, ...]
-  # Subtle variations: Current level = 1.0 (baseline), Day slightly more (1.1-1.15), Night still busy (0.95-1.0)
-  # 00=1.0, 01=0.95, 02=0.95, 03=0.95, 04=0.95, 05=1.0, 06=1.0, 07=1.05, 08=1.1, 09=1.15, 10=1.15, 11=1.1
-  # 12=1.1, 13=1.1, 14=1.1, 15=1.1, 16=1.1, 17=1.15, 18=1.15, 19=1.1, 20=1.05, 21=1.0, 22=1.0, 23=1.0
-  HourlyTrafficDensity: [1.0, 0.95, 0.95, 0.95, 0.95, 1.0, 1.0, 1.05, 1.1, 1.15, 1.15, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.15, 1.15, 1.1, 1.05, 1.0, 1.0, 1.0]
-  # Apply some smoothing to AI spline camber
+  HourlyTrafficDensity: [1.05, 1.0, 0.95, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.25, 1.2, 1.2, 1.2, 1.2, 1.25, 1.25, 1.3, 1.3, 1.25, 1.2, 1.15, 1.1, 1.05]
   SmoothCamber: true
   # Show debug overlay for AI cars
   Debug: false

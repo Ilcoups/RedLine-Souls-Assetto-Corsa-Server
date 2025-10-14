@@ -26,6 +26,12 @@ OutsideNetworkBubbleRefreshRateHz: 4
 EnableServerDetails: true
 # Server description shown in Content Manager
 ServerDescription: |-
+  🐛 FOUND A BUG? PLEASE REPORT IT! 🐛
+  This is my hobby project and I'd really appreciate your help!
+  If something's broken or weird, please report it in Discord with screenshots
+  so I know what to fix. Every bug report helps make the server better!
+  Discord: https://discord.gg/YJJEGAhf
+  
   ⚠️ MINIMUM REQUIREMENTS ⚠️
   CSP 0.1.78+ REQUIRED (AI traffic won't work on older versions!)
   Update your CSP: https://acstuff.ru/patch/
@@ -69,7 +75,7 @@ IgnoreMissingCarData: true
 # Allow players with slightly different car physics
 IgnoreCarPhysicsMismatch: true
 # Enable CSP client messages feature. Requires CSP 0.1.77+
-EnableClientMessages: true
+EnableClientMessages: false
 # Enable CSP UDP client messages feature. Required for VR head/hand syncing. Requires CSP 0.1.80+
 EnableUdpClientMessages: false
 # Log unknown CSP Lua client messages / online events
@@ -83,7 +89,7 @@ PlayerLoadingTimeoutMinutes: 10
 PlayerChecksumTimeoutSeconds: 120
 # Port to control the server using Source RCON protocol. 0 to disable.
 RconPort: 27015
-DebugWelcomeMessage: true
+DebugWelcomeMessage: false
 RedactIpAddresses: false
 ForceServerTrackParams: false
 EnableAlternativeCarChecksums: true

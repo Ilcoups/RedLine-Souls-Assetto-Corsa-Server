@@ -1,42 +1,15 @@
 # Player Join/Disconnect Notifications
 
-## ✅ Setup Complete
+## ✅ Discord Webhook - WORKING
 
-Two notification systems are now active on your server:
+Discord notifications are now active on your server:
 
-### 1. In-Game Chat Announcements (via RCON)
-**What it does:** Posts messages in the in-game chat when players join/disconnect/fail checksums
+### Discord Webhook Notifications
+**What it does:** Posts player connections/disconnections to your Discord channel with Steam IDs and car info
 
 **Files:**
-- `chat_announcer.py` - Python script that monitors server logs
-- `start_chat_announcer.sh` - Easy startup script
-- RCON enabled on port 27015 in `cfg/extra_cfg.yml`
-
-**Messages shown in-game:**
-- ✓ PlayerName joined the server
-- ✗ PlayerName left the server  
-- ⚠ PlayerName failed checksum verification
-
-**Status:** Running (PID: 149789)
-
-**To manage:**
-```bash
-# Start
-./start_chat_announcer.sh
-
-# Stop
-pkill -f chat_announcer.py
-
-# View logs
-tail -f chat_announcer.log
-```
-
----
-
-### 2. Discord Webhook Notifications
-**What it does:** Posts player connections/disconnections to your Discord channel with Steam IDs
-
-**Configuration:** `cfg/extra_cfg.yml` - DiscordAuditPlugin section
+- `discord_announcer.py` - Python script that monitors server logs and posts to Discord
+- `start_discord_announcer.sh` - Easy startup script
 
 **Webhook URL:** 
 ```
@@ -44,71 +17,95 @@ https://discord.com/api/webhooks/1427443975425364018/8KIkIU-vjxSMEQuMhaiQ3gia-EI
 ```
 
 **Discord messages include:**
-- 🔥 Player connected (with name and Steam ID)
-- 🏁 Player disconnected (with name and Steam ID)
-- Player kick/ban events
+- � **PlayerName** joined (Steam: 76561199185532445, Car: ferrari_f40_s3)
+- 🔴 **PlayerName** left the server
+- ⚠️ **PlayerName** failed checksum verification
 
-**Status:** Active (plugin loaded)
+**Status:** Running
 
-**Note:** The DiscordAuditPlugin in your AssettoServer version may have limited configuration options. The basic webhook functionality works - it will post to Discord when players join/leave. If you need more features (like connection audit toggle), you may need a newer version of AssettoServer.
+**To manage:**
+```bash
+# Start
+./start_discord_announcer.sh
+
+# Stop
+pkill -f discord_announcer.py
+
+# View logs
+tail -f discord_announcer.log
+
+# Check if running
+pgrep -a discord_announcer
+```
 
 ---
 
 ## How It Works
 
-**In-Game Chat (chat_announcer.py):**
+**Discord Announcer (discord_announcer.py):**
 1. Monitors `/home/acserver/server/logs/log-YYYYMMDD.txt` every 0.5 seconds
-2. Detects join/disconnect/checksum patterns in log lines
-3. Sends broadcast messages via RCON `/broadcast` command
-4. Players see announcements in their in-game chat
+2. Detects join/disconnect/checksum patterns in log lines using regex
+3. Extracts player name, Steam ID, and car information
+4. Sends formatted embed messages to Discord webhook
+5. Messages appear in your Discord channel instantly with color-coded events
 
-**Discord Webhook (DiscordAuditPlugin):**
-1. Plugin hooks into AssettoServer's player connection events
-2. Sends HTTP POST to Discord webhook when events occur
-3. Messages appear in your Discord channel instantly
+**Log Pattern Matching:**
+- Join: `il (76561199185532445, 26 (ferrari_f40_s3-02_black/ADAn)) has connected`
+- Disconnect: `il has disconnected`
+- Checksum fail: Any line containing "checksum" and "fail"/"error"
 
 ---
 
 ## Testing
 
-1. **In-game chat:** Join the server and you should see your own join message
-2. **Discord:** Check your Discord channel for the webhook message
+**Join your server and check Discord!** You should see:
+- Startup message when announcer starts
+- Green circle when you join (with Steam ID and car)
+- Red circle when you disconnect
 
-Both systems work independently - if one fails, the other still works!
+The script runs in the background and automatically handles log rotation (new day = new log file).
 
 ---
 
 ## Troubleshooting
 
-**Chat announcer not working?**
+**Discord announcer not working?**
 ```bash
 # Check if running
-ps aux | grep chat_announcer
+ps aux | grep discord_announcer
 
-# Check logs
-tail -50 chat_announcer.log
+# Check logs for errors
+tail -50 discord_announcer.log
 
 # Restart
-pkill -f chat_announcer.py && ./start_chat_announcer.sh
+pkill -f discord_announcer.py && ./start_discord_announcer.sh
+
+# Test webhook manually
+curl -X POST "YOUR_WEBHOOK_URL" -H "Content-Type: application/json" \
+  -d '{"content": "Test message"}'
 ```
 
-**Discord webhook not working?**
-```bash
-# Check server logs for Discord errors
-grep -i discord logs/log-$(date +%Y%m%d).txt
+**No messages in Discord?**
+1. Check if announcer is running: `pgrep -f discord_announcer`
+2. Check log file exists: `ls -lh logs/log-$(date +%Y%m%d).txt`
+3. Verify webhook URL is correct in `discord_announcer.py`
+4. Test webhook with curl (see above)
 
-# Check if plugin loaded
-grep "Loaded plugin DiscordAuditPlugin" logs/log-$(date +%Y%m%d).txt
-```
-
-**RCON not responding?**
-- Make sure `RconPort: 27015` in `cfg/extra_cfg.yml`
-- Check if port is open: `netstat -tlnp | grep 27015`
-- Restart server if needed
+**Messages delayed?**
+- Check interval is 0.5 seconds - should be nearly instant
+- Server logs may be buffered - check `discord_announcer.log` for recent activity
 
 ---
 
 ## Git Commits
 
-- `f3383f7` - Add chat announcer: player join/disconnect/checksum messages in-game! RCON port 27015 enabled, Python script monitors logs and broadcasts to chat
-- `351f057` - Add Discord webhook: player join/disconnect notifications with Steam IDs posted to Discord channel
+- `b6fa87b` - FIX: Discord announcer working! Posts player join/leave with Steam IDs. Removed broken RCON chat announcer. Simple Python script monitors logs and uses Discord webhook directly.
+
+## Note on In-Game Chat Announcements
+
+RCON-based in-game chat announcements were attempted but AssettoServer's RCON implementation is complex and unreliable for this use case. Discord notifications work perfectly and provide more detailed information (Steam IDs, car info, timestamps).
+
+If you absolutely need in-game chat announcements, consider:
+1. Using a proper RCON library like `mcrcon`
+2. Implementing via AssettoServer plugin (requires C# development)
+3. Using CSP Lua scripts (client-side only)

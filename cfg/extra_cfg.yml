@@ -83,22 +83,16 @@ PlayerLoadingTimeoutMinutes: 10
 PlayerChecksumTimeoutSeconds: 120
 # Port to control the server using Source RCON protocol. 0 to disable.
 RconPort: 27015
-# Dump contents of welcome message and CSP extra options to a file. For debug purposes only.
 DebugWelcomeMessage: true
-# Anonymize player IP addresses in outputs
 RedactIpAddresses: false
-# Force clients to use track params (coordinates, time zone) specified on the server. CSP 0.1.79+ required
 ForceServerTrackParams: false
-# Allow cars to have multiple data checksums. Instead of a single checksummed data.acd, you can have multiple data*.acd files in the car folder and players can join with any of these files
 EnableAlternativeCarChecksums: true
-# Enable the AC UDP plugin interface compatible with Kunos acServer plugins
 EnableLegacyPluginInterface: true
 UDP_PLUGIN_ADDRESS: 127.0.0.1
 UDP_PLUGIN_LOCAL_PORT: 12000
-# Automatically configure port forwards using UPnP or NAT-PMP. Empty = Enable on Windows when lobby registration is enabled. true = Always enable, detailed error log. false = Always disable
 EnableUPnP: false
-# URL of custom loading screen image. Requires CSP 0.1.80+ and a recent version of Content Manager
 LoadingImageUrl: 
+WelcomeMessageAudioUrl: content/sfx/RedLine Souls Intro.m4a 
 # Name and path of file-based user groups
 UserGroups:
   default_blacklist: blacklist.txt

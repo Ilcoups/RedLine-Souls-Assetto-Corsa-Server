@@ -115,49 +115,32 @@ CorsAllowedOrigins:
 # Allow a user group to execute specific admin commands
 UserGroupCommandPermissions: 
 AiParams:
-  # Radius around a player in which AI cars won't despawn - INCREASED so you don't see them disappear
-  PlayerRadiusMeters: 800
-  # Offset the player radius in direction of the velocity of the player so AI cars will despawn earlier behind a player
-  PlayerPositionOffsetMeters: 400
-  # AFK timeout for players. Players who are AFK longer than this won't spawn AI cars
+  PlayerRadiusMeters: 600
+  PlayerPositionOffsetMeters: 300
   PlayerAfkTimeoutSeconds: 10
-  # Maximum distance to the AI spline for a player to spawn AI cars. This helps with parts of the map without traffic so AI cars won't spawn far away from players
   MaxPlayerDistanceToAiSplineMeters: 200
-  # Minimum amount of spline points in front of a player where AI cars will spawn - INCREASED to spawn further ahead
-  MinSpawnDistancePoints: 100
-  # Maximum amount of spline points in front of a player where AI cars will spawn - INCREASED for more advance spawning
-  MaxSpawnDistancePoints: 1200
-  # Minimum distance between AI cars - tight but enough to prevent clipping
+  MinSpawnDistancePoints: 80
+  MaxSpawnDistancePoints: 800
   MinAiSafetyDistanceMeters: 15
-  # Maximum distance between AI cars - moderate for flow without clipping
   MaxAiSafetyDistanceMeters: 55
-  # Minimum spawn distance for AI states of the same car slot. If you set this too low you risk AI states despawning or AI states becoming invisible for some players when multiple states are close together
   StateSpawnDistanceMeters: 1200
-  # Minimum distance between AI states of the same car slot. If states get closer than this one of them will be forced to despawn
   MinStateDistanceMeters: 300
-  # Minimum spawn distance to players - INCREASED so you don't see cars spawning in front of you
-  SpawnSafetyDistanceToPlayerMeters: 200
-  # Minimum time in which a newly spawned AI car cannot despawn
+  SpawnSafetyDistanceToPlayerMeters: 150
   MinSpawnProtectionTimeSeconds: 10
-  # Maximum time in which a newly spawned AI car cannot despawn
   MaxSpawnProtectionTimeSeconds: 20
-  # Minimum time an AI car will stop/slow down after a collision - short but not zero
   MinCollisionStopTimeSeconds: 1
-  # Maximum time an AI car will stop/slow down after a collision - quick recovery
   MaxCollisionStopTimeSeconds: 2
-  # Default maximum AI speed. This is not an absolute maximum and can be overridden with RightLaneOffsetKph and MaxSpeedVariationPercent
-  # Base 95 kph + 18 right lane offset = 113 kph MAX (not 120!)
   MaxSpeedKph: 95
-  # Speed offset for right lanes. Will be added to MaxSpeedKph - gives us 113 kph max
   RightLaneOffsetKph: 18
-  # Maximum speed variation - less aggressive speed differences
   MaxSpeedVariationPercent: 0.15
-  # Soft player limit, the server will stop accepting new players when this many players are reached. Use this to ensure a minimum amount of AI cars. 0 to disable.
   MaxPlayerCount: 35
-  # Hide AI car nametags and make them invisible on the minimap. Broken on CSP versions < 0.1.78
   HideAiCars: true
-  # Lane width for adjacent lane DETECTION during startup spline analysis ONLY. Used to search perpendicular (left/right) from track centerline
-  # to detect multi-lane roads. This is NOT the lateral spacing between cars driving side-by-side - that is hardcoded to 4 meters in AiState.cs.
+  LaneWidthMeters: 2.8
+  TwoWayTraffic: false
+  WrongWayTraffic: true
+  NamePrefix: Traffic
+  IgnoreObstaclesAfterSeconds: 3
+  IgnoreStationaryPlayers: true
   # Minimum value: 2.1 meters (enforced by AdjacentLaneDetector). Recommended: 2.8-3.5 meters for typical roads.
   LaneWidthMeters: 2.8
   # Enable two way traffic. This will allow AI cars to spawn in lanes with the opposite direction of travel to the player.

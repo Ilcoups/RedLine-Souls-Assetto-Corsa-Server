@@ -11,8 +11,8 @@ function update(dt)
     
     -- Wait 5 seconds after track loads
     if timer > 5 then
-        -- Play the audio
-        ac.loadSoundEvent('/content/sfx/RedLineSoulsIntro.ogg'):play()
+        -- Play the audio from extension folder
+        ac.loadSoundEvent('extension/RedLineSoulsIntro.ogg'):play()
         played = true
     end
 end

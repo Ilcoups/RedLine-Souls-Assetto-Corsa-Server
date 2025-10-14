@@ -8,6 +8,7 @@ Posts daily leaderboards to Discord
 import re
 import json
 import time
+import random
 import requests
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -299,7 +300,7 @@ def monitor_logs():
 # ============================================================================
 
 def generate_leaderboard():
-    """Generate daily leaderboard embed"""
+    """Generate daily leaderboard embed with fun vibes!"""
     daily_stats = stats["daily"]
     
     if not daily_stats:
@@ -326,104 +327,156 @@ def generate_leaderboard():
             cleanest.append((steam_id, data, collisions_per_hour))
     cleanest = sorted(cleanest, key=lambda x: x[2])[:10]
     
-    # Build embed
+    # Fun awards
+    total_collisions = sum(d.get("collisions", 0) for d in filtered_stats.values())
+    total_playtime = sum(d.get("playtime", 0) for d in filtered_stats.values())
+    
+    # Build embed with fun vibes!
+    intro_messages = [
+        "Another day, another set of tire marks on the highway! 🏁",
+        "The streets remember every victory and every wall! 🌃",
+        "RedLine Souls never sleep - here's today's chaos! 💨",
+        "From sunrise to sunset, the engines never stopped roaring! 🔥",
+        "24 hours of pure adrenaline - check who ruled the streets! ⚡"
+    ]
+    
+    import random
     embed = {
-        "title": "🏆 Daily Leaderboard - RedLine Souls",
-        "description": f"Statistics for {datetime.now(timezone.utc).strftime('%B %d, %Y')}",
+        "title": "🏆 DAILY LEADERBOARD - REDLINE SOULS",
+        "description": f"{random.choice(intro_messages)}\n\n📅 **{datetime.now(timezone.utc).strftime('%B %d, %Y')}**",
         "color": 0xFF4500,  # RedLine orange
         "fields": [],
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "footer": {
-            "text": "Stats reset at midnight UTC"
+            "text": "Tomorrow's another race - stats reset at midnight UTC ⏰"
         }
     }
     
-    # Most Active (playtime)
+    # Most Active (playtime) - with medals
     if by_playtime:
         field_value = ""
+        medals = ["🥇", "🥈", "🥉"]
         for i, (steam_id, data) in enumerate(by_playtime, 1):
             name = data.get("name", "Unknown")
             playtime = format_time(data.get("playtime", 0))
             steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
-            field_value += f"**{i}.** {steam_link} - {playtime}\n"
+            medal = medals[i-1] if i <= 3 else f"**{i}.**"
+            field_value += f"{medal} {steam_link} - {playtime}\n"
         embed["fields"].append({
-            "name": "⏱️ Most Active Drivers",
+            "name": "⏱️ NO-LIFERS OF THE DAY",
             "value": field_value or "No data",
             "inline": False
         })
     
-    # Speed Demons (max speed only)
+    # Speed Demons - with fun commentary
     if by_max_speed:
         field_value = ""
+        speed_comments = {
+            1: "👑 ABSOLUTE MADMAN",
+            2: "🔥 ALMOST HAD IT", 
+            3: "⚡ TRYING HARD",
+            4: "💨 DECENT ATTEMPT",
+            5: "🚗 GETTING THERE"
+        }
         for i, (steam_id, data) in enumerate(by_max_speed, 1):
             name = data.get("name", "Unknown")
             max_speed = data.get("max_speed", 0)
             steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
-            field_value += f"**{i}.** {steam_link} - {max_speed:.0f} km/h\n"
+            comment = speed_comments.get(i, "")
+            field_value += f"**{i}.** {steam_link} - **{max_speed:.0f} km/h** {comment}\n"
         embed["fields"].append({
-            "name": "🚀 Speed Demons",
+            "name": "🚀 SPEED DEMONS - WHO WENT FULL SEND",
             "value": field_value or "No data",
             "inline": False
         })
     
-    # Cleanest Drivers (fewest collisions per hour)
+    # Cleanest Drivers - the rare breed
     if cleanest:
         field_value = ""
         for i, (steam_id, data, cph) in enumerate(cleanest, 1):
             name = data.get("name", "Unknown")
             playtime = format_time(data.get("playtime", 0))
             steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
-            field_value += f"**{i}.** {steam_link} - {cph:.1f} crashes/hr ({playtime})\n"
+            if cph < 1:
+                vibe = "🧘 LITERAL BUDDHA"
+            elif cph < 3:
+                vibe = "😇 ACTUALLY CLEAN"
+            elif cph < 5:
+                vibe = "👍 NOT BAD"
+            else:
+                vibe = "🤷 TRYING"
+            field_value += f"**{i}.** {steam_link} - {cph:.1f} crashes/hr {vibe}\n"
         embed["fields"].append({
-            "name": "🧼 Cleanest Drivers",
+            "name": "🧼 CLEANEST DRIVERS - UNICORNS EXIST",
             "value": field_value or "No data",
             "inline": False
         })
     
-    # Most Crashes
+    # Wall Hunters - the entertainers
     if by_collisions:
         field_value = ""
+        crash_roasts = {
+            1: "🎯 PROFESSIONAL WALL FINDER",
+            2: "💀 CRASH TEST DUMMY", 
+            3: "🏗️ TOKYO DRIFT WANNABE",
+            4: "🚧 CONSTRUCTION WORKER",
+            5: "📍 GPS TO EVERY BARRIER"
+        }
         for i, (steam_id, data) in enumerate(by_collisions[:5], 1):
             name = data.get("name", "Unknown")
             collisions = data.get("collisions", 0)
             steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
-            field_value += f"**{i}.** {steam_link} - {collisions} collisions\n"
+            roast = crash_roasts.get(i, "💥")
+            field_value += f"**{i}.** {steam_link} - {collisions} crashes {roast}\n"
         embed["fields"].append({
-            "name": "💥 Most Crashes",
+            "name": "💥 WALL HUNTERS - HALL OF SHAME",
             "value": field_value or "No data",
             "inline": False
         })
     
-    # Fun stats with more details
-    total_collisions = sum(d.get("collisions", 0) for d in daily_stats.values())
-    total_playtime = sum(d.get("playtime", 0) for d in daily_stats.values())
-    unique_players = len(daily_stats)
-    total_joins = sum(d.get("join_count", 0) for d in daily_stats.values())
+    # Server Stats - the numbers
+    unique_players = len(filtered_stats)
+    total_joins = sum(d.get("join_count", 0) for d in filtered_stats.values())
     
-    fun_stats = f"**Total Players:** {unique_players}\n"
-    fun_stats += f"**Total Sessions:** {total_joins}\n"
-    fun_stats += f"**Total Crashes:** {total_collisions}\n"
-    fun_stats += f"**Total Playtime:** {format_time(total_playtime)}\n"
+    fun_stats = f"👥 **{unique_players}** racers hit the streets\n"
+    fun_stats += f"🔄 **{total_joins}** total sessions\n"
+    fun_stats += f"💥 **{total_collisions}** walls kissed\n"
+    fun_stats += f"⏱️ **{format_time(total_playtime)}** combined seat time\n"
     
     if by_max_speed:
         fastest = by_max_speed[0]
         fastest_name = fastest[1].get('name', 'Unknown')
         fastest_speed = fastest[1].get('max_speed', 0)
         fastest_link = f"[{fastest_name}](https://steamcommunity.com/profiles/{fastest[0]})"
-        fun_stats += f"**Fastest Speed:** {fastest_speed:.0f} km/h by {fastest_link}\n"
+        fun_stats += f"\n🏁 **Fastest recorded:** {fastest_speed:.0f} km/h by {fastest_link}\n"
     
-    # Average stats
     if unique_players > 0:
-        avg_playtime = total_playtime / unique_players
-        avg_collisions = total_collisions / unique_players
-        fun_stats += f"**Avg Playtime/Player:** {format_time(avg_playtime)}\n"
-        fun_stats += f"**Avg Crashes/Player:** {avg_collisions:.1f}\n"
+        avg_crashes = total_collisions / unique_players
+        if avg_crashes > 10:
+            vibe = "🎪 (absolute circus)"
+        elif avg_crashes > 5:
+            vibe = "😅 (rough day)"
+        elif avg_crashes > 2:
+            vibe = "🤙 (normal chaos)"
+        else:
+            vibe = "😎 (surprisingly chill)"
+        fun_stats += f"📊 **Avg crashes/player:** {avg_crashes:.1f} {vibe}\n"
     
     embed["fields"].append({
-        "name": "📊 Server Stats",
+        "name": "📊 TODAY'S MAYHEM IN NUMBERS",
         "value": fun_stats,
         "inline": False
     })
+    
+    # Random motivational footer
+    footers = [
+        "See you on the streets tomorrow! 🌙",
+        "Remember: it's not about the crashes, it's about the vibes 💯",
+        "GG everyone, same time tomorrow? 🏁",
+        "The highway awaits... again 🛣️",
+        "Another day, another dollar in repair costs 💸"
+    ]
+    embed["footer"]["text"] = f"{random.choice(footers)} • Resets at midnight UTC"
     
     return embed
 

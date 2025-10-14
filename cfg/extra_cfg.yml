@@ -92,7 +92,9 @@ ForceServerTrackParams: false
 # Allow cars to have multiple data checksums. Instead of a single checksummed data.acd, you can have multiple data*.acd files in the car folder and players can join with any of these files
 EnableAlternativeCarChecksums: true
 # Enable the AC UDP plugin interface compatible with Kunos acServer plugins
-EnableLegacyPluginInterface: false
+EnableLegacyPluginInterface: true
+UDP_PLUGIN_ADDRESS: 127.0.0.1
+UDP_PLUGIN_LOCAL_PORT: 12000
 # Automatically configure port forwards using UPnP or NAT-PMP. Empty = Enable on Windows when lobby registration is enabled. true = Always enable, detailed error log. false = Always disable
 EnableUPnP: false
 # URL of custom loading screen image. Requires CSP 0.1.80+ and a recent version of Content Manager
@@ -154,7 +156,9 @@ AiParams:
   MaxPlayerCount: 35
   # Hide AI car nametags and make them invisible on the minimap. Broken on CSP versions < 0.1.78
   HideAiCars: true
-  # Lane width for adjacent lane detection - balanced: not too narrow (wiggling) but not too wide (cars far apart)
+  # Lane width for adjacent lane DETECTION during startup spline analysis ONLY. Used to search perpendicular (left/right) from track centerline
+  # to detect multi-lane roads. This is NOT the lateral spacing between cars driving side-by-side - that is hardcoded to 4 meters in AiState.cs.
+  # Minimum value: 2.1 meters (enforced by AdjacentLaneDetector). Recommended: 2.8-3.5 meters for typical roads.
   LaneWidthMeters: 2.8
   # Enable two way traffic. This will allow AI cars to spawn in lanes with the opposite direction of travel to the player.
   TwoWayTraffic: false

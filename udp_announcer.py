@@ -248,9 +248,13 @@ def process_line(line):
             # Send to Discord events webhook with rich embed
             send_discord("join", player_name, steam_id=steam_id, car=car_display)
             
-            # Send audio trigger to in-game chat
-            send_chat(f"[AUDIO]content/sfx/RedLineSoulsIntro.ogg")
-            time.sleep(0.1)  # Small delay between messages
+            # Send audio trigger to in-game chat - try multiple path formats
+            send_chat("[AUDIO]/content/sfx/RedLineSoulsIntro.ogg")
+            time.sleep(0.05)
+            send_chat("[AUDIO]content/sfx/RedLineSoulsIntro.ogg") 
+            time.sleep(0.05)
+            send_chat("[AUDIO]sfx/RedLineSoulsIntro.ogg")
+            time.sleep(0.1)
             send_chat(f"{player_name} joined the server")
     
     # Disconnection: il has disconnected

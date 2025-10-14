@@ -1,5 +1,5 @@
 ⚠️ IMPORTANT INFORMATION ⚠️
-[AUDIO]content/sfx/welcome.m4a[/AUDIO]
+[AUDIO]content/sfx/RedLineSoulsIntro.ogg[/AUDIO]
 
 🔧 CSP 0.1.78+ REQUIRED
 Update at: https://acstuff.ru/patch/

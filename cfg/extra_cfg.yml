@@ -92,7 +92,7 @@ UDP_PLUGIN_ADDRESS: 127.0.0.1
 UDP_PLUGIN_LOCAL_PORT: 12000
 EnableUPnP: false
 LoadingImageUrl: 
-WelcomeMessageAudioUrl: content/sfx/RedLine Souls Intro.m4a 
+WelcomeMessagePath: cfg/welcome.txt 
 # Name and path of file-based user groups
 UserGroups:
   default_blacklist: blacklist.txt

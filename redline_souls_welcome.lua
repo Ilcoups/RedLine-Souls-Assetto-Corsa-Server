@@ -4,37 +4,63 @@
 
 local hasPlayed = false
 local timer = 0
-local serverIP = "188.245.183.146"
+local checkTimer = 0
 
 function script.update(dt)
     -- Only run once per session
     if hasPlayed then return end
     
-    -- Check if we're connected to RedLine Souls server
-    local currentServer = ac.getServerIP()
-    if not currentServer then return end
+    -- Check every 0.5 seconds if we're connected
+    checkTimer = checkTimer + dt
+    if checkTimer < 0.5 then return end
+    checkTimer = 0
     
-    -- Check if this is the RedLine Souls server
-    if not string.find(currentServer, serverIP) then
+    -- Try to get server info
+    local serverName = ac.getServerName()
+    local serverIP = ac.getServerIP()
+    
+    -- Debug: log what we detect
+    if serverName then
+        ac.log("RedLine Souls Debug: Server name = " .. tostring(serverName))
+    end
+    if serverIP then
+        ac.log("RedLine Souls Debug: Server IP = " .. tostring(serverIP))
+    end
+    
+    -- Check if we're on RedLine Souls server (by name or IP)
+    local isRedLineSouls = false
+    
+    if serverName and string.find(serverName, "RedLine") then
+        isRedLineSouls = true
+        ac.log("RedLine Souls: Detected by server name!")
+    elseif serverIP and string.find(serverIP, "188.245.183.146") then
+        isRedLineSouls = true
+        ac.log("RedLine Souls: Detected by server IP!")
+    end
+    
+    if not isRedLineSouls then
         return
     end
     
-    -- Wait 3 seconds after joining before playing
+    -- We're on the right server, start timer
     timer = timer + dt
+    
     if timer >= 3 then
         -- Try to play the audio file
         local audioPath = "content/sfx/RedLineSoulsIntro.ogg"
         
+        ac.log("RedLine Souls: Attempting to play audio from " .. audioPath)
+        
         -- Check if file exists
         if io.fileExists(audioPath) then
+            ac.log("RedLine Souls: Audio file found! Playing...")
             ui.playSound(audioPath, 1.0)
             ac.log("RedLine Souls: Welcome audio played!")
         else
-            ac.log("RedLine Souls: Audio file not found at " .. audioPath)
-            ac.log("Please run the installer: https://github.com/Ilcoups/RedLine-Souls-Assetto-Corsa-Server")
+            ac.log("RedLine Souls: ERROR - Audio file not found at " .. audioPath)
+            ac.log("RedLine Souls: Please run installer from GitHub")
         end
         
         hasPlayed = true
     end
 end
-

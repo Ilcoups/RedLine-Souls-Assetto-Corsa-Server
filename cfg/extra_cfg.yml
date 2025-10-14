@@ -58,7 +58,6 @@ EnableAi: true
 # List of plugins to enable
 EnablePlugins:
 - RandomWeatherPlugin
-- DiscordAuditPlugin
 # Ignore some common configuration errors. More info: https://assettoserver.org/docs/common-configuration-errors
 IgnoreConfigurationErrors:
   MissingCarChecksums: true
@@ -314,9 +313,4 @@ MinWeatherDurationMinutes: 8
 MaxWeatherDurationMinutes: 15
 MinTransitionDurationSeconds: 90
 MaxTransitionDurationSeconds: 150
-
----
-!DiscordConfiguration
-# Discord webhook URL for audit events (kicks, bans, and optionally connections/disconnections)
-AuditUrl: https://discord.com/api/webhooks/1427443975425364018/8KIkIU-vjxSMEQuMhaiQ3gia-EIFMF48s_98xMTngfthM_A8eW2aDD0M_TjrfOVwJ0ah
 

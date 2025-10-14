@@ -1,4 +1,6 @@
--- Welcome sound for RedLine Souls
+-- RedLine Souls Welcome Sound
+-- This should be loaded automatically by the server
+
 local played = false
 local timer = 0
 
@@ -7,9 +9,10 @@ function script.update(dt)
     
     timer = timer + dt
     
-    -- Play after 5 seconds
-    if timer >= 5 then
-        ui.playSound('/content/sfx/RedLine Souls Intro.m4a')
+    -- Play after 3 seconds
+    if timer >= 3 then
+        -- Try the audio file
+        ui.playSound('content/sfx/RedLineSoulsIntro.ogg', 1.0)
         played = true
     end
 end

@@ -3,13 +3,13 @@
     "76561199185532445": {
       "name": "il",
       "collisions": 5,
-      "playtime": 6484.586387872696,
+      "playtime": 6593.646754980087,
       "max_speed": 197,
       "speeds": [
         75
       ],
-      "join_count": 23,
-      "last_seen": "2025-10-14T13:40:15.415069+00:00",
+      "join_count": 24,
+      "last_seen": "2025-10-14T13:47:48.081172+00:00",
       "checksum_fails": 0,
       "distance_traveled": 0
     },
@@ -63,13 +63,13 @@
     "76561199185532445": {
       "name": "il",
       "collisions": 5,
-      "playtime": 6484.586387872696,
+      "playtime": 6593.646754980087,
       "max_speed": 197,
       "speeds": [
         75
       ],
-      "join_count": 23,
-      "last_seen": "2025-10-14T13:40:15.415091+00:00",
+      "join_count": 24,
+      "last_seen": "2025-10-14T13:47:48.081199+00:00",
       "checksum_fails": 0,
       "distance_traveled": 0
     },

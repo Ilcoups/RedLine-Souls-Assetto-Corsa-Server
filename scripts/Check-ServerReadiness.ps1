@@ -225,7 +225,7 @@ function Test-Network {
     $tcpResults = @()
     foreach ($port in $TcpPorts) {
         try {
-            $tnc = Test-NetConnection -ComputerName $TargetHost -Port $port -WarningAction SilentlyContinue -InformationLevel Quiet
+            $tnc = Test-NetConnection -ComputerName $TargetHost -Port $port -WarningAction SilentlyContinue
             $ok = $false
             if ($tnc -and ($tnc.TcpTestSucceeded -eq $true)) { $ok = $true }
             $tcpResults += [pscustomobject]@{ Port=$port; Reachable=$ok }

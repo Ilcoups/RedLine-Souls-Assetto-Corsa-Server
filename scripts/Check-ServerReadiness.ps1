@@ -320,7 +320,12 @@ try {
     Write-Log "Output directory: $OutDir" 'OK'
 
     $defaults = Get-DefaultConfig
-    $fileCfg = Load-Config -Path ($ConfigPath ? $ConfigPath : (Join-Path (Get-Location) 'config.json'))
+    $fileCfg = $null
+    if ($ConfigPath) {
+        $fileCfg = Load-Config -Path $ConfigPath
+    } else {
+        $fileCfg = Load-Config -Path (Join-Path (Get-Location) 'config.json')
+    }
     $merged = Merge-Config -Defaults $defaults -Overrides $fileCfg
     $cfg = Coalesce-Parameters -Config $merged
     $Results.Config = $cfg
@@ -368,7 +373,7 @@ try {
         if ($item.Passed) { $passCount++ } else { $failCount++ }
         $fg = 'Red'
         if ($item.Passed) { $fg = 'Green' }
-        Write-Host ("- {0}: {1} — {2}" -f $item.Name, $status, $item.Detail) -ForegroundColor $fg
+        Write-Host ("- {0}: {1} - {2}" -f $item.Name, $status, $item.Detail) -ForegroundColor $fg
     }
     Write-Host ("Support bundle: {0}" -f $zip)
     Write-Host ("Log directory: {0}" -f $OutDir)

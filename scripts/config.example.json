@@ -1,7 +1,7 @@
 {
-  "ServerHost": "your.server.example",
-  "TcpPorts": [9600, 9601],
-  "UdpPorts": [],
+  "ServerHost": "188.245.183.146",
+  "TcpPorts": [9600],
+  "UdpPorts": [9600],
   "ClientChecks": {
     "Type": "none",
     "SteamAppId": 244210,

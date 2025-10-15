@@ -156,7 +156,12 @@ function Test-Network {
     if ($ipCount -gt 0) { Write-Log "DNS resolved $TargetHost => $($ips -join ', ')" 'OK' } else { Write-Log "DNS failed for $TargetHost" 'ERROR' }
 
     try {
-        $pings = Test-Connection -TargetName $TargetHost -Count 4 -Quiet:$false -ErrorAction Stop
+        # PS 5.1 uses -ComputerName, PS 7+ uses -TargetName
+        if ($PSVersionTable.PSVersion.Major -ge 7) {
+            $pings = Test-Connection -TargetName $TargetHost -Count 4 -Quiet:$false -ErrorAction Stop
+        } else {
+            $pings = Test-Connection -ComputerName $TargetHost -Count 4 -Quiet:$false -ErrorAction Stop
+        }
         $stats = $pings | Measure-Object -Property ResponseTime -Average -Minimum -Maximum
         $lat = [pscustomobject]@{ MinMs=$stats.Minimum; AvgMs=[math]::Round($stats.Average,2); MaxMs=$stats.Maximum }
         $net['Ping'] = $lat

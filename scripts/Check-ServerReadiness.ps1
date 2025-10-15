@@ -99,6 +99,17 @@ function Coalesce-Parameters {
     return $c
 }
 
+function Convert-ToIntArray {
+    param($Value)
+    if ($null -eq $Value) { return @() }
+    if ($Value -is [array]) {
+        $out = @()
+        foreach ($v in $Value) { try { $out += [int]$v } catch {} }
+        return $out
+    }
+    try { return @([int]$Value) } catch { return @() }
+}
+
 function Test-System {
     param($Results)
     Write-Log 'Running system checks...'
@@ -328,6 +339,9 @@ try {
     }
     $merged = Merge-Config -Defaults $defaults -Overrides $fileCfg
     $cfg = Coalesce-Parameters -Config $merged
+    # Normalize ports to arrays to support single-value inputs
+    $cfg.TcpPorts = Convert-ToIntArray -Value $cfg.TcpPorts
+    $cfg.UdpPorts = Convert-ToIntArray -Value $cfg.UdpPorts
     $Results.Config = $cfg
     Write-Log ("Effective config: " + ($cfg | ConvertTo-Json -Depth 4)) 'INFO'
 

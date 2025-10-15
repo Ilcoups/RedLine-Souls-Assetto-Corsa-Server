@@ -287,19 +287,21 @@ function Read-SteamLibraries {
 function Find-AssettoCorsa {
     $libs = Read-SteamLibraries
     foreach ($lib in $libs) {
+        if ([string]::IsNullOrWhiteSpace($lib)) { continue }
         $acPath = Join-Path (Split-Path $lib -Parent) 'common\assettocorsa'
-        if (Test-Path (Join-Path $acPath 'acs.exe')) { return $acPath }
+        $acsExe = Join-Path $acPath 'acs.exe'
+        if ((Test-Path $acsExe -ErrorAction SilentlyContinue)) { return $acPath }
     }
     return $null
 }
 
 function Get-CSPVersion {
     param([string]$ACPath)
-    if (-not $ACPath) { return $null }
+    if ([string]::IsNullOrWhiteSpace($ACPath)) { return $null }
     $dllPath = Join-Path $ACPath 'extension\dwrite.dll'
-    if (-not (Test-Path $dllPath)) { return $null }
+    if (-not (Test-Path $dllPath -ErrorAction SilentlyContinue)) { return $null }
     try {
-        $ver = (Get-Item $dllPath).VersionInfo.FileVersion
+        $ver = (Get-Item $dllPath -ErrorAction Stop).VersionInfo.FileVersion
         if ($ver) { return $ver }
     } catch {}
     return 'installed'
@@ -330,9 +332,9 @@ function Test-ACContent {
         $tracksPath = Join-Path $acPath 'content\tracks'
         $trackPath = Join-Path $tracksPath 'shuto_revival_project_beta'
         $layoutPath = Join-Path $trackPath 'heiwajima_pa_n'
-        $content['TrackInstalled'] = (Test-Path $trackPath)
-        $content['LayoutInstalled'] = (Test-Path $layoutPath)
-        if (Test-Path $layoutPath) {
+        $content['TrackInstalled'] = (Test-Path $trackPath -ErrorAction SilentlyContinue)
+        $content['LayoutInstalled'] = (Test-Path $layoutPath -ErrorAction SilentlyContinue)
+        if (Test-Path $layoutPath -ErrorAction SilentlyContinue) {
             Write-Log "Track installed: Shuto Revival Project Beta - Heiwajima PA (North)" 'OK'
         } else {
             Write-Log "Track MISSING: Shuto Revival Project Beta" 'ERROR'
@@ -344,7 +346,7 @@ function Test-ACContent {
         $missingCars = @()
         foreach ($car in $requiredCars) {
             $carPath = Join-Path $carsPath $car
-            if (-not (Test-Path $carPath)) { $missingCars += $car }
+            if (-not (Test-Path $carPath -ErrorAction SilentlyContinue)) { $missingCars += $car }
         }
         $content['TotalCars'] = $requiredCars.Count
         $content['InstalledCars'] = $requiredCars.Count - $missingCars.Count

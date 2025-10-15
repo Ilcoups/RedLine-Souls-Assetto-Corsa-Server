@@ -151,7 +151,9 @@ function Test-Network {
     $net = [ordered]@{}
     $ips = Resolve-Host -Host $Host
     $net['DnsResolved'] = @($ips)
-    if ($ips.Count -gt 0) { Write-Log "DNS resolved $Host => $($ips -join ', ')" 'OK' } else { Write-Log "DNS failed for $Host" 'ERROR' }
+    $ipCount = 0
+    if ($null -ne $ips) { $ipCount = @($ips).Count }
+    if ($ipCount -gt 0) { Write-Log "DNS resolved $Host => $($ips -join ', ')" 'OK' } else { Write-Log "DNS failed for $Host" 'ERROR' }
 
     try {
         $pings = Test-Connection -TargetName $Host -Count 4 -Quiet:$false -ErrorAction Stop
@@ -214,7 +216,8 @@ function Test-Network {
     } catch { Write-Log "GitHub reachability check failed: $($_.Exception.Message)" 'WARN' }
 
     $Results.Network = $net
-    $tcpPass = ($tcpResults | Where-Object { $_.Reachable -eq $false }).Count -eq 0
+    $tcpFails = @($tcpResults | Where-Object { $_.Reachable -eq $false })
+    $tcpPass = (@($tcpFails).Count -eq 0)
     $Results.Summary += @([pscustomobject]@{ Name='Network'; Passed=$tcpPass; Detail='DNS/Ping/TCP/UDP/Traceroute collected' })
 }
 
@@ -231,7 +234,9 @@ function Test-Firewall {
         try {
             $rules = Get-NetFirewallRule -ErrorAction Stop | Get-NetFirewallApplicationFilter | Where-Object { $_.Program -ieq $ExePath }
             $fw['RulesForExe'] = $rules
-            Write-Log "Found $($rules.Count) firewall rule(s) for exe" 'OK'
+            $ruleCount = 0
+            if ($null -ne $rules) { $ruleCount = @($rules).Count }
+            Write-Log "Found $ruleCount firewall rule(s) for exe" 'OK'
         } catch { Write-Log "Firewall rule query failed: $($_.Exception.Message)" 'WARN' }
     }
     $Results.Firewall = $fw
@@ -355,7 +360,7 @@ try {
         $cfg.ServerHost = $inputHost.Trim()
         $Results.Config = $cfg
     }
-    if (-not $cfg.TcpPorts -or $cfg.TcpPorts.Count -eq 0) {
+    if (-not $cfg.TcpPorts -or @($cfg.TcpPorts).Count -eq 0) {
         $inputPorts = Read-Host 'Enter TCP ports (comma-separated), or press Enter to skip'
         if (-not [string]::IsNullOrWhiteSpace($inputPorts)) {
             $parsed = @()

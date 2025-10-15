@@ -112,6 +112,7 @@ function Convert-ToIntArray {
 
 function Test-System {
     param($Results)
+    Write-Host '[1/4] ' -NoNewline -ForegroundColor Cyan
     Write-Log 'Running system checks...'
     $sys = [ordered]@{}
     try {
@@ -147,6 +148,7 @@ function Resolve-Host {
 
 function Test-Network {
     param($Results, [string]$TargetHost, [int[]]$TcpPorts, [int[]]$UdpPorts)
+    Write-Host '[2/4] ' -NoNewline -ForegroundColor Cyan
     Write-Log 'Running network checks...'
     $net = [ordered]@{}
     # Check if TargetHost is already an IP address
@@ -173,7 +175,12 @@ function Test-Network {
         $stats = $pings | Measure-Object -Property ResponseTime -Average -Minimum -Maximum
         $lat = [pscustomobject]@{ MinMs=$stats.Minimum; AvgMs=[math]::Round($stats.Average,2); MaxMs=$stats.Maximum }
         $net['Ping'] = $lat
-        Write-Log "Ping latency ms: min=$($lat.MinMs) avg=$($lat.AvgMs) max=$($lat.MaxMs)" 'OK'
+        $quality = 'EXCELLENT'
+        $qColor = 'OK'
+        if ($lat.AvgMs -gt 150) { $quality = 'POOR (high lag expected)'; $qColor = 'ERROR' }
+        elseif ($lat.AvgMs -gt 80) { $quality = 'FAIR (some lag possible)'; $qColor = 'WARN' }
+        elseif ($lat.AvgMs -gt 50) { $quality = 'GOOD'; $qColor = 'OK' }
+        Write-Log "Ping: $($lat.AvgMs)ms avg ($quality)" $qColor
     } catch { Write-Log "Ping failed: $($_.Exception.Message)" 'WARN' }
 
     $tcpResults = @()
@@ -183,7 +190,12 @@ function Test-Network {
             $ok = $false
             if ($tnc -and ($tnc.TcpTestSucceeded -eq $true)) { $ok = $true }
             $tcpResults += [pscustomobject]@{ Port=$port; Reachable=$ok }
-            if ($ok) { Write-Log "TCP $port => $ok" 'OK' } else { Write-Log "TCP $port => $ok" 'ERROR' }
+            if ($ok) { 
+                Write-Log "TCP $port => Reachable" 'OK' 
+            } else { 
+                Write-Log "TCP $port => BLOCKED (check firewall or ISP)" 'ERROR'
+                Write-Log "  Fix: Windows Firewall > Allow an app > Assetto Corsa" 'INFO'
+            }
         } catch {
             $tcpResults += [pscustomobject]@{ Port=$port; Reachable=$false }
             Write-Log "TCP test error on $($port): $($_.Exception.Message)" 'ERROR'
@@ -236,6 +248,7 @@ function Test-Network {
 
 function Test-Firewall {
     param($Results, [string]$ExePath)
+    Write-Host '[3/4] ' -NoNewline -ForegroundColor Cyan
     Write-Log 'Running firewall checks...'
     $fw = [ordered]@{}
     try {
@@ -304,6 +317,28 @@ function Find-AssettoCorsa {
     return $null
 }
 
+function Find-ContentManager {
+    $cmPaths = @(
+        (Join-Path $env:LOCALAPPDATA 'AcTools Content Manager\Content Manager.exe'),
+        'C:\Program Files\Content Manager\Content Manager.exe',
+        'C:\Program Files (x86)\Content Manager\Content Manager.exe'
+    )
+    foreach ($path in $cmPaths) {
+        if (Test-Path $path -ErrorAction SilentlyContinue) { return $path }
+    }
+    return $null
+}
+
+function Get-DiskSpace {
+    param([string]$Path)
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $null }
+    try {
+        $drive = (Get-Item $Path -ErrorAction Stop).PSDrive.Name + ':'
+        $disk = Get-PSDrive $drive -ErrorAction Stop
+        return [pscustomobject]@{ FreeGB=[math]::Round($disk.Free/1GB,2); UsedGB=[math]::Round($disk.Used/1GB,2) }
+    } catch { return $null }
+}
+
 function Get-CSPVersion {
     param([string]$ACPath)
     if ([string]::IsNullOrWhiteSpace($ACPath)) { return $null }
@@ -365,6 +400,7 @@ function Get-CarDownloadInfo {
 
 function Test-ACContent {
     param($Results)
+    Write-Host '[4/4] ' -NoNewline -ForegroundColor Cyan
     Write-Log 'Running Assetto Corsa content checks...'
     $content = [ordered]@{}
     $pass = $true
@@ -374,6 +410,26 @@ function Test-ACContent {
     if ($acPath) {
         Write-Log "Assetto Corsa found: $acPath" 'OK'
         $content['ACPath'] = $acPath
+        
+        $cmPath = Find-ContentManager
+        $content['ContentManagerInstalled'] = ($null -ne $cmPath)
+        if ($cmPath) {
+            Write-Log "Content Manager found (recommended launcher)" 'OK'
+            $content['CMPath'] = $cmPath
+        } else {
+            Write-Log "Content Manager NOT found (highly recommended)" 'WARN'
+            Write-Log "  Download: https://assettocorsa.club/content-manager.html" 'INFO'
+        }
+        
+        $diskSpace = Get-DiskSpace -Path $acPath
+        if ($diskSpace) {
+            $content['DiskFreeGB'] = $diskSpace.FreeGB
+            if ($diskSpace.FreeGB -lt 10) {
+                Write-Log "Low disk space: $($diskSpace.FreeGB)GB free (recommend 20GB+ for mods)" 'WARN'
+            } else {
+                Write-Log "Disk space: $($diskSpace.FreeGB)GB free" 'OK'
+            }
+        }
         
         $cspVer = Get-CSPVersion -ACPath $acPath
         $content['CSPInstalled'] = ($null -ne $cspVer)

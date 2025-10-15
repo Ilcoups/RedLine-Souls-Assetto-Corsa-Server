@@ -284,40 +284,83 @@ function Read-SteamLibraries {
     return ($libs | Select-Object -Unique)
 }
 
-function Test-Client {
-    param($Results, [pscustomobject]$ClientChecks)
-    Write-Log 'Running client checks...'
-    $client = [ordered]@{ Type=$ClientChecks.Type }
-    $pass = $true
-    switch ($ClientChecks.Type) {
-        'path' {
-            $client['ExePath'] = $ClientChecks.ExePath
-            $exists = $false
-            if ($ClientChecks.ExePath) { $exists = Test-Path -LiteralPath $ClientChecks.ExePath }
-            $client['Exists'] = $exists
-            $pass = $exists
-            if ($exists) { Write-Log ("Client exe present: $exists at '" + $ClientChecks.ExePath + "'") 'OK' } else { Write-Log ("Client exe present: $exists at '" + $ClientChecks.ExePath + "'") 'ERROR' }
-        }
-        'steam' {
-            $client['SteamAppId'] = $ClientChecks.SteamAppId
-            $libs = Read-SteamLibraries
-            $found = $false
-            foreach ($lib in $libs) {
-                $acf = Join-Path $lib ("appmanifest_" + $ClientChecks.SteamAppId + ".acf")
-                if (Test-Path -LiteralPath $acf) { $found = $true; break }
-            }
-            $client['Installed'] = $found
-            $pass = $found
-            if ($found) { Write-Log "Steam AppID $($ClientChecks.SteamAppId) installed: $found" 'OK' } else { Write-Log "Steam AppID $($ClientChecks.SteamAppId) installed: $found" 'ERROR' }
-        }
-        default {
-            $client['Note'] = 'No client validation requested'
-            $pass = $true
-            Write-Log 'Client validation skipped (none)' 'WARN'
-        }
+function Find-AssettoCorsa {
+    $libs = Read-SteamLibraries
+    foreach ($lib in $libs) {
+        $acPath = Join-Path (Split-Path $lib -Parent) 'common\assettocorsa'
+        if (Test-Path (Join-Path $acPath 'acs.exe')) { return $acPath }
     }
-    $Results.Client = $client
-    $Results.Summary += @([pscustomobject]@{ Name='Client'; Passed=$pass; Detail='Client presence check' })
+    return $null
+}
+
+function Get-CSPVersion {
+    param([string]$ACPath)
+    if (-not $ACPath) { return $null }
+    $dllPath = Join-Path $ACPath 'extension\dwrite.dll'
+    if (-not (Test-Path $dllPath)) { return $null }
+    try {
+        $ver = (Get-Item $dllPath).VersionInfo.FileVersion
+        if ($ver) { return $ver }
+    } catch {}
+    return 'installed'
+}
+
+function Test-ACContent {
+    param($Results)
+    Write-Log 'Running Assetto Corsa content checks...'
+    $content = [ordered]@{}
+    $pass = $true
+    
+    $acPath = Find-AssettoCorsa
+    $content['ACInstalled'] = ($null -ne $acPath)
+    if ($acPath) {
+        Write-Log "Assetto Corsa found: $acPath" 'OK'
+        $content['ACPath'] = $acPath
+        
+        $cspVer = Get-CSPVersion -ACPath $acPath
+        $content['CSPInstalled'] = ($null -ne $cspVer)
+        $content['CSPVersion'] = $cspVer
+        if ($cspVer) {
+            Write-Log "CSP installed: $cspVer" 'OK'
+        } else {
+            Write-Log "CSP NOT installed (required 0.1.76+)" 'ERROR'
+            $pass = $false
+        }
+        
+        $tracksPath = Join-Path $acPath 'content\tracks'
+        $trackPath = Join-Path $tracksPath 'shuto_revival_project_beta'
+        $layoutPath = Join-Path $trackPath 'heiwajima_pa_n'
+        $content['TrackInstalled'] = (Test-Path $trackPath)
+        $content['LayoutInstalled'] = (Test-Path $layoutPath)
+        if (Test-Path $layoutPath) {
+            Write-Log "Track installed: Shuto Revival Project Beta - Heiwajima PA (North)" 'OK'
+        } else {
+            Write-Log "Track MISSING: Shuto Revival Project Beta" 'ERROR'
+            $pass = $false
+        }
+        
+        $carsPath = Join-Path $acPath 'content\cars'
+        $requiredCars = @('abarth500','alfa_romeo_giulietta_qv','bmw_1m_s3','bmw_m3_e30','bmw_m3_e92_s1','ferrari_458','ferrari_458_s3','ferrari_f40_s3','ferrari_laferrari','ks_alfa_giulia_qv','ks_alfa_mito_qv','ks_audi_a1s1','ks_audi_r8_plus','ks_corvette_c7_stingray','ks_ford_mustang_2015','ks_lamborghini_huracan_performante','ks_lamborghini_sesto_elemento','ks_maserati_alfieri','ks_maserati_quattroporte','ks_mazda_miata','ks_mercedes_190_evo2','ks_nissan_gtr','ks_porsche_911_gt3_rs_2016','ks_porsche_cayman_gt4_std','ks_toyota_ae86_tuned','ks_toyota_supra_mkiv','lotus_exige_scura','lotus_exige_v6_cup','mazda_rx7_spirit_r','nissan_370z','supra_a90')
+        $missingCars = @()
+        foreach ($car in $requiredCars) {
+            $carPath = Join-Path $carsPath $car
+            if (-not (Test-Path $carPath)) { $missingCars += $car }
+        }
+        $content['TotalCars'] = $requiredCars.Count
+        $content['InstalledCars'] = $requiredCars.Count - $missingCars.Count
+        $content['MissingCars'] = $missingCars
+        if ($missingCars.Count -eq 0) {
+            Write-Log "All $($requiredCars.Count) required cars installed" 'OK'
+        } else {
+            Write-Log "$($missingCars.Count) cars MISSING: $($missingCars -join ', ')" 'WARN'
+        }
+    } else {
+        Write-Log "Assetto Corsa NOT installed" 'ERROR'
+        $pass = $false
+    }
+    
+    $Results.Content = $content
+    $Results.Summary += @([pscustomobject]@{ Name='Content'; Passed=$pass; Detail="AC+CSP+Track+Cars ($($content.InstalledCars)/$($content.TotalCars) cars)" })
 }
 
 function Save-Results {
@@ -391,7 +434,7 @@ try {
     Test-System -Results $Results
     Test-Network -Results $Results -TargetHost $cfg.ServerHost -TcpPorts $cfg.TcpPorts -UdpPorts $cfg.UdpPorts
     Test-Firewall -Results $Results -ExePath $cfg.ClientChecks.ExePath
-    Test-Client -Results $Results -ClientChecks $cfg.ClientChecks
+    Test-ACContent -Results $Results
 
     Save-Results -Results $Results
     $zip = Create-SupportBundle -Directory $OutDir

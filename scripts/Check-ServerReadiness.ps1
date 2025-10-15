@@ -367,11 +367,15 @@ function Test-ACContent {
         }
     } else {
         Write-Log "Assetto Corsa NOT installed" 'ERROR'
+        $content['TotalCars'] = 0
+        $content['InstalledCars'] = 0
+        $content['MissingCars'] = @()
         $pass = $false
     }
     
     $Results.Content = $content
-    $Results.Summary += @([pscustomobject]@{ Name='Content'; Passed=$pass; Detail="AC+CSP+Track+Cars ($($content.InstalledCars)/$($content.TotalCars) cars)" })
+    $detailMsg = if ($content['ACInstalled']) { "AC+CSP+Track+Cars ($($content.InstalledCars)/$($content.TotalCars) cars)" } else { "Assetto Corsa not found" }
+    $Results.Summary += @([pscustomobject]@{ Name='Content'; Passed=$pass; Detail=$detailMsg })
 }
 
 function Save-Results {

@@ -316,6 +316,53 @@ function Get-CSPVersion {
     return 'installed'
 }
 
+function Compare-CSPVersion {
+    param([string]$Version, [string]$MinVersion)
+    if (-not $Version -or $Version -eq 'installed') { return $false }
+    try {
+        $v = [version]($Version -replace '[^\d\.]','')
+        $min = [version]($MinVersion -replace '[^\d\.]','')
+        return ($v -ge $min)
+    } catch { return $false }
+}
+
+function Get-CarDownloadInfo {
+    param([string]$CarId)
+    $dlcCars = @{
+        'ks_alfa_giulia_qv' = 'https://store.steampowered.com/app/404430/'
+        'ks_alfa_mito_qv' = 'https://store.steampowered.com/app/404430/'
+        'ks_audi_a1s1' = 'https://store.steampowered.com/app/404430/'
+        'ks_audi_r8_plus' = 'https://store.steampowered.com/app/347990/'
+        'ks_corvette_c7_stingray' = 'https://store.steampowered.com/app/624180/'
+        'ks_ford_mustang_2015' = 'https://store.steampowered.com/app/624180/'
+        'ks_lamborghini_huracan_performante' = 'https://store.steampowered.com/app/540710/'
+        'ks_lamborghini_sesto_elemento' = 'https://store.steampowered.com/app/540710/'
+        'ks_maserati_alfieri' = 'https://store.steampowered.com/app/404430/'
+        'ks_maserati_quattroporte' = 'https://store.steampowered.com/app/404430/'
+        'ks_mazda_miata' = 'https://store.steampowered.com/app/404431/'
+        'ks_mercedes_190_evo2' = 'https://store.steampowered.com/app/347990/'
+        'ks_nissan_gtr' = 'https://store.steampowered.com/app/347990/'
+        'ks_porsche_911_gt3_rs_2016' = 'https://store.steampowered.com/app/404430/'
+        'ks_porsche_cayman_gt4_std' = 'https://store.steampowered.com/app/404430/'
+        'ks_toyota_ae86_tuned' = 'https://store.steampowered.com/app/404431/'
+        'ks_toyota_supra_mkiv' = 'https://store.steampowered.com/app/404431/'
+    }
+    $modCars = @{
+        'bmw_1m_s3' = 'https://www.patreon.com/simdream (SimDream Development)'
+        'bmw_m3_e30' = 'https://assetto-db.com (Search: BMW M3 E30)'
+        'bmw_m3_e92_s1' = 'https://www.patreon.com/simdream (SimDream Development)'
+        'ferrari_458_s3' = 'https://www.patreon.com/simdream (SimDream Development)'
+        'ferrari_f40_s3' = 'https://www.patreon.com/simdream (SimDream Development)'
+        'alfa_romeo_giulietta_qv' = 'https://assetto-db.com (Search: Alfa Romeo Giulietta)'
+        'mazda_rx7_spirit_r' = 'https://assetto-db.com (Search: Mazda RX-7 Spirit R)'
+        'nissan_370z' = 'https://assetto-db.com (Search: Nissan 370Z)'
+        'supra_a90' = 'https://assetto-db.com (Search: Toyota Supra A90)'
+    }
+    if ($dlcCars.ContainsKey($CarId)) { return [pscustomobject]@{ Type='DLC'; Url=$dlcCars[$CarId] } }
+    if ($modCars.ContainsKey($CarId)) { return [pscustomobject]@{ Type='Mod'; Url=$modCars[$CarId] } }
+    return [pscustomobject]@{ Type='Unknown'; Url='https://assetto-db.com' }
+}
+
 function Test-ACContent {
     param($Results)
     Write-Log 'Running Assetto Corsa content checks...'
@@ -331,10 +378,21 @@ function Test-ACContent {
         $cspVer = Get-CSPVersion -ACPath $acPath
         $content['CSPInstalled'] = ($null -ne $cspVer)
         $content['CSPVersion'] = $cspVer
+        $minCSP = '0.1.76'
+        $recCSP = '0.1.80'
         if ($cspVer) {
-            Write-Log "CSP installed: $cspVer" 'OK'
+            $isMinOk = Compare-CSPVersion -Version $cspVer -MinVersion $minCSP
+            $isRecOk = Compare-CSPVersion -Version $cspVer -MinVersion $recCSP
+            if ($isRecOk) {
+                Write-Log "CSP installed: $cspVer (meets recommended $recCSP+)" 'OK'
+            } elseif ($isMinOk) {
+                Write-Log "CSP installed: $cspVer (minimum $minCSP met, recommend upgrading to $recCSP+)" 'WARN'
+            } else {
+                Write-Log "CSP outdated: $cspVer (minimum $minCSP required). Download: https://acstuff.ru/patch/" 'ERROR'
+                $pass = $false
+            }
         } else {
-            Write-Log "CSP NOT installed (required 0.1.76+)" 'ERROR'
+            Write-Log "CSP NOT installed (required $minCSP+). Download: https://acstuff.ru/patch/" 'ERROR'
             $pass = $false
         }
         
@@ -346,7 +404,7 @@ function Test-ACContent {
         if (Test-Path $layoutPath -ErrorAction SilentlyContinue) {
             Write-Log "Track installed: Shuto Revival Project Beta - Heiwajima PA (North)" 'OK'
         } else {
-            Write-Log "Track MISSING: Shuto Revival Project Beta" 'ERROR'
+            Write-Log "Track MISSING: Shuto Revival Project Beta. Download: https://discord.gg/shutokorevivalproject" 'ERROR'
             $pass = $false
         }
         
@@ -363,10 +421,28 @@ function Test-ACContent {
         if ($missingCars.Count -eq 0) {
             Write-Log "All $($requiredCars.Count) required cars installed" 'OK'
         } else {
-            Write-Log "$($missingCars.Count) cars MISSING: $($missingCars -join ', ')" 'WARN'
+            Write-Log "$($missingCars.Count) cars MISSING (you can still join, but won't see these cars):" 'WARN'
+            $dlcMissing = @()
+            $modMissing = @()
+            foreach ($car in $missingCars) {
+                $info = Get-CarDownloadInfo -CarId $car
+                if ($info.Type -eq 'DLC') { $dlcMissing += $car }
+                elseif ($info.Type -eq 'Mod') { $modMissing += $car }
+            }
+            if ($dlcMissing.Count -gt 0) {
+                Write-Log "  DLC cars ($($dlcMissing.Count)): $($dlcMissing -join ', ')" 'WARN'
+                Write-Log "    Buy from Steam: https://store.steampowered.com/app/244210/Assetto_Corsa/" 'INFO'
+            }
+            if ($modMissing.Count -gt 0) {
+                Write-Log "  Mod cars ($($modMissing.Count)): $($modMissing -join ', ')" 'WARN'
+                Write-Log "    Find on: https://assetto-db.com or https://www.patreon.com/simdream" 'INFO'
+            }
         }
     } else {
-        Write-Log "Assetto Corsa NOT installed" 'ERROR'
+        Write-Log "Assetto Corsa NOT installed (required to join server)" 'ERROR'
+        Write-Log "  Buy & install from Steam: https://store.steampowered.com/app/244210/" 'INFO'
+        Write-Log "  Then install Custom Shaders Patch: https://acstuff.ru/patch/" 'INFO'
+        Write-Log "  And Shuto Revival Project track: https://discord.gg/shutokorevivalproject" 'INFO'
         $content['TotalCars'] = 0
         $content['InstalledCars'] = 0
         $content['MissingCars'] = @()

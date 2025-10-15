@@ -1,0 +1,12 @@
+{
+  "ServerHost": "your.server.example",
+  "TcpPorts": [9600, 9601],
+  "UdpPorts": [],
+  "ClientChecks": {
+    "Type": "none",
+    "SteamAppId": 244210,
+    "ExePath": "C:\\Path\\To\\YourClient.exe"
+  }
+}
+
+

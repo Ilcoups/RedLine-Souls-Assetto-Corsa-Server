@@ -207,9 +207,9 @@ function Test-Network {
     try {
         # PS 5.1 uses -ComputerName, PS 7+ uses -TargetName
         if ($PSVersionTable.PSVersion.Major -ge 7) {
-            $pings = Test-Connection -TargetName $TargetHost -Count 4 -Quiet:$false -ErrorAction Stop
+            $pings = Test-Connection -TargetName $TargetHost -Count 2 -Quiet:$false -ErrorAction Stop
         } else {
-            $pings = Test-Connection -ComputerName $TargetHost -Count 4 -Quiet:$false -ErrorAction Stop
+            $pings = Test-Connection -ComputerName $TargetHost -Count 2 -Quiet:$false -ErrorAction Stop
         }
         $stats = $pings | Measure-Object -Property ResponseTime -Average -Minimum -Maximum
         $lat = [pscustomobject]@{ MinMs=$stats.Minimum; AvgMs=[math]::Round($stats.Average,2); MaxMs=$stats.Maximum }
@@ -225,7 +225,7 @@ function Test-Network {
     $tcpResults = @()
     foreach ($port in $TcpPorts) {
         try {
-            $tnc = Test-NetConnection -ComputerName $TargetHost -Port $port -WarningAction SilentlyContinue
+            $tnc = Test-NetConnection -ComputerName $TargetHost -Port $port -WarningAction SilentlyContinue -InformationLevel Quiet
             $ok = $false
             if ($tnc -and ($tnc.TcpTestSucceeded -eq $true)) { $ok = $true }
             $tcpResults += [pscustomobject]@{ Port=$port; Reachable=$ok }

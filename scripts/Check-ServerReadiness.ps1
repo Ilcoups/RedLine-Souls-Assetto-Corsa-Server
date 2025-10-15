@@ -260,28 +260,37 @@ function Read-SteamLibraries {
     $libs = @()
     try {
         $steamRoot = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Valve\Steam' -Name InstallPath -ErrorAction Stop).InstallPath
-        $libs += (Join-Path $steamRoot 'steamapps')
+        if (-not [string]::IsNullOrWhiteSpace($steamRoot)) {
+            $libs += (Join-Path $steamRoot 'steamapps')
+        }
     } catch {}
     try {
         $steamRootCU = (Get-ItemProperty -Path 'HKCU:\SOFTWARE\Valve\Steam' -Name SteamPath -ErrorAction Stop).SteamPath
-        $libs += (Join-Path $steamRootCU 'steamapps')
+        if (-not [string]::IsNullOrWhiteSpace($steamRootCU)) {
+            $libs += (Join-Path $steamRootCU 'steamapps')
+        }
     } catch {}
-    $libs = $libs | Select-Object -Unique
+    $libs = @($libs | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
     # Parse libraryfolders.vdf for additional libraries
     foreach ($root in $libs) {
-        $vdf = Join-Path (Split-Path $root -Parent) 'steamapps\libraryfolders.vdf'
-        if (Test-Path -LiteralPath $vdf) {
+        if ([string]::IsNullOrWhiteSpace($root)) { continue }
+        $parentPath = Split-Path $root -Parent
+        if ([string]::IsNullOrWhiteSpace($parentPath)) { continue }
+        $vdf = Join-Path $parentPath 'steamapps\libraryfolders.vdf'
+        if (Test-Path -LiteralPath $vdf -ErrorAction SilentlyContinue) {
             try {
-                $content = Get-Content -LiteralPath $vdf -Raw
+                $content = Get-Content -LiteralPath $vdf -Raw -ErrorAction Stop
                 $matches = [regex]::Matches($content, '"path"\s*"([^"]+)"')
                 foreach ($m in $matches) {
                     $path = $m.Groups[1].Value
-                    $libs += (Join-Path $path 'steamapps')
+                    if (-not [string]::IsNullOrWhiteSpace($path)) {
+                        $libs += (Join-Path $path 'steamapps')
+                    }
                 }
             } catch {}
         }
     }
-    return ($libs | Select-Object -Unique)
+    return @($libs | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
 }
 
 function Find-AssettoCorsa {

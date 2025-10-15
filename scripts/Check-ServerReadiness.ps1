@@ -134,29 +134,29 @@ function Test-System {
 }
 
 function Resolve-Host {
-    param([string]$Host)
+    param([string]$TargetHost)
     try {
         if (Get-Command Resolve-DnsName -ErrorAction SilentlyContinue) {
-            $r = Resolve-DnsName -Name $Host -ErrorAction Stop
+            $r = Resolve-DnsName -Name $TargetHost -ErrorAction Stop
             return $r.IPAddress | Select-Object -Unique
         } else {
-            return [System.Net.Dns]::GetHostAddresses($Host).IPAddressToString
+            return [System.Net.Dns]::GetHostAddresses($TargetHost).IPAddressToString
         }
     } catch { return @() }
 }
 
 function Test-Network {
-    param($Results, [string]$Host, [int[]]$TcpPorts, [int[]]$UdpPorts)
+    param($Results, [string]$TargetHost, [int[]]$TcpPorts, [int[]]$UdpPorts)
     Write-Log 'Running network checks...'
     $net = [ordered]@{}
-    $ips = Resolve-Host -Host $Host
+    $ips = Resolve-Host -TargetHost $TargetHost
     $net['DnsResolved'] = @($ips)
     $ipCount = 0
     if ($null -ne $ips) { $ipCount = @($ips).Count }
-    if ($ipCount -gt 0) { Write-Log "DNS resolved $Host => $($ips -join ', ')" 'OK' } else { Write-Log "DNS failed for $Host" 'ERROR' }
+    if ($ipCount -gt 0) { Write-Log "DNS resolved $TargetHost => $($ips -join ', ')" 'OK' } else { Write-Log "DNS failed for $TargetHost" 'ERROR' }
 
     try {
-        $pings = Test-Connection -TargetName $Host -Count 4 -Quiet:$false -ErrorAction Stop
+        $pings = Test-Connection -TargetName $TargetHost -Count 4 -Quiet:$false -ErrorAction Stop
         $stats = $pings | Measure-Object -Property ResponseTime -Average -Minimum -Maximum
         $lat = [pscustomobject]@{ MinMs=$stats.Minimum; AvgMs=[math]::Round($stats.Average,2); MaxMs=$stats.Maximum }
         $net['Ping'] = $lat
@@ -166,7 +166,7 @@ function Test-Network {
     $tcpResults = @()
     foreach ($port in $TcpPorts) {
         try {
-            $tnc = Test-NetConnection -ComputerName $Host -Port $port -WarningAction SilentlyContinue
+            $tnc = Test-NetConnection -ComputerName $TargetHost -Port $port -WarningAction SilentlyContinue
             $ok = $false
             if ($tnc -and ($tnc.TcpTestSucceeded -eq $true)) { $ok = $true }
             $tcpResults += [pscustomobject]@{ Port=$port; Reachable=$ok }
@@ -184,7 +184,7 @@ function Test-Network {
         try {
             $client = New-Object System.Net.Sockets.UdpClient
             $client.Client.ReceiveTimeout = 500
-            $client.Connect($Host, $port)
+            $client.Connect($TargetHost, $port)
             $bytes = [Text.Encoding]::ASCII.GetBytes('probe')
             [void]$client.Send($bytes, $bytes.Length)
             $udpOk = $true
@@ -197,7 +197,7 @@ function Test-Network {
 
     try {
         $trPath = Join-Path $OutDir 'tracert.txt'
-        tracert -d -h 15 $Host | Out-File -FilePath $trPath -Encoding UTF8
+        tracert -d -h 15 $TargetHost | Out-File -FilePath $trPath -Encoding UTF8
         $net['TraceroutePath'] = $trPath
         Write-Log "Traceroute saved: $trPath" 'OK'
     } catch { Write-Log "Traceroute failed: $($_.Exception.Message)" 'WARN' }
@@ -376,7 +376,7 @@ try {
     }
 
     Test-System -Results $Results
-    Test-Network -Results $Results -Host $cfg.ServerHost -TcpPorts $cfg.TcpPorts -UdpPorts $cfg.UdpPorts
+    Test-Network -Results $Results -TargetHost $cfg.ServerHost -TcpPorts $cfg.TcpPorts -UdpPorts $cfg.UdpPorts
     Test-Firewall -Results $Results -ExePath $cfg.ClientChecks.ExePath
     Test-Client -Results $Results -ClientChecks $cfg.ClientChecks
 

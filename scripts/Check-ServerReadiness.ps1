@@ -149,11 +149,19 @@ function Test-Network {
     param($Results, [string]$TargetHost, [int[]]$TcpPorts, [int[]]$UdpPorts)
     Write-Log 'Running network checks...'
     $net = [ordered]@{}
-    $ips = Resolve-Host -TargetHost $TargetHost
-    $net['DnsResolved'] = @($ips)
-    $ipCount = 0
-    if ($null -ne $ips) { $ipCount = @($ips).Count }
-    if ($ipCount -gt 0) { Write-Log "DNS resolved $TargetHost => $($ips -join ', ')" 'OK' } else { Write-Log "DNS failed for $TargetHost" 'ERROR' }
+    # Check if TargetHost is already an IP address
+    $isIp = $false
+    try { $null = [System.Net.IPAddress]::Parse($TargetHost); $isIp = $true } catch {}
+    if ($isIp) {
+        $net['DnsResolved'] = @($TargetHost)
+        Write-Log "Using IP address directly: $TargetHost" 'OK'
+    } else {
+        $ips = Resolve-Host -TargetHost $TargetHost
+        $net['DnsResolved'] = @($ips)
+        $ipCount = 0
+        if ($null -ne $ips) { $ipCount = @($ips).Count }
+        if ($ipCount -gt 0) { Write-Log "DNS resolved $TargetHost => $($ips -join ', ')" 'OK' } else { Write-Log "DNS failed for $TargetHost" 'ERROR' }
+    }
 
     try {
         # PS 5.1 uses -ComputerName, PS 7+ uses -TargetName

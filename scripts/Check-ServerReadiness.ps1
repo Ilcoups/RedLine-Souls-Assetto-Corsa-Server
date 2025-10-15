@@ -577,14 +577,15 @@ function Save-Results {
 
 function Create-SupportBundle {
     param([string]$Directory)
+    if ([string]::IsNullOrWhiteSpace($Directory)) { return $null }
     $zipPath = Join-Path (Split-Path $Directory -Parent) ('support_bundle_' + (Split-Path $Directory -Leaf) + '.zip')
-    if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
+    if (Test-Path -LiteralPath $zipPath -ErrorAction SilentlyContinue) { Remove-Item -LiteralPath $zipPath -Force }
     $items = @()
     $items += (Join-Path $Directory 'readiness.log')
     $items += (Join-Path $Directory 'results.json')
     $tr = Join-Path $Directory 'tracert.txt'
-    if (Test-Path -LiteralPath $tr) { $items += $tr }
-    Compress-Archive -Path $items -DestinationPath $zipPath -CompressionLevel Optimal
+    if (Test-Path -LiteralPath $tr -ErrorAction SilentlyContinue) { $items += $tr }
+    Compress-Archive -Path $items -DestinationPath $zipPath -CompressionLevel Optimal -ErrorAction Stop
     Write-Log "Created support bundle: $zipPath" 'OK'
     return $zipPath
 }

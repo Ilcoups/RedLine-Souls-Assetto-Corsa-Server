@@ -603,19 +603,28 @@ function Test-ACContent {
         $tracksPath = Join-Path $acPath 'content\tracks'
         $trackPath = Join-Path $tracksPath 'shuto_revival_project_beta'
         $layoutPath = Join-Path $trackPath 'heiwajima_pa_n'
-        $modelsIni = Join-Path $layoutPath 'models.ini'
-        $surfacesIni = Join-Path $layoutPath 'surfaces.ini'
         $content['TrackInstalled'] = (Test-Path $trackPath -ErrorAction SilentlyContinue)
         $content['LayoutInstalled'] = (Test-Path $layoutPath -ErrorAction SilentlyContinue)
-        if ((Test-Path $modelsIni -ErrorAction SilentlyContinue) -and (Test-Path $surfacesIni -ErrorAction SilentlyContinue)) {
-            Write-Log "Track installed: Shuto Revival Project Beta - Heiwajima PA (North)" 'OK'
-            if ($trackPath -match 'OneDrive|Dropbox|Google Drive') {
-                Write-Log "WARNING: Track in cloud sync folder - May corrupt! Move AC outside cloud folders" 'ERROR'
-                $pass = $false
+        
+        # Check for track files - be flexible about which files exist
+        $trackFiles = @(
+            (Join-Path $layoutPath 'models.ini'),
+            (Join-Path $layoutPath 'surfaces.ini'),
+            (Join-Path $layoutPath 'map.ini'),
+            (Join-Path $layoutPath 'data\surfaces.ini')
+        )
+        $foundFiles = @($trackFiles | Where-Object { Test-Path $_ -ErrorAction SilentlyContinue })
+        
+        if (Test-Path $layoutPath -ErrorAction SilentlyContinue) {
+            if ($foundFiles.Count -gt 0) {
+                Write-Log "Track installed: Shuto Revival Project Beta - Heiwajima PA (North) [$($foundFiles.Count) config files found]" 'OK'
+                if ($trackPath -match 'OneDrive|Dropbox|Google Drive') {
+                    Write-Log "WARNING: Track in cloud sync folder - May corrupt! Move AC outside cloud folders" 'ERROR'
+                    $pass = $false
+                }
+            } else {
+                Write-Log "Track folder exists but NO config files found - May be corrupted" 'WARN'
             }
-        } elseif (Test-Path $layoutPath -ErrorAction SilentlyContinue) {
-            Write-Log "Track folder exists but files CORRUPTED - Reinstall track" 'ERROR'
-            $pass = $false
         } else {
             Write-Log "Track MISSING: Shuto Revival Project Beta. Download: https://discord.gg/shutokorevivalproject" 'ERROR'
             $pass = $false

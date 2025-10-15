@@ -115,12 +115,51 @@ function Test-System {
     Write-Host '[1/4] ' -NoNewline -ForegroundColor Cyan
     Write-Log 'Running system checks...'
     $sys = [ordered]@{}
+    $pass = $true
     try {
         $os = Get-CimInstance Win32_OperatingSystem
         $sys['OSCaption'] = $os.Caption
         $sys['OSVersion'] = $os.Version
         $sys['BuildNumber'] = $os.BuildNumber
+        $totalRAM = [math]::Round($os.TotalVisibleMemorySize/1MB,2)
+        $freeRAM = [math]::Round($os.FreePhysicalMemory/1MB,2)
+        $sys['TotalRAMGB'] = $totalRAM
+        $sys['FreeRAMGB'] = $freeRAM
+        if ($totalRAM -lt 8) {
+            Write-Log "RAM: $($totalRAM)GB total - LOW (recommend 8GB+ for AI traffic)" 'WARN'
+        } elseif ($freeRAM -lt 4) {
+            Write-Log "RAM: $($totalRAM)GB total, $($freeRAM)GB free - Close programs to free RAM" 'WARN'
+        } else {
+            Write-Log "RAM: $($totalRAM)GB total, $($freeRAM)GB free" 'OK'
+        }
     } catch { Write-Log "OS query failed: $($_.Exception.Message)" 'WARN' }
+    
+    try {
+        $gpu = Get-CimInstance Win32_VideoController -ErrorAction Stop | Select-Object -First 1
+        $sys['GPU'] = $gpu.Name
+        if ($gpu.Name -match 'Intel.*HD|Intel.*UHD|Intel.*Iris') {
+            Write-Log "GPU: $($gpu.Name) - INTEGRATED (may struggle with traffic)" 'WARN'
+        } else {
+            Write-Log "GPU: $($gpu.Name)" 'OK'
+        }
+    } catch {}
+    
+    try {
+        $steamProc = Get-Process steam -ErrorAction SilentlyContinue
+        $sys['SteamRunning'] = ($null -ne $steamProc)
+        if (-not $steamProc) {
+            Write-Log "Steam is NOT running - AC won't launch without Steam" 'WARN'
+        }
+    } catch {}
+    
+    try {
+        $vpn = Get-NetAdapter -ErrorAction Stop | Where-Object { $_.InterfaceDescription -match 'VPN|TAP|Virtual' -and $_.Status -eq 'Up' }
+        if ($vpn) {
+            Write-Log "VPN/Virtual adapter detected - May cause connection issues, try disabling VPN" 'WARN'
+            $sys['VPNDetected'] = $true
+        }
+    } catch {}
+    
     $sys['PSVersion'] = $PSVersionTable.PSVersion.ToString()
     try {
         $execPol = Get-ExecutionPolicy -Scope Process
@@ -131,7 +170,7 @@ function Test-System {
         $sys['TimeService'] = ($timeSync | Out-String).Trim()
     } catch { $sys['TimeService'] = 'w32tm not available or failed' }
     $Results.System = $sys
-    $Results.Summary += @([pscustomobject]@{ Name='System'; Passed=$true; Detail='Collected OS, PS version, time sync' })
+    $Results.Summary += @([pscustomobject]@{ Name='System'; Passed=$pass; Detail='RAM, GPU, Steam, VPN checks' })
 }
 
 function Resolve-Host {
@@ -247,26 +286,36 @@ function Test-Network {
 }
 
 function Test-Firewall {
-    param($Results, [string]$ExePath)
+    param($Results, [string]$ACPath)
     Write-Host '[3/4] ' -NoNewline -ForegroundColor Cyan
     Write-Log 'Running firewall checks...'
     $fw = [ordered]@{}
+    $pass = $true
     try {
         $profiles = Get-NetFirewallProfile -ErrorAction Stop | Select-Object Name, Enabled, DefaultInboundAction, DefaultOutboundAction
         $fw['Profiles'] = $profiles
         Write-Log "Firewall profiles collected" 'OK'
     } catch { Write-Log "Firewall profile query failed: $($_.Exception.Message)" 'WARN' }
-    if ($ExePath -and (Test-Path -LiteralPath $ExePath)) {
-        try {
-            $rules = Get-NetFirewallRule -ErrorAction Stop | Get-NetFirewallApplicationFilter | Where-Object { $_.Program -ieq $ExePath }
-            $fw['RulesForExe'] = $rules
-            $ruleCount = 0
-            if ($null -ne $rules) { $ruleCount = @($rules).Count }
-            Write-Log "Found $ruleCount firewall rule(s) for exe" 'OK'
-        } catch { Write-Log "Firewall rule query failed: $($_.Exception.Message)" 'WARN' }
+    
+    if ($ACPath) {
+        $acsExe = Join-Path $ACPath 'acs.exe'
+        if (Test-Path $acsExe -ErrorAction SilentlyContinue) {
+            try {
+                $rules = Get-NetFirewallApplicationFilter -ErrorAction Stop | Where-Object { $_.Program -ieq $acsExe }
+                $allowRules = $rules | Where-Object { (Get-NetFirewallRule -AssociatedNetFirewallApplicationFilter $_).Action -eq 'Allow' }
+                $fw['ACFirewallRules'] = @($allowRules).Count
+                if (@($allowRules).Count -eq 0) {
+                    Write-Log "NO firewall rules for AC - Add rule:" 'WARN'
+                    Write-Log "  New-NetFirewallRule -DisplayName 'Assetto Corsa' -Program '$acsExe' -Direction Inbound,Outbound -Action Allow" 'INFO'
+                    $pass = $false
+                } else {
+                    Write-Log "Assetto Corsa has $(@($allowRules).Count) firewall allow rule(s)" 'OK'
+                }
+            } catch { Write-Log "Firewall rule query failed: $($_.Exception.Message)" 'WARN' }
+        }
     }
     $Results.Firewall = $fw
-    $Results.Summary += @([pscustomobject]@{ Name='Firewall'; Passed=$true; Detail='Collected firewall profiles and rules' })
+    $Results.Summary += @([pscustomobject]@{ Name='Firewall'; Passed=$pass; Detail='AC firewall rules check' })
 }
 
 function Read-SteamLibraries {
@@ -455,10 +504,19 @@ function Test-ACContent {
         $tracksPath = Join-Path $acPath 'content\tracks'
         $trackPath = Join-Path $tracksPath 'shuto_revival_project_beta'
         $layoutPath = Join-Path $trackPath 'heiwajima_pa_n'
+        $modelsIni = Join-Path $layoutPath 'models.ini'
+        $surfacesIni = Join-Path $layoutPath 'surfaces.ini'
         $content['TrackInstalled'] = (Test-Path $trackPath -ErrorAction SilentlyContinue)
         $content['LayoutInstalled'] = (Test-Path $layoutPath -ErrorAction SilentlyContinue)
-        if (Test-Path $layoutPath -ErrorAction SilentlyContinue) {
+        if ((Test-Path $modelsIni -ErrorAction SilentlyContinue) -and (Test-Path $surfacesIni -ErrorAction SilentlyContinue)) {
             Write-Log "Track installed: Shuto Revival Project Beta - Heiwajima PA (North)" 'OK'
+            if ($trackPath -match 'OneDrive|Dropbox|Google Drive') {
+                Write-Log "WARNING: Track in cloud sync folder - May corrupt! Move AC outside cloud folders" 'ERROR'
+                $pass = $false
+            }
+        } elseif (Test-Path $layoutPath -ErrorAction SilentlyContinue) {
+            Write-Log "Track folder exists but files CORRUPTED - Reinstall track" 'ERROR'
+            $pass = $false
         } else {
             Write-Log "Track MISSING: Shuto Revival Project Beta. Download: https://discord.gg/shutokorevivalproject" 'ERROR'
             $pass = $false
@@ -580,7 +638,8 @@ try {
 
     Test-System -Results $Results
     Test-Network -Results $Results -TargetHost $cfg.ServerHost -TcpPorts $cfg.TcpPorts -UdpPorts $cfg.UdpPorts
-    Test-Firewall -Results $Results -ExePath $cfg.ClientChecks.ExePath
+    $acPath = Find-AssettoCorsa
+    Test-Firewall -Results $Results -ACPath $acPath
     Test-ACContent -Results $Results
 
     Save-Results -Results $Results

@@ -56,7 +56,7 @@ function Load-Config {
     try {
         return Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json
     } catch {
-        Write-Log "Failed to parse config at $Path: $($_.Exception.Message)" 'WARN'
+        Write-Log "Failed to parse config at $($Path): $($_.Exception.Message)" 'WARN'
         return $null
     }
 }
@@ -157,10 +157,10 @@ function Test-Network {
             $ok = $false
             if ($tnc -and ($tnc.TcpTestSucceeded -eq $true)) { $ok = $true }
             $tcpResults += [pscustomobject]@{ Port=$port; Reachable=$ok }
-            Write-Log "TCP $port => $ok" ($ok ? 'OK' : 'ERROR')
+            if ($ok) { Write-Log "TCP $port => $ok" 'OK' } else { Write-Log "TCP $port => $ok" 'ERROR' }
         } catch {
             $tcpResults += [pscustomobject]@{ Port=$port; Reachable=$false }
-            Write-Log "TCP test error on $port: $($_.Exception.Message)" 'ERROR'
+            Write-Log "TCP test error on $($port): $($_.Exception.Message)" 'ERROR'
         }
     }
     $net['TcpPorts'] = $tcpResults
@@ -178,7 +178,7 @@ function Test-Network {
             $client.Close()
         } catch { $udpOk = $false }
         $udpResults += [pscustomobject]@{ Port=$port; SentProbe=$udpOk; Note='UDP is stateless; result advisory' }
-        Write-Log "UDP $port probe sent=$udpOk (advisory)" ($udpOk ? 'OK' : 'WARN')
+        if ($udpOk) { Write-Log "UDP $port probe sent=$udpOk (advisory)" 'OK' } else { Write-Log "UDP $port probe sent=$udpOk (advisory)" 'WARN' }
     }
     $net['UdpPorts'] = $udpResults
 
@@ -199,7 +199,7 @@ function Test-Network {
         }
         if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400) { $ghOk = $true }
         $net['GitHubReachable'] = $ghOk
-        Write-Log "GitHub reachability: $ghOk" ($ghOk ? 'OK' : 'WARN')
+        if ($ghOk) { Write-Log "GitHub reachability: $ghOk" 'OK' } else { Write-Log "GitHub reachability: $ghOk" 'WARN' }
     } catch { Write-Log "GitHub reachability check failed: $($_.Exception.Message)" 'WARN' }
 
     $Results.Network = $net
@@ -267,7 +267,7 @@ function Test-Client {
             if ($ClientChecks.ExePath) { $exists = Test-Path -LiteralPath $ClientChecks.ExePath }
             $client['Exists'] = $exists
             $pass = $exists
-            Write-Log ("Client exe present: $exists at '" + $ClientChecks.ExePath + "'") ($exists ? 'OK' : 'ERROR')
+            if ($exists) { Write-Log ("Client exe present: $exists at '" + $ClientChecks.ExePath + "'") 'OK' } else { Write-Log ("Client exe present: $exists at '" + $ClientChecks.ExePath + "'") 'ERROR' }
         }
         'steam' {
             $client['SteamAppId'] = $ClientChecks.SteamAppId
@@ -279,7 +279,7 @@ function Test-Client {
             }
             $client['Installed'] = $found
             $pass = $found
-            Write-Log "Steam AppID $($ClientChecks.SteamAppId) installed: $found" ($found ? 'OK' : 'ERROR')
+            if ($found) { Write-Log "Steam AppID $($ClientChecks.SteamAppId) installed: $found" 'OK' } else { Write-Log "Steam AppID $($ClientChecks.SteamAppId) installed: $found" 'ERROR' }
         }
         default {
             $client['Note'] = 'No client validation requested'
@@ -366,7 +366,9 @@ try {
     foreach ($item in $Results.Summary) {
         $status = if ($item.Passed) { 'PASS' } else { 'FAIL' }
         if ($item.Passed) { $passCount++ } else { $failCount++ }
-        Write-Host ("- {0}: {1} — {2}" -f $item.Name, $status, $item.Detail) -ForegroundColor ($item.Passed ? 'Green' : 'Red')
+        $fg = 'Red'
+        if ($item.Passed) { $fg = 'Green' }
+        Write-Host ("- {0}: {1} — {2}" -f $item.Name, $status, $item.Detail) -ForegroundColor $fg
     }
     Write-Host ("Support bundle: {0}" -f $zip)
     Write-Host ("Log directory: {0}" -f $OutDir)

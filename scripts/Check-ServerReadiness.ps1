@@ -470,13 +470,33 @@ function Get-DiskSpace {
 function Get-CSPVersion {
     param([string]$ACPath)
     if ([string]::IsNullOrWhiteSpace($ACPath)) { return $null }
-    $dllPath = Join-Path $ACPath 'extension\dwrite.dll'
-    if (-not (Test-Path $dllPath -ErrorAction SilentlyContinue)) { return $null }
-    try {
-        $ver = (Get-Item $dllPath -ErrorAction Stop).VersionInfo.FileVersion
-        if ($ver) { return $ver }
-    } catch {}
-    return 'installed'
+    
+    # CSP can be in multiple locations
+    $cspPaths = @(
+        (Join-Path $ACPath 'extension\dwrite.dll'),
+        (Join-Path $ACPath 'dwrite.dll'),
+        (Join-Path $ACPath 'system\dwrite.dll')
+    )
+    
+    foreach ($dllPath in $cspPaths) {
+        if (Test-Path $dllPath -ErrorAction SilentlyContinue) {
+            Write-Log "Found CSP DLL at: $dllPath" 'INFO'
+            try {
+                $ver = (Get-Item $dllPath -ErrorAction Stop).VersionInfo.FileVersion
+                if ($ver) { return $ver }
+                # Try reading from version.txt if DLL version fails
+                $versionTxt = Join-Path (Split-Path $dllPath -Parent) 'version.txt'
+                if (Test-Path $versionTxt -ErrorAction SilentlyContinue) {
+                    $ver = Get-Content $versionTxt -First 1 -ErrorAction SilentlyContinue
+                    if ($ver) { return $ver.Trim() }
+                }
+            } catch {}
+            return 'installed'
+        }
+    }
+    
+    Write-Log "CSP dwrite.dll not found in: extension\, system\, or root AC folder" 'WARN'
+    return $null
 }
 
 function Compare-CSPVersion {

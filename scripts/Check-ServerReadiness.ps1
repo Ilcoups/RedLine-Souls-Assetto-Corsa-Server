@@ -1,5 +1,5 @@
 # Windows Game Server Readiness Checker
-# Version: 0.1.0
+# Version: 0.1.1 - Fixed Steam library detection and error handling
 
 param(
     [string]$ServerHost,
@@ -297,7 +297,8 @@ function Test-Firewall {
         Write-Log "Firewall profiles collected" 'OK'
     } catch { Write-Log "Firewall profile query failed: $($_.Exception.Message)" 'WARN' }
     
-    if ($ACPath) {
+    # FIXED: Check if ACPath is valid before using it
+    if (-not [string]::IsNullOrWhiteSpace($ACPath)) {
         $acsExe = Join-Path $ACPath 'acs.exe'
         if (Test-Path $acsExe -ErrorAction SilentlyContinue) {
             try {
@@ -312,7 +313,11 @@ function Test-Firewall {
                     Write-Log "Assetto Corsa has $(@($allowRules).Count) firewall allow rule(s)" 'OK'
                 }
             } catch { Write-Log "Firewall rule query failed: $($_.Exception.Message)" 'WARN' }
+        } else {
+            Write-Log "AC executable not found at expected path, skipping firewall rule check" 'WARN'
         }
+    } else {
+        Write-Log "AC installation path unknown, skipping firewall rule check" 'WARN'
     }
     $Results.Firewall = $fw
     $Results.Summary += @([pscustomobject]@{ Name='Firewall'; Passed=$pass; Detail='AC firewall rules check' })
@@ -320,49 +325,123 @@ function Test-Firewall {
 
 function Read-SteamLibraries {
     $libs = @()
+    
+    # Method 1: Registry - HKLM (32-bit Steam on 64-bit Windows)
     try {
         $steamRoot = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Valve\Steam' -Name InstallPath -ErrorAction Stop).InstallPath
         if (-not [string]::IsNullOrWhiteSpace($steamRoot)) {
             $libs += (Join-Path $steamRoot 'steamapps')
+            Write-Log "Found Steam library (HKLM): $steamRoot" 'INFO'
         }
     } catch {}
+    
+    # Method 2: Registry - HKCU
     try {
         $steamRootCU = (Get-ItemProperty -Path 'HKCU:\SOFTWARE\Valve\Steam' -Name SteamPath -ErrorAction Stop).SteamPath
         if (-not [string]::IsNullOrWhiteSpace($steamRootCU)) {
             $libs += (Join-Path $steamRootCU 'steamapps')
+            Write-Log "Found Steam library (HKCU): $steamRootCU" 'INFO'
         }
     } catch {}
+    
+    # Method 3: Check common default locations if registry failed
+    $commonPaths = @(
+        'C:\Program Files (x86)\Steam',
+        'C:\Program Files\Steam',
+        (Join-Path $env:ProgramFiles 'Steam'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Steam')
+    )
+    foreach ($path in $commonPaths) {
+        if (-not [string]::IsNullOrWhiteSpace($path)) {
+            $steamapps = Join-Path $path 'steamapps'
+            if (Test-Path $steamapps -ErrorAction SilentlyContinue) {
+                $libs += $steamapps
+                Write-Log "Found Steam library (common path): $path" 'INFO'
+            }
+        }
+    }
+    
     $libs = @($libs | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
-    # Parse libraryfolders.vdf for additional libraries
+    
+    # Method 4: Parse libraryfolders.vdf for additional libraries
     foreach ($root in $libs) {
         if ([string]::IsNullOrWhiteSpace($root)) { continue }
-        $parentPath = Split-Path $root -Parent
-        if ([string]::IsNullOrWhiteSpace($parentPath)) { continue }
-        $vdf = Join-Path $parentPath 'steamapps\libraryfolders.vdf'
+        # FIXED: libraryfolders.vdf is IN the steamapps folder, not under a parent
+        $vdf = Join-Path $root 'libraryfolders.vdf'
         if (Test-Path -LiteralPath $vdf -ErrorAction SilentlyContinue) {
             try {
                 $content = Get-Content -LiteralPath $vdf -Raw -ErrorAction Stop
-                $matches = [regex]::Matches($content, '"path"\s*"([^"]+)"')
-                foreach ($m in $matches) {
-                    $path = $m.Groups[1].Value
+                # FIXED: Handle both old and new VDF formats
+                # New format: "path" "D:\\SteamLibrary"
+                # Old format: "1" "D:\\SteamLibrary"
+                $pathMatches = [regex]::Matches($content, '"path"\s*"([^"]+)"')
+                $numMatches = [regex]::Matches($content, '"\d+"\s*"([^"]+)"')
+                
+                $allMatches = @()
+                foreach ($m in $pathMatches) { $allMatches += $m.Groups[1].Value }
+                foreach ($m in $numMatches) { 
+                    $val = $m.Groups[1].Value
+                    # Only add if it looks like a path (contains : or starts with /)
+                    if ($val -match '[:\/\\]') { $allMatches += $val }
+                }
+                
+                foreach ($path in $allMatches) {
                     if (-not [string]::IsNullOrWhiteSpace($path)) {
-                        $libs += (Join-Path $path 'steamapps')
+                        # FIXED: Handle escaped backslashes from VDF format
+                        $path = $path -replace '\\\\', '\'
+                        $steamappsPath = Join-Path $path 'steamapps'
+                        if (Test-Path $steamappsPath -ErrorAction SilentlyContinue) {
+                            $libs += $steamappsPath
+                            Write-Log "Found Steam library (VDF): $path" 'INFO'
+                        }
                     }
                 }
-            } catch {}
+            } catch {
+                Write-Log "Failed to parse VDF at $vdf : $($_.Exception.Message)" 'WARN'
+            }
         }
     }
-    return @($libs | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+    
+    # Method 5: Brute force search all fixed drives for Steam libraries (last resort)
+    # This is aggressive but ensures we find AC even in weird locations
+    try {
+        $drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -match '^[A-Z]:\\$' }
+        foreach ($drive in $drives) {
+            $possibleSteam = Join-Path $drive.Root 'SteamLibrary\steamapps'
+            if ((Test-Path $possibleSteam -ErrorAction SilentlyContinue)) {
+                $libs += $possibleSteam
+                Write-Log "Found Steam library (drive scan): $($drive.Root)SteamLibrary" 'INFO'
+            }
+            # Also check for "Steam" folder at root
+            $possibleSteam2 = Join-Path $drive.Root 'Steam\steamapps'
+            if ((Test-Path $possibleSteam2 -ErrorAction SilentlyContinue)) {
+                $libs += $possibleSteam2
+                Write-Log "Found Steam library (drive scan): $($drive.Root)Steam" 'INFO'
+            }
+        }
+    } catch {}
+    
+    $uniqueLibs = @($libs | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+    Write-Log "Total Steam libraries found: $($uniqueLibs.Count)" 'INFO'
+    return $uniqueLibs
 }
 
 function Find-AssettoCorsa {
     $libs = Read-SteamLibraries
     foreach ($lib in $libs) {
         if ([string]::IsNullOrWhiteSpace($lib)) { continue }
-        $acPath = Join-Path (Split-Path $lib -Parent) 'common\assettocorsa'
+        # Navigate up from steamapps to the Steam root, then into common
+        $steamRoot = Split-Path $lib -Parent
+        if ([string]::IsNullOrWhiteSpace($steamRoot)) { continue }
+        $commonPath = Join-Path $steamRoot 'steamapps\common'
+        $acPath = Join-Path $commonPath 'assettocorsa'
         $acsExe = Join-Path $acPath 'acs.exe'
-        if ((Test-Path $acsExe -ErrorAction SilentlyContinue)) { return $acPath }
+        if ((Test-Path $acsExe -ErrorAction SilentlyContinue)) { 
+            Write-Log "Found Assetto Corsa at: $acPath" 'OK'
+            return $acPath 
+        }
     }
+    Write-Log "Assetto Corsa installation not found in any Steam library" 'WARN'
     return $null
 }
 
@@ -666,5 +745,3 @@ catch {
     Write-Error $_
     exit 1
 }
-
-

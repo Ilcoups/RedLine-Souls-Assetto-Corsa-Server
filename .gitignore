@@ -68,3 +68,4 @@ setups/
 !BEAUTIFUL_WEATHER_GUIDE.md
 !SERVER_MANAGEMENT.md
 !*.sh
+\n# Local environment file with secrets\n.env

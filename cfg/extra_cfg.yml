@@ -7,7 +7,7 @@ MandatoryClientSecurityLevel: 0
 # Enable AFK autokick
 EnableAntiAfk: true
 # Maximum allowed AFK time before kick
-MaxAfkTimeMinutes: 10
+MaxAfkTimeMinutes: 20
 # Players might try to get around the AFK kick by doing inputs once in a while without actually driving. Set this to MinimumSpeed to autokick players idling
 AfkKickBehavior: PlayerInput
 # Maximum ping before autokick
@@ -15,42 +15,43 @@ MaxPing: 500
 # Maximum ping duration before autokick
 MaxPingSeconds: 10
 # Kick players with packet loss higher than this percentage
-KickPacketLoss: 0
+KickPacketLoss: 15
 # Force headlights on for all cars
 ForceLights: false
 # Distance for network optimizations. Players outside of this range will send less updates to reduce network traffic
-NetworkBubbleDistance: 500
+NetworkBubbleDistance: 1000
 # Refresh rate for players outside of the network bubble
 OutsideNetworkBubbleRefreshRateHz: 4
 # Enable server details in CM. Required for server description
 EnableServerDetails: true
 # Server description shown in Content Manager
 ServerDescription: |-
-  🐛 FOUND A BUG? PLEASE REPORT IT! 🐛
+  FAILD TO LOAD? PLEASE SEND MESSAGE IN DISCORD!
   This is my hobby project and I'd really appreciate your help!
-  If something's broken or weird, please report it in Discord with screenshots
-  so I know what to fix. Every bug report helps make the server better!
+  If something's broken or weird, please report it in Discord and if 
+  possible with screenshots so I know what to fix. 
+  Every bug report helps make the server better!
   Discord: https://discord.gg/YJJEGAhf
   
-  ⚠️ MINIMUM REQUIREMENTS ⚠️
+  ⚠️MINIMUM REQUIREMENTS⚠️
   CSP 0.1.78+ REQUIRED (AI traffic won't work on older versions!)
   Update your CSP: https://acstuff.ru/patch/
   
   Welcome to RedLine Souls - High-Speed Traffic Server!
   
   🚗 Features:
-  • Dense AI traffic (up to 250 cars) - 3-lane highways PACKED!
-  • Beautiful weather only (Clear, FewClouds, ScatteredClouds, BrokenClouds)
-  • Dynamic day/night cycle (4x speed)
-  • 113 km/h AI max speed - challenging but fair
-  • Lane-specific traffic density (highways vs city roads)
+  • Light AI traffic (15 cars per player, WIDE spaces, pushable on limits!)
+  • 9 stunning weather types (sunny, clouds, wind, haze - NO RAIN!)
+  • Dynamic day/night cycle (12x speed - golden hour every 60 minutes!)
+  • Wide spacing: 60-150m gaps, realistic speeds 85-110 km/h!
+  • Lane-specific traffic (fast 3-lane highways, moderate 2-lane city)
   
   📋 Rules:
-  • Drive safely - AI won't clip through you!
+  • Push Hard!
   • Respect other players
   • Have fun and enjoy the drive!
   
-  💬 Discord: https://discord.gg/YJJEGAhf
+  💬 Join Discord: https://discord.gg/YJJEGAhf
 # Link server time to real map time. DISABLED so we can control day/night cycle
 EnableRealTime: false
 # Enable new CSP weather handling. Allows rain and smooth weather transitions. Requires CSP 0.1.76+
@@ -75,14 +76,16 @@ IgnoreMissingCarData: true
 # Allow players with slightly different car physics
 IgnoreCarPhysicsMismatch: true
 # Enable CSP client messages feature. Requires CSP 0.1.77+
-EnableClientMessages: false
+EnableClientMessages: true
 # Enable CSP UDP client messages feature. Required for VR head/hand syncing. Requires CSP 0.1.80+
 EnableUdpClientMessages: false
 # Log unknown CSP Lua client messages / online events
-DebugClientMessages: false
+DebugClientMessages: true
 # Enable CSP custom position updates. This is an improved version of batched position updates, reducing network traffic even further. CSP 0.1.77+ required
+
 # DISABLED for maximum compatibility - allows CSP 0.1.60+ users to join
 EnableCustomUpdate: false
+
 # Maximum time a player can spend on the loading screen before being disconnected (INCREASED for debugging quick disconnects)
 PlayerLoadingTimeoutMinutes: 10
 # Maximum time the server will wait for a checksum response before disconnecting the player (INCREASED for debugging)
@@ -115,75 +118,65 @@ CorsAllowedOrigins:
 # Allow a user group to execute specific admin commands
 UserGroupCommandPermissions: 
 AiParams:
-  PlayerRadiusMeters: 650
-  PlayerPositionOffsetMeters: 300
-  PlayerAfkTimeoutSeconds: 10
-  MaxPlayerDistanceToAiSplineMeters: 200
-  MinSpawnDistancePoints: 80
-  MaxSpawnDistancePoints: 900
-  MinAiSafetyDistanceMeters: 12
-  MaxAiSafetyDistanceMeters: 50
-  StateSpawnDistanceMeters: 1200
-  MinStateDistanceMeters: 300
-  SpawnSafetyDistanceToPlayerMeters: 150
-  MinSpawnProtectionTimeSeconds: 10
-  MaxSpawnProtectionTimeSeconds: 20
+  PlayerRadiusMeters: 500
+  PlayerPositionOffsetMeters: 100
+  PlayerAfkTimeoutSeconds: 120
+  MaxPlayerDistanceToAiSplineMeters: 7
+  MinSpawnDistancePoints: 100
+  MaxSpawnDistancePoints: 800
+  MinAiSafetyDistanceMeters: 10
+  MaxAiSafetyDistanceMeters: 25
+  StateSpawnDistanceMeters: 600
+  MinStateDistanceMeters: 50
+  SpawnSafetyDistanceToPlayerMeters: 250
+  MinSpawnProtectionTimeSeconds: 20
+  MaxSpawnProtectionTimeSeconds: 35
   MinCollisionStopTimeSeconds: 1
-  MaxCollisionStopTimeSeconds: 2
+  MaxCollisionStopTimeSeconds: 5
   MaxSpeedKph: 95
   RightLaneOffsetKph: 18
-  MaxSpeedVariationPercent: 0.2
-  MaxPlayerCount: 35
+  MaxSpeedVariationPercent: 0.20
+  MaxPlayerCount: 27
   HideAiCars: true
-  LaneWidthMeters: 2.8
-  TwoWayTraffic: false
+
+  LaneWidthMeters: 1.9
+  
+  TwoWayTraffic: true
   WrongWayTraffic: true
   NamePrefix: Traffic
-  IgnoreObstaclesAfterSeconds: 3
+  IgnoreObstaclesAfterSeconds: 5
   IgnoreStationaryPlayers: true
-  # Minimum value: 2.1 meters (enforced by AdjacentLaneDetector). Recommended: 2.8-3.5 meters for typical roads.
-  LaneWidthMeters: 2.8
-  # Enable two way traffic. This will allow AI cars to spawn in lanes with the opposite direction of travel to the player.
-  TwoWayTraffic: false
-  # Enable traffic spawning if the player is driving the wrong way. Only takes effect when TwoWayTraffic is set to false.
-  WrongWayTraffic: true
-  # Name prefix for AI cars. Names will be in the form of '<NamePrefix> <SessionId>'
-  NamePrefix: Traffic
-  # Ignore obstacles for some time if the AI car is stopped for longer than x seconds - helps with stuck AI but not too aggressive
-  IgnoreObstaclesAfterSeconds: 3
-  # Ignore stationary players (speed < 5 km/h) as obstacles - prevents AI reacting to players in elevated pit stops
-  IgnoreStationaryPlayers: true
-  HourlyTrafficDensity: [1.05, 1.0, 0.95, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.25, 1.2, 1.2, 1.2, 1.2, 1.25, 1.25, 1.3, 1.3, 1.25, 1.2, 1.15, 1.1, 1.05]
+  HourlyTrafficDensity: [0.6, 0.5, 0.5, 0.5, 0.6, 0.9, 1.2, 1.5, 1.3, 1.2, 1.1, 1.0, 1.0, 1.0, 1.0, 1.1, 1.3, 1.5, 1.4, 1.2, 1.0, 0.9, 0.7, 0.6]
   SmoothCamber: true
   # Show debug overlay for AI cars
   Debug: false
-  # Update interval for AI spawn point finder - INCREASED for smoother AI movement!
-  AiBehaviorUpdateIntervalHz: 10
+  # Update interval for AI spawn point finder - smooth, high-frequency updates
+  AiBehaviorUpdateIntervalHz: 60
   # AI cars inside these areas will ignore all player obstacles
   IgnorePlayerObstacleSpheres: 
   # Override some settings for newly spawned cars based on the number of lanes
-  # 3-lane highways PACKED, 2-lane moderate density, 1-lane fast & light
+  # 3-lane highways FAST, 2-lane moderate speed, 1-lane light traffic
   LaneCountSpecificOverrides:
     1:
-      # Single lane roads (touge, mountain) - faster, lighter traffic
-      MinAiSafetyDistanceMeters: 25
-      MaxAiSafetyDistanceMeters: 80
-      MaxSpeedKph: 100
-      RightLaneOffsetKph: 13
-    2:
-      # 2-lane roads (C1, city) - moderate density, need to brake enough but no clipping
-      MinAiSafetyDistanceMeters: 12
-      MaxAiSafetyDistanceMeters: 45
+      # Single lane roads (touge, mountain) - VERY spacious, light traffic
+      MinAiSafetyDistanceMeters: 30
+      MaxAiSafetyDistanceMeters: 60
       MaxSpeedKph: 90
-      RightLaneOffsetKph: 18
-    3:
-      # EXTREMELY DENSE on 3-lane highways (Wangan, Yokohane) - INSANE traffic density!
-      MinAiSafetyDistanceMeters: 6
-      MaxAiSafetyDistanceMeters: 25
+      RightLaneOffsetKph: 15
+    2:
+      # 2-lane roads (C1, city) - wide spacing, realistic speeds
+      MinAiSafetyDistanceMeters: 25
+      MaxAiSafetyDistanceMeters: 45
       MaxSpeedKph: 95
-      RightLaneOffsetKph: 18
-      # Aggressive spawning for constant traffic flow
-      MinSpawnProtectionTimeSeconds: 20
+      RightLaneOffsetKph: 16
+    3:
+      # 3-lane highways (Wangan, Yokohane) - wide spacing, no clipping
+      MinAiSafetyDistanceMeters: 30
+      MaxAiSafetyDistanceMeters: 55
+      MaxSpeedKph: 115
+      RightLaneOffsetKph: 22
+      # Moderate cycling - less aggressive
+      MinSpawnProtectionTimeSeconds: 25
       MaxSpawnProtectionTimeSeconds: 40
   # Override some settings for specific car models
   CarSpecificOverrides:
@@ -196,7 +189,7 @@ AiParams:
     # AI engine max RPM
     EngineMaxRpm: 3000
     # AI car deceleration for obstacle/collision detection (m/s^2)
-    Acceleration: 2.5
+    Acceleration: 1.5
     # AI car acceleration for obstacle/collision detection (m/s^2)
     Deceleration: 8.5
     # AI cornering speed factor. Lower = AI cars will drive slower around corners.
@@ -206,7 +199,7 @@ AiParams:
     # AI cornering brake force factor. This is multiplied with Deceleration. Lower = AI cars will brake less hard for corners.
     CorneringBrakeForceFactor: 0.5
     # Tyre diameter of AI cars in meters, shouldn't have to be changed unless cars are creating lots of smoke.
-    TyreDiameterMeters: 0.8
+    TyreDiameterMeters: 0.80
     # Maximum number of AI states for a car slot of this car model
     MaxOverbooking: 1
     # Minimum time in which a newly spawned AI car cannot despawn
@@ -234,37 +227,41 @@ AiParams:
     - Left
     - Middle
     - Right
-  # Default AI car deceleration for obstacle/collision detection (m/s^2) - smoother braking
-  DefaultDeceleration: 7
-  # Default AI car acceleration for obstacle/collision detection (m/s^2) - faster recovery
-  DefaultAcceleration: 4
-  # Maximum AI car target count for AI slot overbooking. This is not an absolute maximum and might be slightly higher
-  MaxAiTargetCount: 200
-  # Number of AI cars per player the server will try to keep - reduced for better balance
-  AiPerPlayerTargetCount: 20
-  # AI spline height offset. Use this if the AI spline is too close to the ground
-  SplineHeightOffsetMeters: 0
-  # AI cornering speed factor. Lower = AI cars will drive slower around corners.
-  CorneringSpeedFactor: 0.7
+  # Default AI car deceleration for obstacle/collision detection (m/s^2) - SMOOTHER, less jerky
+  DefaultDeceleration: 5.5
+  # Default AI car acceleration for obstacle/collision detection (m/s^2) - SMOOTHER, gradual
+  DefaultAcceleration: 2.5
+  # Maximum AI car target count for AI slot overbooking - light traffic, WIDE spaces
+  MaxAiTargetCount: 2500
+  # Number of AI cars per player the server will try to keep - light, pushable
+  AiPerPlayerTargetCount: 27
+  # AI spline height offset - minimal offset
+  SplineHeightOffsetMeters: 0.01
+  # AI cornering speed factor. Lower = AI cars will drive slower around corners - CONFIDENT CORNERING
+  CorneringSpeedFactor: 0.85
   # AI cornering brake distance factor. Lower = AI cars will brake later for corners.
-  CorneringBrakeDistanceFactor: 2.5
+  CorneringBrakeDistanceFactor: 5
   # AI cornering brake force factor. This is multiplied with DefaultDeceleration. Lower = AI cars will brake less hard for corners.
-  CorneringBrakeForceFactor: 0.5
+  CorneringBrakeForceFactor: 0.3
   # Apply scale to some traffic density related settings. Increasing this DOES NOT magically increase your traffic density, it is dependent on your other settings. Values higher than 1 not recommended.
   TrafficDensity: 1
-  # Tyre diameter of AI cars in meters, shouldn't have to be changed unless some cars are creating lots of smoke.
+  # Tyre diameter of AI cars in meters - smaller diameter
   TyreDiameterMeters: 0.65
 
 ---
 !RandomWeatherConfiguration
-# Only 4 beautiful weathers - changes every 8-15 minutes for lots of variety!
+# 9 beautiful weather types - maximum visual variety with perfect conditions!
 WeatherWeights:
-  Clear: 1.0              # Sunny
-  FewClouds: 1.0          # Light clouds
-  ScatteredClouds: 1.0    # Medium clouds
-  BrokenClouds: 1.0       # More clouds
-  # Everything else disabled
-  OvercastClouds: 0.0
+  Clear: 2.0              # ☀️ Perfect sunny day - most common
+  FewClouds: 1.5          # 🌤️ Light clouds - beautiful contrast
+  ScatteredClouds: 1.5    # ⛅ Medium clouds - dynamic skies
+  BrokenClouds: 1.2       # 🌥️ Dramatic clouds - great lighting
+  OvercastClouds: 0.8     # ☁️ Soft diffused light - cinematic look
+  Windy: 1.0              # 💨 Clear + wind - adds movement to trees/flags
+  Cold: 0.6               # ❄️ Crisp clear air - sharper visibility
+  Hot: 0.8                # 🔥 Warm haze - golden hour enhanced
+  Haze: 0.4               # 🌫️ Light atmospheric haze - dreamy sunset look
+  # Bad weather disabled
   Fog: 0.0
   Mist: 0.0
   LightThunderstorm: 0.0
@@ -294,7 +291,7 @@ WeatherWeights:
   Windy: 0.0
   Hail: 0.0
 MinWeatherDurationMinutes: 8
-MaxWeatherDurationMinutes: 15
-MinTransitionDurationSeconds: 90
-MaxTransitionDurationSeconds: 150
+MaxWeatherDurationMinutes: 14
+MinTransitionDurationSeconds: 120
+MaxTransitionDurationSeconds: 180
 

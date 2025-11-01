@@ -1,0 +1,47 @@
+# Cursor AI Rules for RedLine Souls Server
+
+## 📖 Primary Reference
+**ALWAYS read `CLAUDE.md` first** - Complete technical documentation for AI assistants working on this project.
+
+## 🚫 Critical Constraints
+- User is `acserver` (NOT root) - no sudo access
+- Never suggest `sudo` commands or system package installs
+- Use `pip3 install --user` if Python packages needed (but prefer built-in modules)
+- Never commit: `.env`, `cfg/server_cfg.ini`, `logs/`, `player_stats.json`
+
+## ✅ Always Do
+- Check `CLAUDE.md` for architectural context before suggesting changes
+- Use environment variables from `.env` (never hardcode credentials)
+- Add `?wait=true` to Discord webhook POST requests (required for message editing)
+- Restart server (`./stop_server.sh && ./start_server.sh`) after AI traffic changes
+- Restart systemd service after unified_announcer.py changes: `systemctl --user restart unified-announcer.service`
+- Provide test commands with any change suggestions
+- Keep README.md user-friendly (technical details → CLAUDE.md)
+
+## 🎯 Code Patterns
+- Environment loading: Custom fallback parser (no python-dotenv)
+- Log monitoring: Seek/tell position tracking pattern
+- Discord editing: Store message_id from POST, PATCH to edit later
+- Error handling: Try/except with traceback, auto-recovery where possible
+
+## 📂 File Structure
+- Root: Main scripts, shell scripts
+- `cfg/`: Server configuration (extra_cfg.yml = AI traffic/weather)
+- `_docs/`: Human documentation
+- `_utils/`: Utility scripts
+- `logs/`: Server logs (gitignored)
+- `.env`: Secrets (gitignored, use `.env.example` as template)
+
+## 🔧 Common Tasks
+- AI traffic → `cfg/extra_cfg.yml` → restart server
+- Discord → `unified_announcer.py` → restart systemd service
+- Stats → `player_stats.py` → kill old process, restart manually
+- Logs → `./archive_old_logs.sh` (keeps 7 days, gzip compresses old)
+
+## 🧠 Context Files
+1. `CLAUDE.md` - Technical deep-dive (read first!)
+2. `README.md` - User docs (keep friendly)
+3. `.env.example` - Environment variable template
+4. `cfg/extra_cfg.yml` - Server configuration
+
+Full details in CLAUDE.md - this is just a quick reference!

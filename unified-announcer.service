@@ -1,0 +1,16 @@
+[Unit]
+Description=RedLine Souls - Unified Announcer (Discord + Chat + Audio)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/acserver/server
+ExecStart=/usr/bin/python3 -u /home/acserver/server/unified_announcer.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/acserver/server/logs/unified_announcer.log
+StandardError=append:/home/acserver/server/logs/unified_announcer_error.log
+
+[Install]
+WantedBy=multi-user.target
+

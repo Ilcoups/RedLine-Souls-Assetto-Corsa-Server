@@ -10,16 +10,51 @@ import json
 import time
 import random
 import requests
+import os
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 
+# Load environment variables from .env file
+env_path = Path('/home/acserver/server/.env')
+if env_path.exists():
+    try:
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for raw in f:
+                line = raw.strip()
+                if not line or line.startswith('#'):
+                    continue
+                if '=' in line:
+                    k, v = line.split('=', 1)
+                    k = k.strip()
+                    v = v.strip().strip('"\'')
+                    if k and v:
+                        os.environ.setdefault(k, v)
+        print("✓ Loaded environment variables from .env")
+    except Exception as e:
+        print(f"⚠ Warning: Could not load .env file: {e}")
+else:
+    print("⚠ Warning: .env file not found, using environment variables only")
+
 # Configuration
 LOG_DIR = Path("/home/acserver/server/logs")
 STATS_FILE = Path("/home/acserver/server/player_stats.json")
-DISCORD_STATS_WEBHOOK = "https://discord.com/api/webhooks/1427462778075218015/QRjTkpivsX_UgX7NhPP6-i3l4p5gPIMuYTCgqflG0Y5XF-PTpbpm0tZ_WY6lFex8jH3l"  # Chat channel
+DISCORD_STATS_WEBHOOK = os.getenv('DISCORD_STATS_WEBHOOK')
 CHECK_INTERVAL = 1.0
 LEADERBOARD_TIME = "23:59"  # Post leaderboard at 11:59 PM
+
+# Validate critical configuration
+if not DISCORD_STATS_WEBHOOK:
+    print("⚠ WARNING: DISCORD_STATS_WEBHOOK not set! Daily leaderboards will NOT be posted.")
+    print("   Set DISCORD_STATS_WEBHOOK in .env file to enable statistics posting.")
+else:
+    print(f"✓ Discord stats webhook configured")
+
+print(f"✓ Player Stats Configuration:")
+print(f"  - Stats file: {STATS_FILE}")
+print(f"  - Log directory: {LOG_DIR}")
+print(f"  - Leaderboard time: {LEADERBOARD_TIME}")
+print(f"  - Discord posting: {'Enabled' if DISCORD_STATS_WEBHOOK else 'DISABLED'}")
 
 # Stats storage structure
 stats = {
@@ -487,6 +522,10 @@ def post_leaderboard():
         return
     
     try:
+        if not DISCORD_STATS_WEBHOOK:
+            print("⚠ Discord stats webhook not configured; skipping leaderboard post")
+            return
+
         response = requests.post(DISCORD_STATS_WEBHOOK, json={"embeds": [embed]}, timeout=10)
         if response.status_code in [200, 204]:
             print("✓ Leaderboard posted to Discord")
@@ -523,17 +562,34 @@ def check_leaderboard_time():
 
 def main():
     """Main monitoring loop"""
+    import argparse
+    parser = argparse.ArgumentParser(description="Player Statistics Tracker")
+    parser.add_argument('--test-summary-now', action='store_true', help='Immediately post daily summary for testing and exit')
+    args = parser.parse_args()
+
     print("=" * 60)
     print("Player Statistics Tracker")
     print("=" * 60)
-    
+
     load_stats()
-    
+
     print(f"✓ Monitoring logs in: {LOG_DIR}")
     print(f"✓ Stats file: {STATS_FILE}")
     print(f"✓ Daily leaderboard at: {LEADERBOARD_TIME} UTC")
+
+    # Prevent repeated test summary posts using a memory flag
+    test_summary_flag_file = Path(".test_summary_flag")
+    if args.test_summary_now:
+        if test_summary_flag_file.exists():
+            print("⚠ Test summary already posted in this session. Remove .test_summary_flag to re-run.")
+            return
+        print("✓ Posting test daily summary...")
+        post_leaderboard()
+        test_summary_flag_file.write_text("posted")
+        print("✓ Test summary posted. Exiting.")
+        return
+
     print("✓ Running...")
-    
     while True:
         try:
             monitor_logs()

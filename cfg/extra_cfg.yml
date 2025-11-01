@@ -140,7 +140,7 @@ AiParams:
   MaxCollisionStopTimeSeconds: 2
   MaxSpeedKph: 95
   RightLaneOffsetKph: 18
-  MaxSpeedVariationPercent: 0.30
+  MaxSpeedVariationPercent: 0.20
   MaxPlayerCount: 35
   HideAiCars: true
 
@@ -194,7 +194,7 @@ AiParams:
   - # Car model to match for these overrides
     Model: my_car_model
     # AI spline height offset. Use this if the AI spline is too close to the ground
-    SplineHeightOffsetMeters: 0
+    SplineHeightOffsetMeters: -0.15
     # AI engine idle RPM
     EngineIdleRpm: 800
     # AI engine max RPM
@@ -246,8 +246,8 @@ AiParams:
   MaxAiTargetCount: 2500
   # Number of AI cars per player the server will try to keep - light, pushable
   AiPerPlayerTargetCount: 58
-  # AI spline height offset - raised to prevent bouncing
-  SplineHeightOffsetMeters: 0.15
+  # AI spline height offset - fine-tuned for SRP 0.9.3 to keep all traffic grounded
+  SplineHeightOffsetMeters: 0.0
   # AI cornering speed factor. Lower = AI cars will drive slower around corners - CONFIDENT
   CorneringSpeedFactor: 0.85
   # AI cornering brake distance factor. Lower = AI cars will brake later for corners.
@@ -296,11 +296,6 @@ WeatherWeights:
   Squalls: 0.0
   Tornado: 0.0
   Hurricane: 0.0
-MinWeatherDurationMinutes: 8
-MaxWeatherDurationMinutes: 14
-MinTransitionDurationSeconds: 120
-MaxTransitionDurationSeconds: 180
-  Windy: 0.0
   Hail: 0.0
 MinWeatherDurationMinutes: 8
 MaxWeatherDurationMinutes: 14

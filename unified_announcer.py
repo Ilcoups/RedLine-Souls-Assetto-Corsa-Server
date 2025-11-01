@@ -620,12 +620,32 @@ def main():
     
     try:
         while True:
-            monitor_logs()
+            try:
+                monitor_logs()
+            except FileNotFoundError as e:
+                print(f"⚠ Log file not found: {e}")
+                time.sleep(5)  # Wait longer if log file missing
+            except PermissionError as e:
+                print(f"✗ Permission error reading logs: {e}")
+                time.sleep(5)
+            except Exception as e:
+                print(f"✗ Error in monitor_logs: {e}")
+                import traceback
+                traceback.print_exc()
+                time.sleep(2)  # Brief pause before retry
+            
             time.sleep(CHECK_INTERVAL)
     except KeyboardInterrupt:
         print("\n\nShutting down...")
         if udp_socket:
             udp_socket.close()
+    except Exception as e:
+        print(f"\n✗ FATAL ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        if udp_socket:
+            udp_socket.close()
+        raise  # Re-raise so systemd can restart
 
 import sys
 def run_test():

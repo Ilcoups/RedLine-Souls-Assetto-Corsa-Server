@@ -1,3 +1,5 @@
+# Override minimum CSP version required to join this server
+MinimumCSPVersion: 2651  # CSP 0.2.0 - Required for weather, UDP messages, and custom updates
 # Enable Steam ticket validation. Requires CSP 0.1.75+ and a recent version of Content Manager
 UseSteamAuth: true
 # List of DLC App IDs that are required to join. Steam auth must be enabled. Possible values: https://steamdb.info/app/244210/dlc/
@@ -93,7 +95,8 @@ PlayerChecksumTimeoutSeconds: 120
 # Port to control the server using Source RCON protocol. 0 to disable.
 RconPort: 27015
 DebugWelcomeMessage: false
-RedactIpAddresses: false
+# Anonymize player IP addresses in logs (GDPR compliance)
+RedactIpAddresses: true
 ForceServerTrackParams: false
 EnableAlternativeCarChecksums: true
 EnableLegacyPluginInterface: true

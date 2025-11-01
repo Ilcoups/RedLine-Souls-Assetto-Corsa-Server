@@ -130,14 +130,14 @@ AiParams:
   StateSpawnDistanceMeters: 600
   MinStateDistanceMeters: 50
   SpawnSafetyDistanceToPlayerMeters: 250
-  MinSpawnProtectionTimeSeconds: 10
-  MaxSpawnProtectionTimeSeconds: 18
-  # AI stops for 2-5 seconds after collision (punishing, creates obstacles)
-  MinCollisionStopTimeSeconds: 2
-  MaxCollisionStopTimeSeconds: 5
+  MinSpawnProtectionTimeSeconds: 20
+  MaxSpawnProtectionTimeSeconds: 35
+  # AI stops for 1-2 seconds after collision (respects crashes but doesn't create long jams)
+  MinCollisionStopTimeSeconds: 1
+  MaxCollisionStopTimeSeconds: 2
   MaxSpeedKph: 95
   RightLaneOffsetKph: 18
-  MaxSpeedVariationPercent: 0.35
+  MaxSpeedVariationPercent: 0.30
   MaxPlayerCount: 35
   HideAiCars: true
 
@@ -242,13 +242,13 @@ AiParams:
   # Maximum AI car target count for AI slot overbooking - light traffic, WIDE spaces
   MaxAiTargetCount: 2500
   # Number of AI cars per player the server will try to keep - light, pushable
-  AiPerPlayerTargetCount: 55
+  AiPerPlayerTargetCount: 58
   # AI spline height offset - raised to prevent bouncing
   SplineHeightOffsetMeters: 0.15
-  # AI cornering speed factor. Lower = AI cars will drive slower around corners - AGGRESSIVE
-  CorneringSpeedFactor: 0.92
+  # AI cornering speed factor. Lower = AI cars will drive slower around corners - CONFIDENT
+  CorneringSpeedFactor: 0.85
   # AI cornering brake distance factor. Lower = AI cars will brake later for corners.
-  CorneringBrakeDistanceFactor: 3
+  CorneringBrakeDistanceFactor: 5
   # AI cornering brake force factor. This is multiplied with DefaultDeceleration. Lower = AI cars will brake less hard for corners.
   CorneringBrakeForceFactor: 0.3
   # Apply scale to some traffic density related settings. Increasing this DOES NOT magically increase your traffic density, it is dependent on your other settings. Values higher than 1 not recommended.

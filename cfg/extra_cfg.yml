@@ -121,16 +121,16 @@ CorsAllowedOrigins:
 # Allow a user group to execute specific admin commands
 UserGroupCommandPermissions: 
 AiParams:
-  PlayerRadiusMeters: 450
+  PlayerRadiusMeters: 700
   PlayerPositionOffsetMeters: 100
   # If player is AFK/stationary for 3 seconds, traffic ignores them (NO TRAFFIC JAMS!)
   PlayerAfkTimeoutSeconds: 3
   MaxPlayerDistanceToAiSplineMeters: 7
-  MinSpawnDistancePoints: 150
+  MinSpawnDistancePoints: 220
   MaxSpawnDistancePoints: 850
-  MinAiSafetyDistanceMeters: 55
-  MaxAiSafetyDistanceMeters: 100
-  StateSpawnDistanceMeters: 600
+  MinAiSafetyDistanceMeters: 35
+  MaxAiSafetyDistanceMeters: 85
+  StateSpawnDistanceMeters: 900
   MinStateDistanceMeters: 50
   SpawnSafetyDistanceToPlayerMeters: 250
   MinSpawnProtectionTimeSeconds: 20
@@ -139,7 +139,7 @@ AiParams:
   MinCollisionStopTimeSeconds: 1
   MaxCollisionStopTimeSeconds: 2
   MaxSpeedKph: 95
-  RightLaneOffsetKph: 18
+  RightLaneOffsetKph: 22
   MaxSpeedVariationPercent: 0.20
   MaxPlayerCount: 35
   HideAiCars: true
@@ -157,8 +157,8 @@ AiParams:
   SmoothCamber: true
   # Show debug overlay for AI cars
   Debug: false
-  # Update interval for AI spawn point finder - smooth, high-frequency updates
-  AiBehaviorUpdateIntervalHz: 60
+  # Update interval for AI spawn point finder - balanced frequency
+  AiBehaviorUpdateIntervalHz: 12
   # AI cars inside these areas will ignore ALL player obstacles (perfect for pit/parking areas)
   # Heiwajima PA pit area - traffic drives through parked/AFK players
   IgnorePlayerObstacleSpheres:
@@ -169,26 +169,26 @@ AiParams:
   # 3-lane highways FAST, 2-lane moderate speed, 1-lane light traffic
   LaneCountSpecificOverrides:
     1:
-      # Single lane roads (touge, mountain) - VERY spacious, light traffic
-      MinAiSafetyDistanceMeters: 50
-      MaxAiSafetyDistanceMeters: 90
+      # Single lane roads (touge, mountain) - light traffic, natural spacing
+      MinAiSafetyDistanceMeters: 32
+      MaxAiSafetyDistanceMeters: 78
       MaxSpeedKph: 90
-      RightLaneOffsetKph: 15
+      RightLaneOffsetKph: 18
     2:
-      # 2-lane roads (C1, city) - wide spacing, realistic speeds
-      MinAiSafetyDistanceMeters: 65
-      MaxAiSafetyDistanceMeters: 100
+      # 2-lane roads (C1, city) - balanced spacing, realistic speeds
+      MinAiSafetyDistanceMeters: 34
+      MaxAiSafetyDistanceMeters: 82
       MaxSpeedKph: 99
-      RightLaneOffsetKph: 19
+      RightLaneOffsetKph: 21
     3:
-      # 3-lane highways (Wangan, Yokohane) - wide spacing, no clipping
-      MinAiSafetyDistanceMeters: 50
-      MaxAiSafetyDistanceMeters: 100
+      # 3-lane highways (Wangan, Yokohane) - smooth flow, good spacing
+      MinAiSafetyDistanceMeters: 37
+      MaxAiSafetyDistanceMeters: 88
       MaxSpeedKph: 115
-      RightLaneOffsetKph: 22
-      # Moderate cycling - less aggressive
-      MinSpawnProtectionTimeSeconds: 25
-      MaxSpawnProtectionTimeSeconds: 40
+      RightLaneOffsetKph: 24
+      # Moderate cycling
+      MinSpawnProtectionTimeSeconds: 22
+      MaxSpawnProtectionTimeSeconds: 38
   # Override some settings for specific car models
   CarSpecificOverrides:
   - # Car model to match for these overrides
@@ -242,10 +242,10 @@ AiParams:
   DefaultDeceleration: 5.0
   # Default AI car acceleration for obstacle/collision detection (m/s^2) - FASTER RECOVERY
   DefaultAcceleration: 4.5
-  # Maximum AI car target count for AI slot overbooking - light traffic, WIDE spaces
-  MaxAiTargetCount: 2500
-  # Number of AI cars per player the server will try to keep - light, pushable
-  AiPerPlayerTargetCount: 58
+  # Maximum AI car target count for AI slot overbooking - spacious traffic
+  MaxAiTargetCount: 1200
+  # Number of AI cars per player the server will try to keep - spacious, pushable
+  AiPerPlayerTargetCount: 50
   # AI spline height offset - fine-tuned for SRP 0.9.3 to keep all traffic grounded
   SplineHeightOffsetMeters: 0.0
   # AI cornering speed factor. Lower = AI cars will drive slower around corners - CONFIDENT
@@ -254,8 +254,8 @@ AiParams:
   CorneringBrakeDistanceFactor: 5
   # AI cornering brake force factor. This is multiplied with DefaultDeceleration. Lower = AI cars will brake less hard for corners.
   CorneringBrakeForceFactor: 0.3
-  # Apply scale to some traffic density related settings. Increasing this DOES NOT magically increase your traffic density, it is dependent on your other settings. Values higher than 1 not recommended.
-  TrafficDensity: 0.95
+  # Apply scale to some traffic density related settings. Lower = wider spacing
+  TrafficDensity: 0.90
   # Tyre diameter of AI cars in meters - default value
   TyreDiameterMeters: 0.65
 

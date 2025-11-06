@@ -136,19 +136,22 @@ def update_player_name(steam_id, name):
             stats[period][steam_id]["name"] = name
 
 def record_collision(steam_id, speed=None):
-    """Record a collision for a player"""
+    """Record a collision for a player (only significant impacts >= 30 km/h)"""
+    # Filter out minor bumps/road surface contact (< 30 km/h)
+    if speed is None or speed < 30:
+        return
+    
     for period in ["all_time", "daily"]:
         player = get_player_stats(steam_id, period)
         player["collisions"] += 1
-        # Only record speed if it's meaningful (above 60 km/h)
-        if speed and speed >= 60:
-            if speed > player["max_speed"]:
-                player["max_speed"] = speed
+        # Track max speed from collision data (only source available)
+        if speed > player["max_speed"]:
+            player["max_speed"] = speed
     save_stats()
 
 def record_speed(steam_id, speed):
-    """Record a speed measurement (only if above 60 km/h)"""
-    if speed < 60:
+    """Record a speed measurement (only if above 30 km/h to filter noise)"""
+    if speed < 30:
         return
     for period in ["all_time", "daily"]:
         player = get_player_stats(steam_id, period)

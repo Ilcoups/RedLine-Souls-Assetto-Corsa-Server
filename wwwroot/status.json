@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-11-06T20:50:01.400714+00:00",
+  "server": {
+    "name": "RedLine Souls",
+    "status": "online",
+    "track": "Shuto Revival Project",
+    "max_players": 35
+  },
+  "online": {
+    "count": 0,
+    "players": []
+  },
+  "today": {
+    "unique_players": 8,
+    "total_crashes": 201
+  }
+}

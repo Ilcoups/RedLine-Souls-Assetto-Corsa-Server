@@ -121,13 +121,14 @@ def get_player_stats(steam_id, period="all_time"):
         stats[period][steam_id] = {
             "name": "Unknown",
             "collisions": 0,
-            "playtime": 0,  # seconds
+            "playtime": 0,
             "max_speed": 0,
+            "speeds": [],
             "join_count": 0,
             "last_seen": None,
-            "checksum_fails": 0,
+            "streak": 0,
+            "last_streak_date": None
         }
-    return stats[period][steam_id]
 
 def update_player_name(steam_id, name):
     """Update player name in both all-time and daily stats"""
@@ -169,6 +170,24 @@ def record_join(steam_id, name):
         player["name"] = name
         player["join_count"] += 1
         player["last_seen"] = datetime.now(timezone.utc).isoformat()
+        
+        # Update streak (all_time only)
+        if period == "all_time":
+            today = datetime.now(timezone.utc).date().isoformat()
+            last_date = player.get("last_streak_date")
+            
+            if last_date:
+                last = datetime.fromisoformat(last_date).date()
+                yesterday = (datetime.now(timezone.utc).date() - timedelta(days=1))
+                
+                if last == yesterday:
+                    player["streak"] += 1
+                elif last.isoformat() != today:
+                    player["streak"] = 1
+            else:
+                player["streak"] = 1
+                
+            player["last_streak_date"] = today
     
     save_stats()
 
@@ -388,7 +407,7 @@ def generate_leaderboard():
         }
     }
     
-    # Most Active (playtime) - with medals
+    # Most Active (playtime) - with medals and streaks
     if by_playtime:
         field_value = ""
         medals = ["🥇", "🥈", "🥉"]
@@ -397,7 +416,12 @@ def generate_leaderboard():
             playtime = format_time(data.get("playtime", 0))
             steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
             medal = medals[i-1] if i <= 3 else f"**{i}.**"
-            field_value += f"{medal} {steam_link} - {playtime}\n"
+            
+            # Show streak if > 1
+            streak = stats["all_time"].get(steam_id, {}).get("streak", 0)
+            streak_display = f" 🔥{streak}" if streak > 1 else ""
+            
+            field_value += f"{medal} {steam_link} - {playtime}{streak_display}\n"
         embed["fields"].append({
             "name": "⏱️ NO-LIFERS OF THE DAY",
             "value": field_value or "No data",
@@ -421,7 +445,7 @@ def generate_leaderboard():
             comment = speed_comments.get(i, "")
             field_value += f"**{i}.** {steam_link} - **{max_speed:.0f} km/h** {comment}\n"
         embed["fields"].append({
-            "name": "🚀 SPEED DEMONS - WHO WENT FULL SEND",
+            "name": "� HARDEST HITTERS - FASTEST CRASH SPEEDS",
             "value": field_value or "No data",
             "inline": False
         })
@@ -458,12 +482,25 @@ def generate_leaderboard():
             4: "🚧 CONSTRUCTION WORKER",
             5: "📍 GPS TO EVERY BARRIER"
         }
+        
+        # Crash of the Day - highest impact
+        crash_king = by_collisions[0]
+        crash_king_name = crash_king[1].get('name', 'Unknown')
+        crash_king_collisions = crash_king[1].get('collisions', 0)
+        crash_king_link = f"[{crash_king_name}](https://steamcommunity.com/profiles/{crash_king[0]})"
+        
         for i, (steam_id, data) in enumerate(by_collisions[:5], 1):
             name = data.get("name", "Unknown")
             collisions = data.get("collisions", 0)
             steam_link = f"[{name}](https://steamcommunity.com/profiles/{steam_id})"
             roast = crash_roasts.get(i, "💥")
-            field_value += f"**{i}.** {steam_link} - {collisions} crashes {roast}\n"
+            
+            # Highlight crash king
+            if i == 1:
+                field_value += f"👑 **{steam_link}** - **{collisions} crashes** {roast}\n"
+            else:
+                field_value += f"**{i}.** {steam_link} - {collisions} crashes {roast}\n"
+                
         embed["fields"].append({
             "name": "💥 WALL HUNTERS - HALL OF SHAME",
             "value": field_value or "No data",
@@ -484,7 +521,7 @@ def generate_leaderboard():
         fastest_name = fastest[1].get('name', 'Unknown')
         fastest_speed = fastest[1].get('max_speed', 0)
         fastest_link = f"[{fastest_name}](https://steamcommunity.com/profiles/{fastest[0]})"
-        fun_stats += f"\n🏁 **Fastest recorded:** {fastest_speed:.0f} km/h by {fastest_link}\n"
+        fun_stats += f"\n💥 **Hardest impact:** {fastest_speed:.0f} km/h by {fastest_link}\n"
     
     if unique_players > 0:
         avg_crashes = total_collisions / unique_players

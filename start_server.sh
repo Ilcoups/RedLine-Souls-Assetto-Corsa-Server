@@ -9,6 +9,7 @@ echo "🏁 Starting RedLine Souls Server..."
 # Kill any existing instances
 pkill -f AssettoServer
 pkill -f player_stats
+pkill -f overtake_tracker
 sleep 1
 
 # Start server in background
@@ -28,6 +29,11 @@ fi
 nohup python3 player_stats.py > stats_tracker.log 2>&1 &
 STATS_PID=$!
 echo "✓ Player Stats started (PID: $STATS_PID)"
+
+# Start overtake tracker
+nohup python3 -u overtake_tracker.py > overtake_tracker.log 2>&1 &
+OVERTAKE_PID=$!
+echo "✓ Overtake Tracker started (PID: $OVERTAKE_PID)"
 
 # Start audio HTTP server if not running
 if ! pgrep -f "python3 -m http.server 8082" >/dev/null 2>&1; then

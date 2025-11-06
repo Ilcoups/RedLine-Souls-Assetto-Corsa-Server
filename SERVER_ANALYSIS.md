@@ -140,16 +140,17 @@ if speed > player["max_speed"]:
 
 ### **Category B: Medium Effort, High Reward**
 
-#### 5. **Live Crash Replays** 🌟🌟🌟🌟
-**What:** Save crash replays automatically
+#### 5. **Live Crash Replays** 🌟🌟🌟🌟 ❌ **NOT FEASIBLE**
+**What:** Auto-record crash videos and post to Discord
 **Why:** Hilarious content, community engagement
-**How:**
-- AssettoServer has replay functionality
-- Trigger replay save on high-speed crashes (>100 km/h)
-- Upload to Discord or web storage
-- Post link with crash notification
-**Effort:** Medium | **Impact:** High | **Cool Factor:** 🔥🔥🔥🔥
-**Requirement:** Check AssettoServer plugin capabilities
+**Reality Check:**
+- ❌ Would need to convert `.acreplay` → video
+- ❌ Requires AC running with GPU for rendering
+- ❌ Server is headless Linux (no graphics)
+- ❌ Would need: camera angle automation, video encoding, timing sync
+- ❌ File size limits on Discord
+**Effort:** Very High (1-2 weeks) | **Feasibility:** Not possible on current hardware
+**Alternative:** Save replay files for manual download by players
 
 #### 6. **Geographic Heatmap** 🌟🌟🌟
 **What:** Visualize where crashes happen on the map
@@ -228,6 +229,18 @@ if speed > player["max_speed"]:
 
 ## 🛠️ QUICK WINS (Can Do Today!)
 
+### **0. FIX: Rename "Max Speed" to "Fastest Crash"** (5 minutes) ⚠️
+Be honest about what we're tracking:
+```python
+# In player_stats.py leaderboard
+"🚀 SPEED DEMONS - WHO WENT FULL SEND"
+# Change to:
+"💥 HARDEST HITTERS - FASTEST CRASH SPEEDS"
+
+# And clarify:
+"**{max_speed:.0f} km/h** impact speed"
+```
+
 ### **1. Enhanced Discord Embeds** (15 minutes)
 Add more flair to existing messages:
 - Add car emoji based on car type
@@ -286,10 +299,24 @@ Add personality to weather changes:
    - Cars being driven
 
 ### **Untapped Data:**
-- Position/lap data (could enable sector times)
-- Weather transitions
-- Peak concurrent players (could track)
-- Player interactions (close calls, drafting)
+- Position/lap data (could enable sector times) - **Need to check if available**
+- Weather transitions - **Logged but not parsed**
+- Peak concurrent players - **Could track this**
+- Player interactions (close calls, drafting) - **Would need position data**
+- **TRUE top speed** - ⚠️ Currently NOT tracked!
+
+### **⚠️ IMPORTANT: Speed Tracking Limitation**
+**Current Status:** We only track **collision speed**, NOT actual top speed!
+- Logs show: `Collision... rel. speed 121km/h`
+- This is collision impact speed, not player's max cruising speed
+- "Max Speed" in leaderboard is actually "Fastest Crash Speed"
+
+**To track true top speed, we would need:**
+1. Position update logs (check if AssettoServer supports)
+2. UDP telemetry capture from CSP packets
+3. Or accept current limitation and rename field to be honest
+
+**Recommendation:** Rename to "Fastest Crash" to avoid confusion
 
 ---
 
@@ -307,14 +334,19 @@ Add personality to weather changes:
 2. 🔧 Weekly summary reports
 3. 🔧 Achievement system (basic)
 4. 🔧 Crash location heatmap
-5. 🔧 New player welcome DM
+5. 🔧 True top speed tracking (requires telemetry capture)
 
 ### **ADVANCED (1-3 days)**
-1. 🚀 Live crash replay saves
-2. 🚀 Time trial system
-3. 🚀 AI traffic events
-4. 🚀 Voice chat integration
-5. 🚀 Twitch integration
+1. 🚀 Time trial system
+2. 🚀 AI traffic events
+3. 🚀 Voice chat integration
+4. 🚀 Twitch integration
+5. 🚀 Replay file auto-save (for manual viewing)
+
+### **NOT FEASIBLE (Current Hardware)**
+1. ❌ Auto-generated crash videos (needs GPU)
+2. ❌ Real-time video streaming (needs GPU)
+3. ❌ VR support (needs GPU)
 
 ### **LONG-TERM (Weeks)**
 1. 🌟 Full economy system

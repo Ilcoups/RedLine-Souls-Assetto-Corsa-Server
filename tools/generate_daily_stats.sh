@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # generate_daily_stats.sh
 # Extract connection statistics from server logs for a given date (default: yesterday)
+# Runs daily at 23:59 UTC via systemd timer (same time as player_stats.py leaderboard)
 
 set -euo pipefail
 

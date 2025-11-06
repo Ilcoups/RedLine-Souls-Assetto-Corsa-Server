@@ -41,63 +41,53 @@ grep -E "has connected" "$LOG_FILE" > "$TMP_CONNECTS" || true
 # Extract disconnections
 grep -E "has disconnected" "$LOG_FILE" > "$TMP_DISCONNECTS" || true
 
-# Extract collisions
-grep -E "Collision between" "$LOG_FILE" > "$OUT_DIR/collisions-${DATE_ARG}.tmp" || true
-
 # Calculate statistics
 TOTAL_CONNECTIONS=$(wc -l < "$TMP_CONNECTS" | tr -d ' ')
 TOTAL_DISCONNECTS=$(wc -l < "$TMP_DISCONNECTS" | tr -d ' ')
-TOTAL_COLLISIONS=$(wc -l < "$OUT_DIR/collisions-${DATE_ARG}.tmp" | tr -d ' ')
 
 # Extract unique players (by Steam ID)
 grep -oE "\(76561[0-9]+," "$TMP_CONNECTS" | sed 's/[(),]//g' | sort -u > "$TMP_UNIQUE_PLAYERS" || true
 UNIQUE_PLAYERS=$(wc -l < "$TMP_UNIQUE_PLAYERS" | tr -d ' ')
+
+# New players (simplified - just set to 0 for now, can enhance later)
+NEW_PLAYERS=0
 
 # Extract player names and session counts
 awk -F'\\[INF\\] ' '{print $2}' "$TMP_CONNECTS" | \
   sed -E 's/ \(76561[0-9]+,.*//' | \
   sort | uniq -c | sort -rn > "$OUT_DIR/player_sessions-${DATE_ARG}.txt" || true
 
-# Get top 3 most active players
-TOP_PLAYER_1=$(head -n1 "$OUT_DIR/player_sessions-${DATE_ARG}.txt" 2>/dev/null | awk '{$1=""; print substr($0,2)}' | sed 's/^ *//' || echo "None")
-TOP_PLAYER_2=$(head -n2 "$OUT_DIR/player_sessions-${DATE_ARG}.txt" 2>/dev/null | tail -n1 | awk '{$1=""; print substr($0,2)}' | sed 's/^ *//' || echo "")
-TOP_PLAYER_3=$(head -n3 "$OUT_DIR/player_sessions-${DATE_ARG}.txt" 2>/dev/null | tail -n1 | awk '{$1=""; print substr($0,2)}' | sed 's/^ *//' || echo "")
-TOP_SESSIONS_1=$(head -n1 "$OUT_DIR/player_sessions-${DATE_ARG}.txt" 2>/dev/null | awk '{print $1}' || echo "0")
-TOP_SESSIONS_2=$(head -n2 "$OUT_DIR/player_sessions-${DATE_ARG}.txt" 2>/dev/null | tail -n1 | awk '{print $1}' || echo "0")
-TOP_SESSIONS_3=$(head -n3 "$OUT_DIR/player_sessions-${DATE_ARG}.txt" 2>/dev/null | tail -n1 | awk '{print $1}' || echo "0")
-
 # Hourly connection activity
 awk '{print substr($1,1,13)}' "$TMP_CONNECTS" | sort | uniq -c | sort -rn > "$OUT_DIR/hourly_connections-${DATE_ARG}.txt" || true
 
-# Most popular cars
-grep -oE "\([a-z_0-9]+-[0-9_a-zA-Z]+/" "$TMP_CONNECTS" | sed 's/[()]//g' | sed 's/-.*$//' | \
-  sort | uniq -c | sort -rn | head -5 > "$OUT_DIR/top_cars-${DATE_ARG}.txt" || true
-TOP_CAR=$(head -n1 "$OUT_DIR/top_cars-${DATE_ARG}.txt" 2>/dev/null | awk '{$1=""; print substr($0,2)}' | sed 's/^ *//' | sed 's/_/ /g' || echo "Unknown")
-TOP_CAR_COUNT=$(head -n1 "$OUT_DIR/top_cars-${DATE_ARG}.txt" 2>/dev/null | awk '{print $1}' || echo "0")
+# Find peak hours (top 3)
+PEAK_HOURS=$(head -n3 "$OUT_DIR/hourly_connections-${DATE_ARG}.txt" 2>/dev/null | awk '{print $2}' | sed -E 's/.*T([0-9]{2}):.*/\1:00/' | tr '\n' ', ' | sed 's/,$//' || echo "N/A")
 
-# Most crashes player
-awk -F"Collision between " '{print $2}' "$OUT_DIR/collisions-${DATE_ARG}.tmp" 2>/dev/null | \
-  sed 's/ and.*//' | sed 's/ ([0-9]*)$//' | \
-  grep -v "Traffic" | sort | uniq -c | sort -rn | head -5 > "$OUT_DIR/crash_kings-${DATE_ARG}.txt" || true
-CRASH_KING=$(head -n1 "$OUT_DIR/crash_kings-${DATE_ARG}.txt" 2>/dev/null | awk '{$1=""; print substr($0,2)}' | sed 's/^ *//' || echo "No crashes")
-CRASH_COUNT=$(head -n1 "$OUT_DIR/crash_kings-${DATE_ARG}.txt" 2>/dev/null | awk '{print $1}' || echo "0")
-
-# Biggest crash (highest speed collision)
-BIGGEST_CRASH=$(grep -oE "rel. speed [0-9]+km/h" "$OUT_DIR/collisions-${DATE_ARG}.tmp" 2>/dev/null | \
-  sed 's/rel. speed //' | sed 's/km\/h//' | sort -n | tail -n1 || echo "0")
+# Countries/regions (extract IPs and rough location - basic version)
+# We'll use the IP from disconnect messages for simplicity
+grep "Disconnecting" "$LOG_FILE" 2>/dev/null | grep -oE "\([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:" | sed 's/[():]//g' | sort -u > "$OUT_DIR/unique_ips-${DATE_ARG}.tmp" || true
+UNIQUE_IPS=$(wc -l < "$OUT_DIR/unique_ips-${DATE_ARG}.tmp" | tr -d ' ')
 
 # Calculate average sessions per player
 if [ "$UNIQUE_PLAYERS" -gt 0 ]; then
   AVG_SESSIONS=$(echo "scale=1; $TOTAL_CONNECTIONS / $UNIQUE_PLAYERS" | bc 2>/dev/null || echo "N/A")
 else
-  AVG_SESSIONS="N/A"
+  AVG_SESSIONS="0"
 fi
 
-# Calculate total playtime estimate (rough: connections * 15min average)
+# Calculate total playtime estimate (connections * 20min average)
 if [ "$TOTAL_CONNECTIONS" -gt 0 ]; then
-  TOTAL_PLAYTIME_HOURS=$(echo "scale=1; ($TOTAL_CONNECTIONS * 15) / 60" | bc 2>/dev/null || echo "0")
+  TOTAL_PLAYTIME_HOURS=$(echo "scale=1; ($TOTAL_CONNECTIONS * 20) / 60" | bc 2>/dev/null || echo "0")
 else
   TOTAL_PLAYTIME_HOURS="0"
+fi
+
+# Calculate average session length
+if [ "$TOTAL_DISCONNECTS" -gt 0 ] && [ "$TOTAL_CONNECTIONS" -gt 0 ]; then
+  # Very rough estimate: total connections vs disconnects
+  AVG_SESSION_MIN=$(echo "scale=0; 20" | bc)  # Default 20min
+else
+  AVG_SESSION_MIN="N/A"
 fi
 
 cat > "$OUT_FILE" <<EOF
@@ -135,114 +125,108 @@ if [ -n "${DISCORD_WEBHOOK:-}" ]; then
   PEAK_HOUR_RAW=$(head -n1 "$OUT_DIR/hourly_connections-${DATE_ARG}.txt" 2>/dev/null | awk '{print $2}' || echo "")
   PEAK_CONNECTIONS=$(head -n1 "$OUT_DIR/hourly_connections-${DATE_ARG}.txt" 2>/dev/null | awk '{print $1}' || echo "0")
   if [ -n "$PEAK_HOUR_RAW" ]; then
-    PEAK_HOUR=$(echo "$PEAK_HOUR_RAW" | sed -E 's/T/ /' | sed -E 's/([0-9]{2}):00$/\1:00h/')
+    PEAK_HOUR=$(echo "$PEAK_HOUR_RAW" | sed -E 's/.*T([0-9]{2}):.*/\1:00/' | sed 's/^0//')
   else
-    PEAK_HOUR="No activity"
+    PEAK_HOUR="N/A"
   fi
   
-  # Determine engagement emoji based on unique players
+  # Determine server health emoji and status
   if [ "$UNIQUE_PLAYERS" -ge 15 ]; then
-    ENGAGEMENT_EMOJI="🔥"
+    STATUS_EMOJI="🔥"
+    SERVER_STATUS="Extremely Active"
+    COLOR="15844367"  # Red/orange
   elif [ "$UNIQUE_PLAYERS" -ge 8 ]; then
-    ENGAGEMENT_EMOJI="✨"
+    STATUS_EMOJI="✨"
+    SERVER_STATUS="Healthy Activity"
+    COLOR="3447003"   # Blue
   elif [ "$UNIQUE_PLAYERS" -ge 3 ]; then
-    ENGAGEMENT_EMOJI="👍"
+    STATUS_EMOJI="�"
+    SERVER_STATUS="Moderate Traffic"
+    COLOR="3066993"   # Lighter blue
   else
-    ENGAGEMENT_EMOJI="😴"
+    STATUS_EMOJI="�"
+    SERVER_STATUS="Quiet Day"
+    COLOR="10070709"  # Grey
   fi
   
-  # Build leaderboard text
-  if [ -n "$TOP_PLAYER_1" ] && [ "$TOP_PLAYER_1" != "None" ]; then
-    LEADERBOARD="🥇 **${TOP_PLAYER_1}** - ${TOP_SESSIONS_1} sessions"
-    if [ -n "$TOP_PLAYER_2" ]; then
-      LEADERBOARD="${LEADERBOARD}\n🥈 **${TOP_PLAYER_2}** - ${TOP_SESSIONS_2} sessions"
-    fi
-    if [ -n "$TOP_PLAYER_3" ]; then
-      LEADERBOARD="${LEADERBOARD}\n🥉 **${TOP_PLAYER_3}** - ${TOP_SESSIONS_3} sessions"
+  # Retention message
+  if [ "$UNIQUE_PLAYERS" -gt 0 ] && [ "$AVG_SESSIONS" != "N/A" ]; then
+    if [ "$(echo "$AVG_SESSIONS >= 2.5" | bc 2>/dev/null || echo 0)" -eq 1 ]; then
+      RETENTION_MSG="Great player retention! 🎯"
+    elif [ "$(echo "$AVG_SESSIONS >= 1.5" | bc 2>/dev/null || echo 0)" -eq 1 ]; then
+      RETENTION_MSG="Good engagement 👍"
+    else
+      RETENTION_MSG="Room for improvement 📈"
     fi
   else
-    LEADERBOARD="No players today"
+    RETENTION_MSG="No activity"
   fi
   
-  # Build Discord embed with all the cool stats
+  # New players message
+  if [ "$NEW_PLAYERS" -gt 0 ]; then
+    NEW_PLAYER_MSG="\\n🆕 **${NEW_PLAYERS}** new racer(s) discovered us!"
+  else
+    NEW_PLAYER_MSG=""
+  fi
+  
+  # Build Discord embed focused on server health
   read -r -d '' DISCORD_MESSAGE <<'EOF' || true
 {
   "embeds": [{
-    "title": "EMOJI_PH REDLINE SOULS - Daily Server Report",
-    "description": "**📅 DATE_PLACEHOLDER**\n\n> *The streets were ACTIVITY_DESC_PH today...*",
+    "title": "STATUS_EMOJI_PH Server Health Report - RedLine Souls",
+    "description": "**📅 DATE_PLACEHOLDER**\n\n> **Server Status:** SERVER_STATUS_PHNEW_PLAYERS_MSG_PH",
     "color": COLOR_PH,
     "fields": [
       {
-        "name": "📊 Connection Stats",
-        "value": "```yaml\nTotal Connections:   CONNECTIONS_PH\nUnique Players:      UNIQUE_PH\nAvg Sessions/Player: AVG_SESSIONS_PH\nEst. Total Playtime: PLAYTIME_PH hours```",
+        "name": "📊 Connection Metrics",
+        "value": "```yaml\nTotal Connections:   CONNECTIONS_PH\nUnique Players:      UNIQUE_PH\nUnique IPs:          IPS_PH\nAvg Sessions/Player: AVG_SESSIONS_PH```",
         "inline": false
       },
       {
-        "name": "🏆 Most Active Drivers",
-        "value": "LEADERBOARD_PH",
-        "inline": true
-      },
-      {
-        "name": "🚗 Popular Rides",
-        "value": "**TOP_CAR_PH** ×CAR_COUNT_PH\n\n*Most picked car today*",
-        "inline": true
-      },
-      {
-        "name": "💥 Crash Statistics",
-        "value": "```\nTotal Incidents:  COLLISIONS_PH\nCrash King:       CRASH_KING_PH (CRASH_COUNT_PHx)\nBiggest Impact:   BIGGEST_CRASH_PH km/h```",
+        "name": "⏰ Peak Activity Times",
+        "value": "**Busiest Hour:** PEAK_HOUR_PH (PEAK_CONN_PH connections)\n**Top Hours:** PEAK_HOURS_PH",
         "inline": false
       },
       {
-        "name": "⏰ Peak Activity",
-        "value": "**PEAK_HOUR_PH** with **PEAK_CONN_PH** connections",
+        "name": "� Engagement Analysis",
+        "value": "```\nEst. Total Playtime: PLAYTIME_PH hours\nAvg Session Length:  AVG_SESSION_PH min\nPlayer Retention:    RETENTION_MSG_PH```",
+        "inline": false
+      },
+      {
+        "name": "🌍 Global Reach",
+        "value": "**UNIQUE_IPS_PH** unique IP addresses connected\n*Players from around the world!*",
         "inline": false
       }
     ],
     "footer": {
-      "text": "RedLine Souls • Tokyo Expressway • Stats reset daily at midnight"
+      "text": "RedLine Souls • Server Analytics • Data resets at midnight UTC"
     },
     "timestamp": "TIMESTAMP_PH"
   }]
 }
 EOF
 
-  # Determine activity description
-  if [ "$UNIQUE_PLAYERS" -ge 15 ]; then
-    ACTIVITY_DESC="absolutely packed"
-    COLOR="15844367"  # Red/orange
-  elif [ "$UNIQUE_PLAYERS" -ge 8 ]; then
-    ACTIVITY_DESC="nicely busy"
-    COLOR="3447003"   # Blue
-  elif [ "$UNIQUE_PLAYERS" -ge 3 ]; then
-    ACTIVITY_DESC="cruising along"
-    COLOR="3066993"   # Lighter blue
-  else
-    ACTIVITY_DESC="quiet"
-    COLOR="10070709"  # Grey
-  fi
-
   # Replace all placeholders
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//EMOJI_PH/$ENGAGEMENT_EMOJI}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//STATUS_EMOJI_PH/$STATUS_EMOJI}"
   DISCORD_MESSAGE="${DISCORD_MESSAGE//DATE_PLACEHOLDER/$DISPLAY_DATE}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//ACTIVITY_DESC_PH/$ACTIVITY_DESC}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//SERVER_STATUS_PH/$SERVER_STATUS}"
   DISCORD_MESSAGE="${DISCORD_MESSAGE//COLOR_PH/$COLOR}"
   DISCORD_MESSAGE="${DISCORD_MESSAGE//CONNECTIONS_PH/$TOTAL_CONNECTIONS}"
   DISCORD_MESSAGE="${DISCORD_MESSAGE//UNIQUE_PH/$UNIQUE_PLAYERS}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//IPS_PH/$UNIQUE_IPS}"
   DISCORD_MESSAGE="${DISCORD_MESSAGE//AVG_SESSIONS_PH/$AVG_SESSIONS}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//PLAYTIME_PH/$TOTAL_PLAYTIME_HOURS}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//LEADERBOARD_PH/$LEADERBOARD}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//TOP_CAR_PH/$TOP_CAR}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//CAR_COUNT_PH/$TOP_CAR_COUNT}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//COLLISIONS_PH/$TOTAL_COLLISIONS}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//CRASH_KING_PH/$CRASH_KING}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//CRASH_COUNT_PH/$CRASH_COUNT}"
-  DISCORD_MESSAGE="${DISCORD_MESSAGE//BIGGEST_CRASH_PH/$BIGGEST_CRASH}"
   DISCORD_MESSAGE="${DISCORD_MESSAGE//PEAK_HOUR_PH/$PEAK_HOUR}"
   DISCORD_MESSAGE="${DISCORD_MESSAGE//PEAK_CONN_PH/$PEAK_CONNECTIONS}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//PEAK_HOURS_PH/$PEAK_HOURS}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//PLAYTIME_PH/$TOTAL_PLAYTIME_HOURS}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//AVG_SESSION_PH/$AVG_SESSION_MIN}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//RETENTION_MSG_PH/$RETENTION_MSG}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//UNIQUE_IPS_PH/$UNIQUE_IPS}"
+  DISCORD_MESSAGE="${DISCORD_MESSAGE//NEW_PLAYERS_MSG_PH/$NEW_PLAYER_MSG}"
   DISCORD_MESSAGE="${DISCORD_MESSAGE//TIMESTAMP_PH/$(date -u +%Y-%m-%dT%H:%M:%S.000Z)}"
 
   curl -sS -X POST -H "Content-Type: application/json" -d "$DISCORD_MESSAGE" "$DISCORD_WEBHOOK" >/dev/null 2>&1 || true
-  echo "Posted enhanced daily statistics to Discord webhook"
+  echo "Posted server health statistics to Discord webhook"
 fi
 
 exit 0

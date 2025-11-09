@@ -10,6 +10,8 @@ import time
 import socket
 import struct
 import requests
+import json
+import pytz
 from pathlib import Path
 from datetime import datetime, timezone
 import os
@@ -60,10 +62,17 @@ print(f"  - Log Directory: {LOG_DIR}")
 last_position = 0
 last_log_file = None
 udp_socket = None
-# Track active player sessions: {steam_id: {name, join_time, car, discord_message_id}}
+# Track active player sessions: {steam_id: {name, join_time, car, discord_message_id, poll_asked, poll_voted}}
 active_sessions = {}
 triggered_players = set()  # Track who got audio trigger today
 recent_events = {}  # Track recent events to prevent spam: {event_key: timestamp}
+# Track checksum failures: {player_name: {attempts: count, message_id: discord_message_id, first_attempt_time: timestamp}}
+checksum_failures = {}
+# Traffic poll tracking
+# Ask at different milestones: 10min, 30min, 90min (1.5hr), 180min (3hr)
+# This gives more weight to longer sessions without being annoying
+POLL_MILESTONES = [10, 30, 90, 180]  # minutes
+VOTES_FILE = Path("/home/acserver/server/traffic_votes.json")
 
 # ============================================================================
 # UDP Plugin Interface - Chat Messages
@@ -118,6 +127,234 @@ def send_chat(message, hidden=False):
         return False
 
 # ============================================================================
+# Traffic Poll System
+# ============================================================================
+
+def load_votes():
+    """Load existing votes from JSON file"""
+    if VOTES_FILE.exists():
+        try:
+            with open(VOTES_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def get_traffic_period():
+    """Get current traffic period (night/morning/afternoon/evening)"""
+    # Use Amsterdam timezone (same as dynamic_traffic.py)
+    import pytz
+    amsterdam_tz = pytz.timezone('Europe/Amsterdam')
+    hour = datetime.now(amsterdam_tz).hour
+    
+    if 0 <= hour < 6:
+        return "night"
+    elif 6 <= hour < 12:
+        return "morning"
+    elif 12 <= hour < 18:
+        return "afternoon"
+    else:
+        return "evening"
+
+def is_regular_player(steam_id):
+    """Check if player is a 'regular' (has stats from player_stats.py)"""
+    try:
+        stats_file = Path("/home/acserver/server/player_stats.json")
+        if not stats_file.exists():
+            return False
+        
+        with open(stats_file, 'r') as f:
+            stats = json.load(f)
+        
+        # Check all_time stats
+        if steam_id in stats.get("all_time", {}):
+            player_data = stats["all_time"][steam_id]
+            # Regular = played at least 2 hours total AND joined 3+ times
+            total_playtime = player_data.get("playtime", 0)
+            join_count = player_data.get("join_count", 0)
+            
+            if total_playtime >= 7200 and join_count >= 3:  # 2+ hours, 3+ sessions
+                return True
+        
+        return False
+    except Exception as e:
+        print(f"⚠ Error checking regular status: {e}")
+        return False
+
+def save_vote(steam_id, player_name, rating, session_duration=None):
+    """Save a traffic rating vote with weighted metadata"""
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    
+    votes = load_votes()
+    if today not in votes:
+        votes[today] = []
+    
+    # Get current traffic period
+    current_period = get_traffic_period()
+    
+    # Get session duration if not provided
+    if session_duration is None:
+        session = active_sessions.get(steam_id, {})
+        join_time = session.get('join_time')
+        if not join_time:
+            print(f"⚠ Poll: No join time for {player_name}")
+            return False
+        session_duration = (datetime.now(timezone.utc) - join_time).total_seconds() / 60
+    
+    # Calculate vote weight: min(session_minutes / 30, 3.0)
+    # 30 min = 1.0x weight (baseline)
+    # Cap at 3.0x to prevent one player dominating
+    vote_weight = min(session_duration / 30.0, 3.0)
+    
+    # Check if regular player
+    is_regular = is_regular_player(steam_id)
+    
+    vote_data = {
+        'steam_id': steam_id,
+        'player_name': player_name,
+        'rating': rating,
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+        'session_minutes': round(session_duration, 1),
+        'vote_weight': round(vote_weight, 2),
+        'traffic_period': current_period,
+        'is_regular': is_regular
+    }
+    
+    votes[today].append(vote_data)
+    
+    try:
+        with open(VOTES_FILE, 'w') as f:
+            json.dump(votes, f, indent=2)
+        print(f"✓ Poll: {player_name} voted {rating}/5 (weight: {vote_weight:.2f}x)")
+        return True
+    except Exception as e:
+        print(f"✗ Poll save error: {e}")
+        return False
+
+def check_and_send_polls():
+    """Check if any players need to be asked for traffic feedback at milestones"""
+    global active_sessions
+    current_time = datetime.now(timezone.utc)
+    
+    for steam_id, session in active_sessions.items():
+        join_time = session.get('join_time')
+        if not join_time:
+            continue
+        
+        time_playing = (current_time - join_time).total_seconds() / 60  # minutes
+        polls_asked = session.get('polls_asked', [])
+        
+        # Check each milestone
+        for milestone in POLL_MILESTONES:
+            # If player has been playing long enough for this milestone
+            # and we haven't asked at this milestone yet
+            if time_playing >= milestone and milestone not in polls_asked:
+                player_name = session['name']
+                
+                # Different messages based on milestone
+                if milestone == 10:
+                    # First poll - simple and friendly
+                    send_chat(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    send_chat(f"📊 Hey {player_name}! Quick question:")
+                    send_chat(f"How's the AI traffic? Vote /1-/5")
+                    send_chat(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                elif milestone == 30:
+                    # Second poll - show they've been here a bit
+                    send_chat(f"📊 {player_name}, you've been cruising for {int(time_playing)} min!")
+                    send_chat(f"   Still enjoying the traffic? /1-/5")
+                elif milestone == 90:
+                    # Third poll - appreciate their time
+                    send_chat(f"🎉 {player_name}, 1.5 hours! Legend!")
+                    send_chat(f"   Traffic still good? /1-/5 (your vote = 3x weight)")
+                else:  # 180+ minutes
+                    # Final poll - they're a real one
+                    send_chat(f"⭐ {player_name}, 3+ hours! You're amazing!")
+                    send_chat(f"   Final check: traffic quality /1-/5")
+                
+                # Mark this milestone as asked
+                if 'polls_asked' not in session:
+                    session['polls_asked'] = []
+                session['polls_asked'].append(milestone)
+                
+                print(f"✓ Poll: Asked {player_name} for feedback (milestone: {milestone}min, session: {time_playing:.0f}min)")
+                
+                # Only ask one poll per check cycle to avoid spam
+                break
+
+def handle_vote_command(player_name, steam_id, message):
+    """Handle /1 through /5 vote commands"""
+    message = message.strip()
+    
+    # Check if message is a vote command
+    if message in ['/1', '/2', '/3', '/4', '/5']:
+        rating = int(message[1])
+        
+        # Check if player is in active session
+        if steam_id not in active_sessions:
+            print(f"⚠ Poll: Vote from unknown player {player_name}")
+            return
+        
+        session = active_sessions[steam_id]
+        join_time = session.get('join_time')
+        current_time = datetime.now(timezone.utc)
+        session_duration = (current_time - join_time).total_seconds() / 60  # minutes
+        
+        # Check if they already voted recently (prevent spam - 5 min cooldown)
+        votes = session.get('votes', [])
+        if votes:
+            last_vote_time = votes[-1].get('time')
+            if last_vote_time:
+                time_since_last_vote = (current_time - last_vote_time).total_seconds() / 60
+                if time_since_last_vote < 5:
+                    send_chat(f"⚠️ {player_name}: Wait a bit before voting again!")
+                    return
+        
+        # Calculate vote weight based on session duration
+        # 0-30min = 1.0x, 30-60min = 2.0x, 60-90min = 2.5x, 90+ = 3.0x
+        vote_weight = min(session_duration / 30.0, 3.0)
+        is_regular = is_regular_player(steam_id)
+        
+        # Store vote in session
+        vote_data = {
+            'time': current_time,
+            'rating': rating,
+            'weight': vote_weight,
+            'session_duration': session_duration
+        }
+        
+        if 'votes' not in session:
+            session['votes'] = []
+        session['votes'].append(vote_data)
+        
+        # Save vote to file
+        if save_vote(steam_id, player_name, rating, session_duration):
+            # Thank you message with weight info
+            weight_text = f"{vote_weight:.1f}x"
+            regular_badge = " ⭐" if is_regular else ""
+            vote_count = len(session['votes'])
+            
+            if rating >= 4:
+                if vote_count > 1:
+                    send_chat(f"✅ Thanks {player_name}! Still loving it! 🚗💨")
+                else:
+                    send_chat(f"✅ Thanks {player_name}! Glad you're enjoying the traffic! 🚗💨")
+            elif rating == 3:
+                send_chat(f"✅ Thanks {player_name}! We'll keep improving! 🔧")
+            else:
+                send_chat(f"✅ Thanks {player_name}! Your feedback helps us improve! 📊")
+            
+            # Show weight and session info
+            if vote_count > 1:
+                send_chat(f"   Vote #{vote_count}: {weight_text}{regular_badge} ({session_duration:.0f}min)")
+            else:
+                send_chat(f"   Vote weight: {weight_text}{regular_badge} ({session_duration:.0f}min)")
+            
+            print(f"✓ Poll: {player_name} voted {rating}/5 (weight: {weight_text}, session: {session_duration:.0f}min, vote #{vote_count})")
+        else:
+            send_chat(f"❌ {player_name}: Failed to save vote, try again!")
+            print(f"✗ Poll: Failed to save vote for {player_name}")
+
+# ============================================================================
 # Event Rate Limiting
 # ============================================================================
 
@@ -166,19 +403,27 @@ def send_discord_event(message_type, player_name, steam_id=None, car=None, join_
         embed = {}
         
         if message_type == "join":
+            # Random join messages for variety
+            join_messages = [
+                f"🟢 {player_name} hit the Shuto!",
+                f"🟢 {player_name} rolled into Tokyo",
+                f"🟢 {player_name} entered the highway",
+                f"🟢 {player_name} joined the cruise"
+            ]
+            import random
             embed = {
-                "title": f"🟢 {player_name} joined the server",
+                "title": random.choice(join_messages),
                 "color": 0x00ff00,
                 "description": "*Waiting for session completion...*",
                 "fields": [
                     {
-                        "name": "🚗 Car",
+                        "name": "🚗 Weapon of Choice",
                         "value": car if car else "Unknown",
                         "inline": True
                     }
                 ],
                 "footer": {
-                    "text": f"Steam ID: {steam_id}" if steam_id else "RedLine Souls"
+                    "text": f"Steam ID: {steam_id}" if steam_id else "RedLine Souls • Shuto Revival Project"
                 },
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
@@ -191,11 +436,19 @@ def send_discord_event(message_type, player_name, steam_id=None, car=None, join_
                 })
                 
         elif message_type == "leave":
+            # Random leave messages
+            leave_messages = [
+                f"🔴 {player_name} exited the expressway",
+                f"🔴 {player_name} left the streets",
+                f"🔴 {player_name} headed to the garage",
+                f"🔴 {player_name} called it a night"
+            ]
+            import random
             embed = {
-                "title": f"🔴 {player_name} left the server",
+                "title": random.choice(leave_messages),
                 "color": 0xff0000,
                 "footer": {
-                    "text": "RedLine Souls"
+                    "text": "RedLine Souls • Drive safe out there"
                 },
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
@@ -214,8 +467,22 @@ def send_discord_event(message_type, player_name, steam_id=None, car=None, join_
             join_ts = join_time.strftime('%H:%M:%S UTC') if join_time else 'unknown'
             leave_ts = leave_time.strftime('%H:%M:%S UTC') if leave_time else 'unknown'
             
+            # Session completion messages with personality
+            if hours >= 4:
+                title_emoji = "🏆"
+                title_suffix = "marathon session!"
+            elif hours >= 2:
+                title_emoji = "⭐"
+                title_suffix = "solid session"
+            elif minutes >= 30:
+                title_emoji = "✨"
+                title_suffix = "quick cruise"
+            else:
+                title_emoji = "💨"
+                title_suffix = "pit stop"
+                
             embed = {
-                "title": f"🚗 {player_name} completed session",
+                "title": f"{title_emoji} {player_name}'s {title_suffix}",
                 "color": 0x0099ff,
                 "description": f"**Joined:** {join_ts} | **Left:** {leave_ts}",
                 "fields": [
@@ -225,13 +492,13 @@ def send_discord_event(message_type, player_name, steam_id=None, car=None, join_
                         "inline": True
                     },
                     {
-                        "name": "⏱️ Session Duration",
+                        "name": "⏱️ Time on Streets",
                         "value": duration_str,
                         "inline": True
                     }
                 ],
                 "footer": {
-                    "text": f"Steam ID: {steam_id}" if steam_id else "RedLine Souls"
+                    "text": f"Steam ID: {steam_id}" if steam_id else "RedLine Souls • Thanks for cruising!"
                 },
                 "timestamp": leave_time.isoformat() if leave_time else datetime.now(timezone.utc).isoformat()
             }
@@ -441,19 +708,58 @@ def process_line(line):
             if not should_process_event(event_key, cooldown_seconds=5):
                 return  # Skip duplicate
             
+            # Check if player had previous checksum failures
+            had_failures = player_name in checksum_failures
+            failure_attempts = checksum_failures.get(player_name, {}).get('attempts', 0)
+            
             # Store session info
             join_time = datetime.now(timezone.utc)
             active_sessions[steam_id] = {
                 'name': player_name,
                 'join_time': join_time,
                 'car': car_display,
-                'discord_message_id': None
+                'discord_message_id': None,
+                'polls_asked': [],  # Track which milestones we've asked at
+                'votes': []  # Track all votes: [{time, rating, weight}]
             }
             
-            # Post join message to Discord and store message ID
-            message_id = send_discord_event("join", player_name, steam_id=steam_id, car=car_display)
-            if message_id:
-                active_sessions[steam_id]['discord_message_id'] = message_id
+            # Send Discord message with failure recovery note if applicable
+            if had_failures and failure_attempts > 1:
+                # Player recovered from failures!
+                embed = {
+                    "title": f"✅ {player_name} connected successfully!",
+                    "description": f"**Recovered after {failure_attempts} failed checksum attempts**",
+                    "color": 0x00ff00,
+                    "fields": [
+                        {"name": "🚗 Car", "value": car_display if car_display else "Unknown", "inline": True},
+                        {"name": "👤 Steam Profile", "value": f"[View Profile](https://steamcommunity.com/profiles/{steam_id})", "inline": True}
+                    ],
+                    "footer": {"text": "Files verified ✓ • Ready to cruise"},
+                    "timestamp": join_time.isoformat()
+                }
+                try:
+                    if DISCORD_WEBHOOK:
+                        webhook_url = DISCORD_WEBHOOK + ('?wait=true' if '?' not in DISCORD_WEBHOOK else '&wait=true')
+                        response = requests.post(webhook_url, json={"embeds": [embed]}, timeout=5)
+                        if response.status_code in [200, 204]:
+                            try:
+                                response_data = response.json()
+                                message_id = response_data.get('id')
+                                if message_id:
+                                    active_sessions[steam_id]['discord_message_id'] = message_id
+                            except:
+                                pass
+                        print(f"✓ Discord: JOIN (recovered) - {player_name}")
+                except Exception as e:
+                    print(f"✗ Discord join error: {e}")
+                del checksum_failures[player_name]
+            else:
+                # Normal join (no previous failures)
+                message_id = send_discord_event("join", player_name, steam_id=steam_id, car=car_display)
+                if message_id:
+                    active_sessions[steam_id]['discord_message_id'] = message_id
+                if player_name in checksum_failures:
+                    del checksum_failures[player_name]
             
             print(f"✓ Session started: {player_name} ({steam_id})")
             
@@ -543,36 +849,109 @@ def process_line(line):
                 # Fallback: simple left message
                 send_chat(f"🔴 {player_name} left the server")
     
-    # Checksum failure - RATE LIMITED to prevent spam
+    # Chat message - Check for vote commands
+    # AssettoServer format: [INF] Chat: PlayerName (steamid): message
+    elif "[INF]" in line and ("Chat:" in line or "said:" in line):
+        # Try multiple patterns for chat detection
+        chat_match = re.search(r'Chat:\s*(.+?)\s*\((\d+)\):\s*(.+)', line)
+        if not chat_match:
+            chat_match = re.search(r'said:\s*(.+?)\s*\((\d+)\):\s*(.+)', line)
+        
+        if chat_match:
+            player_name = chat_match.group(1).strip()
+            steam_id = chat_match.group(2)
+            message = chat_match.group(3).strip()
+            
+            # Handle vote commands (/1 through /5)
+            if message.startswith('/') and message in ['/1', '/2', '/3', '/4', '/5']:
+                handle_vote_command(player_name, steam_id, message)
+    
+    # Checksum failure - TRACK AND UPDATE
     elif "checksum" in line.lower() and ("fail" in line.lower() or "error" in line.lower() or "mismatch" in line.lower()):
         match = re.search(r'(\w+).*checksum', line, re.IGNORECASE)
         if match:
             player_name = match.group(1).strip()
             
-            # Rate limit: only send ONE checksum message per player per 60 seconds
+            # Rate limit: only update once per 10 seconds
             event_key = f"checksum:{player_name}"
-            if not should_process_event(event_key, cooldown_seconds=60):
-                # Spam detected - log it but don't send to Discord
-                print(f"⚠ Checksum spam suppressed for {player_name}")
+            if not should_process_event(event_key, cooldown_seconds=10):
+                print(f"⚠ Checksum update suppressed for {player_name} (too soon)")
                 return
             
-            # Send to Discord (only once per minute per player)
-            embed = {
-                "title": f"⚠️ {player_name} - Checksum Failed",
-                "description": "Player has modified car files or outdated content",
-                "color": 0xffaa00,
-                "footer": {"text": "Player cannot join until files match server"},
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            }
-            try:
-                data = {"embeds": [embed]}
-                if DISCORD_WEBHOOK:
-                    requests.post(DISCORD_WEBHOOK, json=data, timeout=5)
-                    print(f"✓ Discord: CHECKSUM FAIL - {player_name}")
+            # Track or update checksum failures
+            if player_name not in checksum_failures:
+                # First failure - create new tracking entry
+                checksum_failures[player_name] = {
+                    'attempts': 1,
+                    'message_id': None,
+                    'first_attempt_time': time.time()
+                }
+                
+                # Send initial Discord message
+                embed = {
+                    "title": f"⚠️ {player_name} - Checksum Failed",
+                    "description": f"**Attempt 1** - Player has modified car files or outdated content",
+                    "color": 0xffaa00,
+                    "footer": {"text": "Player cannot join until files match server"},
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                }
+                try:
+                    if DISCORD_WEBHOOK:
+                        webhook_url = DISCORD_WEBHOOK + ('?wait=true' if '?' not in DISCORD_WEBHOOK else '&wait=true')
+                        response = requests.post(webhook_url, json={"embeds": [embed]}, timeout=5)
+                        if response.status_code in [200, 204]:
+                            try:
+                                response_data = response.json()
+                                message_id = response_data.get('id')
+                                if message_id:
+                                    checksum_failures[player_name]['message_id'] = message_id
+                                    print(f"✓ Discord: CHECKSUM FAIL (Attempt 1) - {player_name} [msg:{message_id}]")
+                            except:
+                                print(f"✓ Discord: CHECKSUM FAIL (Attempt 1) - {player_name}")
+                    else:
+                        print(f"⚠ Discord events webhook not configured; skipping checksum fail for {player_name}")
+                except Exception as e:
+                    print(f"✗ Discord checksum error: {e}")
+            else:
+                # Subsequent failure - increment and edit message
+                checksum_failures[player_name]['attempts'] += 1
+                attempts = checksum_failures[player_name]['attempts']
+                message_id = checksum_failures[player_name].get('message_id')
+                
+                # Edit existing message if we have message ID
+                if message_id and DISCORD_WEBHOOK:
+                    webhook_id, webhook_token = extract_webhook_parts(DISCORD_WEBHOOK)
+                    if webhook_id and webhook_token:
+                        edit_url = f"https://discord.com/api/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}"
+                        
+                        # Escalating severity colors
+                        if attempts >= 5:
+                            color = 0xff0000  # Red - persistent issue
+                        elif attempts >= 3:
+                            color = 0xff5500  # Orange-red
+                        else:
+                            color = 0xffaa00  # Orange
+                        
+                        embed = {
+                            "title": f"⚠️ {player_name} - Checksum Failed",
+                            "description": f"**Attempt {attempts}** - Player has modified car files or outdated content",
+                            "color": color,
+                            "footer": {"text": f"First failed {int(time.time() - checksum_failures[player_name]['first_attempt_time'])}s ago • Files must match server"},
+                            "timestamp": datetime.now(timezone.utc).isoformat()
+                        }
+                        
+                        try:
+                            response = requests.patch(edit_url, json={"embeds": [embed]}, timeout=5)
+                            if response.status_code in [200, 204]:
+                                print(f"✓ Discord: CHECKSUM FAIL (Attempt {attempts}) - {player_name} [edited]")
+                            else:
+                                print(f"✗ Discord edit failed ({response.status_code}): Attempt {attempts} - {player_name}")
+                        except Exception as e:
+                            print(f"✗ Discord checksum edit error: {e}")
+                    else:
+                        print(f"✓ CHECKSUM FAIL (Attempt {attempts}) - {player_name} [no webhook parts]")
                 else:
-                    print(f"⚠ Discord events webhook not configured; skipping checksum fail for {player_name}")
-            except Exception as e:
-                print(f"✗ Discord checksum error: {e}")
+                    print(f"✓ CHECKSUM FAIL (Attempt {attempts}) - {player_name}")
     
     # Player chat messages: [INF] CHAT: PlayerName (SlotID): message
     elif "CHAT:" in line and "[INF]" in line:
@@ -583,6 +962,20 @@ def process_line(line):
             
             # Skip CSP internal messages
             if not message.startswith('$CSP'):
+                # Handle vote commands (/1 through /5)
+                if message.startswith('/') and message in ['/1', '/2', '/3', '/4', '/5']:
+                    # Find steam_id by player name
+                    steam_id = None
+                    for sid, session in active_sessions.items():
+                        if session['name'] == player_name:
+                            steam_id = sid
+                            break
+                    
+                    if steam_id:
+                        handle_vote_command(player_name, steam_id, message)
+                    else:
+                        print(f"⚠ Poll: Vote from unknown player {player_name} (not in active_sessions)")
+                
                 # Send to Discord chat webhook
                 send_discord_chat(message, player_name)
 
@@ -622,6 +1015,8 @@ def main():
         while True:
             try:
                 monitor_logs()
+                # Check if any players need poll messages
+                check_and_send_polls()
             except FileNotFoundError as e:
                 print(f"⚠ Log file not found: {e}")
                 time.sleep(5)  # Wait longer if log file missing

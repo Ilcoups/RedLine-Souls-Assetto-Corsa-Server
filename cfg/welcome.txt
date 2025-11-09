@@ -5,18 +5,32 @@ Update at: https://acstuff.ru/patch/
 
 🚗 PIT LIMITER WARNING!
 You spawn with PIT LIMITER ON (80 km/h limit)
-➤ Press CTRL+P or your pit limiter key to DISABLE it!
+➤➤➤ Press CTRL+P to DISABLE it! ➤➤➤
 ➤ If your car won't go fast, check pit limiter first!
+➤ This is the #1 reason new players get confused!
 
 ✓ Server Features:
-• Dense AI traffic (up to 250 cars)
-• Dynamic weather & day/night
-• 113 km/h AI max speed
-• Steam authentication
+• Dense AI traffic (up to 250 cars, changes every 6 hours!)
+• Dynamic weather & day/night cycle
+• 107 km/h AI max speed
+• 157 teleport locations (CSP teleport menu)
+• Daily leaderboards on Discord (speed, playtime, clean driving)
+⏱️ First join? AI spawning may take 10-20 seconds - be patient!
+
+📍 SPAWN LOCATION: Heiwajima PA (parking area/pit)
+🎮 USE TELEPORTS: Press ESC → navigate with mouse → Teleports
+🏁 Explore C1, Wangan, Yokohane, Bayshore, and more!
 
 ❌ Old CSP issues:
 • Invisible AI traffic
 • Connection problems
 • Poor performance
 
-Disable pit limiter and enjoy! 🏁
+🚗 RECOMMENDED CARS FOR BEGINNERS:
+• Nissan GT-R - Stable, fast, great for learning
+• Toyota GT86 - Fun, forgiving, perfect for cruising
+• BMW M3 E92 - Balanced, good handling
+
+💡 PRO TIP: Use teleports to explore without driving!
+
+Disable pit limiter and enjoy the streets! 🏁

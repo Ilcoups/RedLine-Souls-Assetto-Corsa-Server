@@ -77,8 +77,6 @@ EnablePlugins:
 - PatreonOvertakePlugin
 - PatreonSpeedTrapPlugin
 - PatreonTimingPlugin
-- DiscordAuditPlugin
-- PatreonAnalyticsPlugin
 IgnoreConfigurationErrors:
   MissingCarChecksums: true
   MissingTrackParams: true
@@ -120,8 +118,8 @@ AiParams:
   MaxPlayerDistanceToAiSplineMeters: 7
   MinSpawnDistancePoints: 150
   MaxSpawnDistancePoints: 1200
-  MinAiSafetyDistanceMeters: 31
-  MaxAiSafetyDistanceMeters: 76
+  MinAiSafetyDistanceMeters: 40
+  MaxAiSafetyDistanceMeters: 97
   StateSpawnDistanceMeters: 900
   MinStateDistanceMeters: 50
   SpawnSafetyDistanceToPlayerMeters: 250
@@ -129,16 +127,16 @@ AiParams:
   MaxSpawnProtectionTimeSeconds: 35
   MinCollisionStopTimeSeconds: 1
   MaxCollisionStopTimeSeconds: 2
-  MaxSpeedKph: 103
-  RightLaneOffsetKph: 28
-  MaxSpeedVariationPercent: 0.25
+  MaxSpeedKph: 90
+  RightLaneOffsetKph: 22
+  MaxSpeedVariationPercent: 0.2
   MaxPlayerCount: 35
   HideAiCars: true
   LaneWidthMeters: 2.5
   TwoWayTraffic: true
   WrongWayTraffic: true
   NamePrefix: Traffic
-  IgnoreObstaclesAfterSeconds: 1
+  IgnoreObstaclesAfterSeconds: 2
   IgnoreStationaryPlayers: true
   HourlyTrafficDensity:
   - 0.6
@@ -176,17 +174,17 @@ AiParams:
     1:
       MinAiSafetyDistanceMeters: 32
       MaxAiSafetyDistanceMeters: 78
-      MaxSpeedKph: 98
+      MaxSpeedKph: 85
       RightLaneOffsetKph: 18
     2:
       MinAiSafetyDistanceMeters: 34
       MaxAiSafetyDistanceMeters: 82
-      MaxSpeedKph: 107
+      MaxSpeedKph: 94
       RightLaneOffsetKph: 21
     3:
       MinAiSafetyDistanceMeters: 37
       MaxAiSafetyDistanceMeters: 88
-      MaxSpeedKph: 123
+      MaxSpeedKph: 110
       RightLaneOffsetKph: 24
       MinSpawnProtectionTimeSeconds: 22
       MaxSpawnProtectionTimeSeconds: 38
@@ -218,15 +216,14 @@ AiParams:
     - Right
   DefaultDeceleration: 5.0
   DefaultAcceleration: 4.5
-  MaxAiTargetCount: 1392
-  AiPerPlayerTargetCount: 58
+  MaxAiTargetCount: 840
+  AiPerPlayerTargetCount: 35
   SplineHeightOffsetMeters: 0.0
   CorneringSpeedFactor: 0.85
   CorneringBrakeDistanceFactor: 5
   CorneringBrakeForceFactor: 0.3
-  TrafficDensity: 0.8
+  TrafficDensity: 1.2
   TyreDiameterMeters: 0.65
-  MinAiTargetCount: 0
 
 ---
 !RandomWeatherConfiguration
@@ -305,10 +302,9 @@ EnableOverlay: true
 Grayscale: false
 AllowDisablingPictureUpload: true
 Debug: false
-# Discord webhook - Using LOCAL PROXY to prevent game lag
-# The proxy (port 8083) buffers and forwards to Discord asynchronously
+# Discord webhook for speed trap violations
 DiscordWebhook:
-  Url: http://127.0.0.1:8083/webhook
+  Url: https://discord.com/api/webhooks/1427462778075218015/QRjTkpivsX_UgX7NhPP6-i3l4p5gPIMuYTCgqflG0Y5XF-PTpbpm0tZ_WY6lFex8jH3l
   Username: 🚨 RedLine Speed Enforcement 🚨
   MessageTemplate: |
     **━━━━━━━━━━━━━━━━━━━━━**
@@ -326,14 +322,3 @@ DiscordWebhook:
 ---
 !PatreonTimingConfiguration
 LeaderboardName: RedLine Souls
-
----
-!PatreonAnalyticsConfiguration
-# Enable collection of client metrics (FPS, CPU occupancy, frame time)
-EnableClientMetrics: true
-# Update interval for client metrics (FPS, CPU occupancy)
-ClientMetricsUpdateIntervalSeconds: 10
-# Update interval for server metrics (collisions, car usage)
-ServerMetricsUpdateIntervalSeconds: 10
-# Minimum speed for collisions to be counted to metrics
-MinimumCollisionsSpeedKph: 10

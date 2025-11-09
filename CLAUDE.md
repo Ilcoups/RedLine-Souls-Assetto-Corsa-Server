@@ -51,7 +51,7 @@ This file contains technical context for AI assistants (Claude, GPT, etc.) helpi
 ├── cfg/
 │   ├── extra_cfg.yml          # AI traffic, plugins, weather
 │   ├── server_cfg.ini         # Network, admin password (GITIGNORED)
-│   └── csp_extra_options.ini  # CSP features, spawn audio
+│   └── csp_extra_options.ini  # CSP features, spawn audio, teleports
 ├── unified_announcer.py        # Discord + Chat + Audio
 ├── player_stats.py            # Stats tracking + leaderboards
 ├── .env                       # Webhooks (GITIGNORED)
@@ -62,6 +62,7 @@ This file contains technical context for AI assistants (Claude, GPT, etc.) helpi
 ├── logs/                      # Server logs (GITIGNORED)
 │   └── archive/               # Compressed old logs (.gz)
 ├── wwwroot/                   # HTTP server root (audio files)
+├── TELEPORTS.md               # Teleport system documentation
 └── _docs/                     # Human documentation
 ```
 
@@ -123,6 +124,39 @@ AiParams:
 ```
 
 **Lane-specific overrides**: 3-lane highways = fastest, 1-lane = slowest
+
+### Dynamic Traffic System
+**Service**: `dynamic-traffic.service` (systemd user service)
+**Script**: `/home/acserver/server/dynamic_traffic.py`
+
+Features:
+1. **6-Hour Preset Rotation** - Changes traffic style every 6 hours (night/morning/afternoon/evening)
+2. **Player-Based Scaling** - Reduces AI count as player count increases (1-10 = 100%, 26+ = 65%)
+3. **Idle Traffic** - **NEW!** Keeps 15 AI cars running with 0 players for instant join
+4. **Server Load Monitoring** - Monitors CPU, memory, and system load every 60 seconds
+5. **Emergency Scaling** - Automatically reduces AI to 50% during server stress
+6. **Player Spike Detection** - Detects sudden player influx and monitors closely
+
+**Idle Traffic** (0 players):
+- 15 AI cars always running (keeps system warm)
+- Instant join - no waiting for traffic to spawn
+- Minimal resources (~0.2% CPU, ~50MB RAM)
+- Configurable: `'idle_traffic_enabled': True`, `'idle_ai_count': 15`
+
+**Load Monitoring Thresholds**:
+- CPU: Warning 75%, Critical 85%, Recovery <60%
+- Memory: Warning 2.5GB, Critical 3.5GB, Recovery <2.0GB
+- Load Avg: Warning 3.0, Critical 3.5, Recovery <2.5
+
+**Commands**:
+```bash
+python3 dynamic_traffic.py --schedule       # View all features
+python3 dynamic_traffic.py --check-load     # Check server health
+systemctl --user restart dynamic-traffic.service
+journalctl --user -u dynamic-traffic.service -f
+```
+
+See `IDLE_TRAFFIC_FEATURE.md` and `SERVER_LOAD_MONITOR.md` for full documentation.
 
 ---
 
@@ -360,6 +394,14 @@ rm -f .test_announcer_flag .test_summary_flag
 - Debug historical issues
 - gzip compression: 17MB → 472KB (97% reduction!)
 - No external packages needed (gzip is built-in)
+
+### Why Teleport System?
+- 157 locations covering entire SRP 0.9.3 map
+- Integrated via `csp_extra_options.ini` (CSP standard format)
+- No server restart needed - CSP loads config on connect
+- Credits: [Gaulven's teleport pack](https://discord.gaulven.com/)
+- Covers C1 Inner/Outer, all routes (3, 4, 6, 9, 11, B, K1, K3, K5, Y)
+- Includes famous spots: Shibuya, Daikoku, Tatsumi PA, etc.
 
 ---
 

@@ -4,12 +4,14 @@ High-speed AI traffic server on Shuto Revival Project with beautiful weather and
 
 ## 🌟 Server Features
 
-- **Dynamic AI Traffic**: Up to 200 AI cars that scale with player count (12 cars per player).
+- **Dynamic AI Traffic**: Changes every 6 hours (4 presets: Night, Morning, Afternoon, Evening).
+- **157 Teleport Locations**: Instant travel to all famous spots (Daikoku, Shibuya, C1, etc.).
 - **Beautiful Weather Only**: Clear skies, few clouds, and scattered clouds - no rain or fog.
 - **Fast Day/Night Cycles**: 8x time multiplier with frequent golden hours.
 - **Real Tokyo Time**: Authentic Asia/Tokyo timezone with smooth weather transitions.
 - **WeatherFX**: CSP-powered smooth weather and lighting transitions.
 - **Free Roam**: 24-hour practice sessions with loop mode - join anytime!
+- **Discord Integration**: Join/leave notifications, chat relay, daily leaderboards.
 
 ## 📋 Server Configuration
 
@@ -108,11 +110,19 @@ It prints a PASS/FAIL summary and creates a support bundle zip to share with the
 
 - `cfg/server_cfg.ini.template` - Template for core server settings (copy to server_cfg.ini).
 - `cfg/extra_cfg.yml` - AssettoServer advanced config (AI traffic, plugins).
+- `cfg/csp_extra_options.ini` - CSP features (teleports, rules, speed limiter).
 - `cfg/entry_list.ini` - Player slots (53 max clients).
 - `cfg/data_track_params.ini` - Track timezone and coordinates.
 - `admins.txt` - Server admin Steam IDs (create manually).
 - `blacklist.txt` - Banned players (create manually).
 - `whitelist.txt` - Whitelist mode (optional).
+
+### Documentation
+
+- `TELEPORTS.md` - Complete guide to 157 teleport locations.
+- `QUICK_TELEPORTS.md` - Quick reference for popular spots.
+- `DYNAMIC_TRAFFIC.md` - Traffic rotation system documentation.
+- `CLAUDE.md` - Technical documentation for AI assistants.
 
 ## 🎮 Client Requirements
 

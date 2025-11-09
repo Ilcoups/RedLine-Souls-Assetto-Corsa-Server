@@ -12,60 +12,69 @@ ForceLights: false
 NetworkBubbleDistance: 1000
 OutsideNetworkBubbleRefreshRateHz: 25
 EnableServerDetails: true
-ServerDescription: "\U0001F3CE\uFE0F REDLINE SOULS - TOKYO HIGHWAY CRUISE \U0001F38C\
-  \n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\n\nWelcome to the most immersive Shuto Revival Project\ncruise server! Drive\
-  \ through Tokyo's highways with\ndynamic AI traffic that changes throughout the\
-  \ day.\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\n\n\U0001F4CB REQUIREMENTS\n\u2705 Shutoko Revival Project 0.9.3\n\u2705\
-  \ Content Manager v0.8.2594+\n\u2705 CSP 0.2.0+ (CSP 0.1.78+ minimum)\n\nGet CSP:\
-  \ https://acstuff.ru/patch/\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\n\n\U0001F306 DYNAMIC TRAFFIC SYSTEM\nTraffic density\
-  \ & behavior changes every 6 hours!\n\n\U0001F319 Night (00:00-06:00)\n\u2022 Light\
-  \ traffic, chill vibes\n\u2022 Perfect for scenic cruising\n\n\u2600\uFE0F Morning\
-  \ (06:00-12:00)\n\u2022 Rush hour! Dense & aggressive\n\u2022 Test your skills in\
-  \ traffic\n\n\U0001F324\uFE0F Afternoon (12:00-18:00)\n\u2022 Balanced flow, steady\
-  \ pace\n\u2022 Great for exploring\n\n\U0001F306 Evening (18:00-00:00)\n\u2022 Highway\
-  \ battles, push hard!\n\u2022 Most intense traffic\n\n\U0001F3AE Weekend Specials:\
-  \ Different traffic patterns\nevery Saturday & Sunday!\n\n\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\n\u2728 SERVER FEATURES\n\
-  \u2022 \U0001F697 70+ AI cars per player (up to 250 total!)\n\u2022 \U0001F324\uFE0F\
-  \ Dynamic weather & day/night cycle\n\u2022 \U0001F4CD 157 teleport locations (C1,\
-  \ Wangan, Yokohane, etc.)\n\u2022 \U0001F4CA Daily leaderboards (speed, playtime,\
-  \ clean driving)\n\u2022 \U0001F38C Tokyo-authentic traffic behavior\n\u2022 \u26A1\
-  \ High-performance server (60 Hz tick rate)\n\u2022 \U0001F504 AI traffic respects\
-  \ Heiwajima PA pit area\n\u2022 \U0001F4AC Active Discord community\n\n\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\n\U0001F4E2\
-  \ JOIN OUR COMMUNITY\nDiscord: https://discord.gg/YJJEGAhf\n\u2022 Daily leaderboards\n\
-  \u2022 Server updates & events\n\u2022 Community races\n\u2022 Get help & share\
-  \ clips\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\n\n\u26A0\uFE0F IMPORTANT TIPS\n\u2022 Disable pit limiter after spawning\
-  \ (CTRL+P)\n\u2022 Use teleports: ESC \u2192 Teleports menu (157 locations!)\n\u2022\
-  \ First join may take 10-20 seconds (AI spawning)\n\u2022 You spawn at Heiwajima\
-  \ PA (parking area)\n\u2022 Recommended cars: GT-R, GT86, M3 E92\n\u2022 Respect\
-  \ other drivers - this isn't a demolition derby!\n\u2022 AFK kick after 20 minutes\n\
-  \n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\n\n\U0001F4DC SERVER RULES\n1\uFE0F\u20E3 No intentional ramming or blocking\n\
-  2\uFE0F\u20E3 Respect the pit area (Heiwajima PA)\n3\uFE0F\u20E3 Push hard, but\
-  \ drive smart\n4\uFE0F\u20E3 Have fun - it's a cruise server!\n\n\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
-  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\nSee you on\
-  \ the Wangan! \U0001F3C1\nKeep it sideways, keep it stylish \U0001F38C"
+ServerDescription: "🏎️ REDLINE SOULS - TOKYO HIGHWAY CRUISE 🎌\n\
+  \n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\
+  Welcome to the most immersive Shuto Revival Project\n\
+  cruise server! Drive through Tokyo's highways with\n\
+  dynamic AI traffic that changes throughout the day.\n\n\
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\
+  📋 REQUIREMENTS\n\
+  ✅ Shutoko Revival Project 0.9.3\n\
+  ✅ Content Manager v0.8.2594+\n\
+  ✅ CSP 0.2.0+ (CSP 0.1.78+ minimum)\n\n\
+  Get CSP: https://acstuff.ru/patch/\n\n\
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\
+  🌆 DYNAMIC TRAFFIC SYSTEM\n\
+  Traffic density & behavior changes every 6 hours!\n\n\
+  🌙 Night (00:00-06:00)\n\
+     • Light traffic, chill vibes\n\
+     • Perfect for scenic cruising\n\n\
+  ☀️ Morning (06:00-12:00)\n\
+     • Rush hour! Dense & aggressive\n\
+     • Test your skills in traffic\n\n\
+  🌤️ Afternoon (12:00-18:00)\n\
+     • Balanced flow, steady pace\n\
+     • Great for exploring\n\n\
+  🌆 Evening (18:00-00:00)\n\
+     • Highway battles, push hard!\n\
+     • Most intense traffic\n\n\
+  🎮 Weekend Specials: Different traffic patterns\n\
+     every Saturday & Sunday!\n\n\
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\
+  ✨ SERVER FEATURES\n\
+  • 🚗 70+ AI cars per player (up to 250 total!)\n\
+  • 🌤️ Dynamic weather & day/night cycle\n\
+  • 📍 157 teleport locations (C1, Wangan, Yokohane, etc.)\n\
+  • 📊 Daily leaderboards (speed, playtime, clean driving)\n\
+  • 🎌 Tokyo-authentic traffic behavior\n\
+  • ⚡ High-performance server (60 Hz tick rate)\n\
+  • 🔄 AI traffic respects Heiwajima PA pit area\n\
+  • 💬 Active Discord community\n\n\
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\
+  📢 JOIN OUR COMMUNITY\n\
+  Discord: https://discord.gg/YJJEGAhf\n\
+  • Daily leaderboards\n\
+  • Server updates & events\n\
+  • Community races\n\
+  • Get help & share clips\n\n\
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\
+  ⚠️ IMPORTANT TIPS\n\
+  • Disable pit limiter after spawning (CTRL+P)\n\
+  • Use teleports: ESC → Teleports menu (157 locations!)\n\
+  • First join may take 10-20 seconds (AI spawning)\n\
+  • You spawn at Heiwajima PA (parking area)\n\
+  • Recommended cars: GT-R, GT86, M3 E92\n\
+  • Respect other drivers - this isn't a demolition derby!\n\
+  • AFK kick after 20 minutes\n\n\
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\
+  📜 SERVER RULES\n\
+  1️⃣ No intentional ramming or blocking\n\
+  2️⃣ Respect the pit area (Heiwajima PA)\n\
+  3️⃣ Push hard, but drive smart\n\
+  4️⃣ Have fun - it's a cruise server!\n\n\
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\
+  See you on the Wangan! 🏁\n\
+  Keep it sideways, keep it stylish 🎌"
 EnableRealTime: false
 EnableWeatherFx: true
 LockServerDate: true
@@ -118,10 +127,10 @@ AiParams:
   PlayerPositionOffsetMeters: 100
   PlayerAfkTimeoutSeconds: 3
   MaxPlayerDistanceToAiSplineMeters: 7
-  MinSpawnDistancePoints: 150
-  MaxSpawnDistancePoints: 1200
-  MinAiSafetyDistanceMeters: 31
-  MaxAiSafetyDistanceMeters: 76
+  MinSpawnDistancePoints: 150  # Reduced from 220 - spawn AI closer/faster
+  MaxSpawnDistancePoints: 1200  # Increased from 850 - larger spawn area
+  MinAiSafetyDistanceMeters: 29
+  MaxAiSafetyDistanceMeters: 72
   StateSpawnDistanceMeters: 900
   MinStateDistanceMeters: 50
   SpawnSafetyDistanceToPlayerMeters: 250
@@ -129,7 +138,7 @@ AiParams:
   MaxSpawnProtectionTimeSeconds: 35
   MinCollisionStopTimeSeconds: 1
   MaxCollisionStopTimeSeconds: 2
-  MaxSpeedKph: 103
+  MaxSpeedKph: 107
   RightLaneOffsetKph: 28
   MaxSpeedVariationPercent: 0.25
   MaxPlayerCount: 35
@@ -176,17 +185,17 @@ AiParams:
     1:
       MinAiSafetyDistanceMeters: 32
       MaxAiSafetyDistanceMeters: 78
-      MaxSpeedKph: 98
+      MaxSpeedKph: 102
       RightLaneOffsetKph: 18
     2:
       MinAiSafetyDistanceMeters: 34
       MaxAiSafetyDistanceMeters: 82
-      MaxSpeedKph: 107
+      MaxSpeedKph: 111
       RightLaneOffsetKph: 21
     3:
       MinAiSafetyDistanceMeters: 37
       MaxAiSafetyDistanceMeters: 88
-      MaxSpeedKph: 123
+      MaxSpeedKph: 127
       RightLaneOffsetKph: 24
       MinSpawnProtectionTimeSeconds: 22
       MaxSpawnProtectionTimeSeconds: 38
@@ -218,15 +227,14 @@ AiParams:
     - Right
   DefaultDeceleration: 5.0
   DefaultAcceleration: 4.5
-  MaxAiTargetCount: 1392
-  AiPerPlayerTargetCount: 58
+  MaxAiTargetCount: 1320
+  AiPerPlayerTargetCount: 70  # Increased from 55 - more AI density even with 1 player
   SplineHeightOffsetMeters: 0.0
   CorneringSpeedFactor: 0.85
   CorneringBrakeDistanceFactor: 5
   CorneringBrakeForceFactor: 0.3
-  TrafficDensity: 0.8
+  TrafficDensity: 0.85
   TyreDiameterMeters: 0.65
-  MinAiTargetCount: 0
 
 ---
 !RandomWeatherConfiguration
@@ -305,10 +313,9 @@ EnableOverlay: true
 Grayscale: false
 AllowDisablingPictureUpload: true
 Debug: false
-# Discord webhook - Using LOCAL PROXY to prevent game lag
-# The proxy (port 8083) buffers and forwards to Discord asynchronously
+# Discord webhook for speed trap violations
 DiscordWebhook:
-  Url: http://127.0.0.1:8083/webhook
+  Url: https://discord.com/api/webhooks/1427462778075218015/QRjTkpivsX_UgX7NhPP6-i3l4p5gPIMuYTCgqflG0Y5XF-PTpbpm0tZ_WY6lFex8jH3l
   Username: 🚨 RedLine Speed Enforcement 🚨
   MessageTemplate: |
     **━━━━━━━━━━━━━━━━━━━━━**

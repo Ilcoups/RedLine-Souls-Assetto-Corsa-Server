@@ -1,0 +1,17 @@
+[Unit]
+Description=RedLine Souls - Dynamic Traffic Rotation
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/acserver/server
+ExecStart=/usr/bin/python3 /home/acserver/server/dynamic_traffic.py --monitor
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=append:/home/acserver/server/logs/dynamic_traffic.log
+StandardError=append:/home/acserver/server/logs/dynamic_traffic_error.log
+
+[Install]
+WantedBy=default.target

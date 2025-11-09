@@ -226,7 +226,7 @@ AiParams:
   CorneringBrakeForceFactor: 0.3
   TrafficDensity: 0.8
   TyreDiameterMeters: 0.65
-  MinAiTargetCount: 0
+  MinAiTargetCount: 15
 
 ---
 !RandomWeatherConfiguration
@@ -305,10 +305,9 @@ EnableOverlay: true
 Grayscale: false
 AllowDisablingPictureUpload: true
 Debug: false
-# Discord webhook - Using LOCAL PROXY to prevent game lag
-# The proxy (port 8083) buffers and forwards to Discord asynchronously
+# Discord webhook for speed trap violations
 DiscordWebhook:
-  Url: http://127.0.0.1:8083/webhook
+  Url: https://discord.com/api/webhooks/1427462778075218015/QRjTkpivsX_UgX7NhPP6-i3l4p5gPIMuYTCgqflG0Y5XF-PTpbpm0tZ_WY6lFex8jH3l
   Username: 🚨 RedLine Speed Enforcement 🚨
   MessageTemplate: |
     **━━━━━━━━━━━━━━━━━━━━━**

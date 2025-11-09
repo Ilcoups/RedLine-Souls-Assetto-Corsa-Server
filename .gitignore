@@ -3,6 +3,8 @@ admins.txt
 blacklist.txt
 whitelist.txt
 cfg/server_cfg.ini
+patreon.key
+.patreon
 
 # Server Executables & Binaries
 acServer
@@ -69,3 +71,7 @@ setups/
 !SERVER_MANAGEMENT.md
 !*.sh
 \n# Local environment file with secrets\n.env
+__pycache__/
+*.pyc
+*.pyo
+traffic_votes.json

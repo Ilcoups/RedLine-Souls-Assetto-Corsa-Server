@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-06T20:50:01.400714+00:00",
+  "timestamp": "2025-11-09T10:24:01.271898+00:00",
   "server": {
     "name": "RedLine Souls",
     "status": "online",
@@ -7,11 +7,16 @@
     "max_players": 35
   },
   "online": {
-    "count": 0,
-    "players": []
+    "count": 1,
+    "players": [
+      {
+        "name": "Kidontheplane",
+        "car": "ks_pagani_huayra_bc"
+      }
+    ]
   },
   "today": {
-    "unique_players": 8,
-    "total_crashes": 201
+    "unique_players": 4,
+    "total_crashes": 32
   }
 }

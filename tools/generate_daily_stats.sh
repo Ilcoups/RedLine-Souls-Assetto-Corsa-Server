@@ -230,4 +230,12 @@ EOF
   echo "Posted server health statistics to Discord webhook"
 fi
 
+# Post speed trap daily summary (if violations exist)
+echo "Generating speed trap daily summary..."
+if [ -x "$( dirname "$0")/../_utils/speed_trap_daily_summary.py" ]; then
+  python3 "$(dirname "$0")/../_utils/speed_trap_daily_summary.py" || echo "Speed trap summary failed (non-fatal)"
+else
+  echo "Speed trap summary script not found (skipping)"
+fi
+
 exit 0

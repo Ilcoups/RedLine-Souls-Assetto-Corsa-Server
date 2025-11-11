@@ -48,6 +48,60 @@ stats = {
     'avg_delay_ms': 0
 }
 
+STATS_FILE = Path("/home/acserver/server/_utils/speed_trap_stats.json")
+
+
+def save_violation_stats(webhook_data):
+    """Save violation data for leaderboard tracking"""
+    try:
+        # Extract violation info from webhook data
+        data = webhook_data.get('data', {})
+        
+        # Parse the message template to extract fields
+        if isinstance(data, dict) and 'content' in data:
+            content = data['content']
+            violation = {
+                'timestamp': datetime.now().isoformat(),
+                'raw_content': content
+            }
+            
+            # Try to extract structured data from content
+            lines = content.split('\n')
+            for line in lines:
+                if '**Driver:**' in line:
+                    violation['driver'] = line.split('`')[1] if '`' in line else 'Unknown'
+                elif '**Speed:**' in line:
+                    violation['speed'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
+                elif '**Limit:**' in line:
+                    violation['limit'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
+                elif '**Over Limit:**' in line:
+                    violation['over_limit'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
+                elif '**Camera:**' in line:
+                    violation['camera'] = line.split('`')[1] if '`' in line else 'Unknown'
+            
+            # Load existing stats
+            if STATS_FILE.exists():
+                with open(STATS_FILE, 'r') as f:
+                    stats_data = json.load(f)
+            else:
+                stats_data = {'violations': [], 'last_updated': None}
+            
+            # Add new violation
+            stats_data['violations'].append(violation)
+            stats_data['last_updated'] = datetime.now().isoformat()
+            
+            # Keep last 1000 violations
+            if len(stats_data['violations']) > 1000:
+                stats_data['violations'] = stats_data['violations'][-1000:]
+            
+            # Save
+            with open(STATS_FILE, 'w') as f:
+                json.dump(stats_data, f, indent=2)
+                
+    except Exception as e:
+        log.error(f"Error saving violation stats: {e}")
+
+
 
 class WebhookProxyHandler(BaseHTTPRequestHandler):
     """HTTP handler that receives webhooks and queues them"""
@@ -119,6 +173,12 @@ class WebhookProxyHandler(BaseHTTPRequestHandler):
             
             WEBHOOK_QUEUE.put(webhook_data)
             stats['total_received'] += 1
+            
+            # Also save to statistics file for leaderboard
+            try:
+                save_violation_stats(webhook_data)
+            except Exception as e:
+                log.error(f"Failed to save stats: {e}")
             
             # Respond immediately (game doesn't wait)
             self.send_response(200)

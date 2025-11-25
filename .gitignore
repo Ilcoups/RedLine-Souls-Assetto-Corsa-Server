@@ -70,8 +70,41 @@ setups/
 !BEAUTIFUL_WEATHER_GUIDE.md
 !SERVER_MANAGEMENT.md
 !*.sh
-\n# Local environment file with secrets\n.env
+
+# Local environment file with secrets
+.env
+speed_trap_proxy.conf
+speed_trap_proxy.conf.old_leaked
+cfg/plugin_discord_audit_cfg.yml
+
+# Configuration files with credentials
+cfg/server_cfg.ini
+cfg/extra_cfg.yml
+hub/configuration.yml
+hub/configuration.yml.*
+
+# Test files that may contain credentials
+_utils/test_*.py
+
+# Backup files
+cfg/traffic_presets/backup_*.yml
+*.backup
+*.bak
+*.old_leaked
+
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
+
+# Traffic votes
 traffic_votes.json
+
+
+# Honeypot system (NEVER commit - exposes trap!)
+honeypot*.py
+logs/honeypot*.log
+logs/honeypot*.json
+*honeypot_data.json
+HONEYPOT*.md
+_archive/docs_cleanup_2025/OLD_WEBHOOK_BACKUP.md

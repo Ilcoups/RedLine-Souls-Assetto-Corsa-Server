@@ -14,7 +14,30 @@ from queue import Queue, Empty
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import logging
-import cgi
+from email import message_from_string
+from urllib.parse import parse_qs
+
+# Load environment variables from .env file (fallback loader - no dependencies)
+ROOT_DIR = Path(__file__).resolve().parent
+env_path = ROOT_DIR / '.env'
+if env_path.exists():
+    try:
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for raw in f:
+                line = raw.strip()
+                if not line or line.startswith('#'):
+                    continue
+                if '=' in line:
+                    k, v = line.split('=', 1)
+                    k = k.strip()
+                    v = v.strip().strip('"\'')
+                    if k and v:
+                        os.environ.setdefault(k, v)
+        print("✓ Loaded environment variables from .env")
+    except Exception as e:
+        print(f"⚠ Warning: Could not load .env file: {e}")
+else:
+    print(f"⚠ Warning: .env file not found at {env_path}")
 
 # Configuration
 PROXY_PORT = 8083  # Local proxy port
@@ -57,46 +80,64 @@ def save_violation_stats(webhook_data):
         # Extract violation info from webhook data
         data = webhook_data.get('data', {})
         
-        # Parse the message template to extract fields
-        if isinstance(data, dict) and 'content' in data:
-            content = data['content']
-            violation = {
-                'timestamp': datetime.now().isoformat(),
-                'raw_content': content
-            }
+        # Handle both multipart (with images) and JSON webhooks
+        content = None
+        if isinstance(data, dict):
+            if 'payload_json' in data:
+                # Multipart upload (with image) - parse payload_json
+                try:
+                    payload = json.loads(data['payload_json'])
+                    content = payload.get('content', '')
+                except (json.JSONDecodeError, TypeError):
+                    log.error("Failed to parse payload_json")
+                    return
+            elif 'content' in data:
+                # Direct JSON webhook
+                content = data['content']
+        
+        if not content:
+            log.warning("No content found in webhook data")
+            return
             
-            # Try to extract structured data from content
-            lines = content.split('\n')
-            for line in lines:
-                if '**Driver:**' in line:
-                    violation['driver'] = line.split('`')[1] if '`' in line else 'Unknown'
-                elif '**Speed:**' in line:
-                    violation['speed'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
-                elif '**Limit:**' in line:
-                    violation['limit'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
-                elif '**Over Limit:**' in line:
-                    violation['over_limit'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
-                elif '**Camera:**' in line:
-                    violation['camera'] = line.split('`')[1] if '`' in line else 'Unknown'
+        violation = {
+            'timestamp': datetime.now().isoformat(),
+            'raw_content': content
+        }
+        
+        # Try to extract structured data from content
+        lines = content.split('\n')
+        for line in lines:
+            if '**Driver:**' in line:
+                violation['driver'] = line.split('`')[1] if '`' in line else 'Unknown'
+            elif '**Speed:**' in line:
+                violation['speed'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
+            elif '**Limit:**' in line:
+                violation['limit'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
+            elif '**Over Limit:**' in line:
+                violation['over_limit'] = line.split('`')[1].replace(' km/h', '') if '`' in line else '0'
+            elif '**Camera:**' in line:
+                violation['camera'] = line.split('`')[1] if '`' in line else 'Unknown'
+        
+        # Load existing stats
+        if STATS_FILE.exists():
+            with open(STATS_FILE, 'r') as f:
+                stats_data = json.load(f)
+        else:
+            stats_data = {'violations': [], 'last_updated': None}
+        
+        # Add new violation
+        stats_data['violations'].append(violation)
+        stats_data['last_updated'] = datetime.now().isoformat()
+        
+        # Keep last 1000 violations
+        if len(stats_data['violations']) > 1000:
+            stats_data['violations'] = stats_data['violations'][-1000:]
+        
+        # Save
+        with open(STATS_FILE, 'w') as f:
+            json.dump(stats_data, f, indent=2)
             
-            # Load existing stats
-            if STATS_FILE.exists():
-                with open(STATS_FILE, 'r') as f:
-                    stats_data = json.load(f)
-            else:
-                stats_data = {'violations': [], 'last_updated': None}
-            
-            # Add new violation
-            stats_data['violations'].append(violation)
-            stats_data['last_updated'] = datetime.now().isoformat()
-            
-            # Keep last 1000 violations
-            if len(stats_data['violations']) > 1000:
-                stats_data['violations'] = stats_data['violations'][-1000:]
-            
-            # Save
-            with open(STATS_FILE, 'w') as f:
-                json.dump(stats_data, f, indent=2)
+        log.info(f"✓ Saved violation: {violation.get('driver', 'Unknown')} @ {violation.get('speed', '?')} km/h")
                 
     except Exception as e:
         log.error(f"Error saving violation stats: {e}")
@@ -295,23 +336,22 @@ def webhook_worker():
 
 
 def load_config():
-    """Load real webhook URL from speed_trap_proxy.conf"""
+    """Load real webhook URL from environment variable"""
     global REAL_WEBHOOK_URL
     
-    config_file = Path("/home/acserver/server/speed_trap_proxy.conf")
-    try:
-        with open(config_file, 'r') as f:
-            for line in f:
-                if line.startswith('REAL_DISCORD_WEBHOOK='):
-                    REAL_WEBHOOK_URL = line.split('=', 1)[1].strip()
-                    log.info(f"✓ Loaded webhook URL: {REAL_WEBHOOK_URL[:50]}...")
-                    return True
-    except Exception as e:
-        log.error(f"Failed to load webhook URL: {e}")
+    REAL_WEBHOOK_URL = os.getenv('DISCORD_SPEED_TRAP_WEBHOOK')
+    
+    if not REAL_WEBHOOK_URL:
+        log.error("❌ DISCORD_SPEED_TRAP_WEBHOOK not set in .env file")
+        log.error("   Please add: DISCORD_SPEED_TRAP_WEBHOOK=\"https://discord.com/api/webhooks/...\"")
         return False
     
-    log.error("Could not find REAL_DISCORD_WEBHOOK in config")
-    return False
+    if not REAL_WEBHOOK_URL.startswith('https://discord.com/api/webhooks/'):
+        log.error(f"❌ Invalid webhook URL format: {REAL_WEBHOOK_URL[:30]}...")
+        return False
+    
+    log.info(f"✓ Loaded webhook from .env: {REAL_WEBHOOK_URL[:50]}...")
+    return True
 
 
 def start_proxy():

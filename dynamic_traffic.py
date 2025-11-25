@@ -11,7 +11,7 @@ from datetime import datetime
 import pytz
 
 # Config
-SERVER_DIR = Path("/home/acserver/server")
+SERVER_DIR = Path(__file__).resolve().parent
 CONFIG_FILE = SERVER_DIR / "cfg" / "extra_cfg.yml"
 BACKUP_DIR = SERVER_DIR / "cfg" / "traffic_presets"
 LOG_FILE = SERVER_DIR / "logs" / "dynamic_traffic.log"
@@ -97,6 +97,24 @@ BASE_LANE_OVERRIDES = {
         "MinSpawnProtectionTimeSeconds": 22, "MaxSpawnProtectionTimeSeconds": 38}
 }
 
+# Weather-Reactive Traffic (Subtle Wow Factor)
+WEATHER_MULTIPLIERS = {
+    'Clear': {'speed': 1.0, 'spacing': 1.0, 'name': '☀️ Clear'},
+    'FewClouds': {'speed': 1.0, 'spacing': 1.0, 'name': '🌤️ Few Clouds'},
+    'ScatteredClouds': {'speed': 0.97, 'spacing': 1.05, 'name': '⛅ Scattered Clouds'},
+    'BrokenClouds': {'speed': 0.95, 'spacing': 1.08, 'name': '☁️ Broken Clouds'},
+    'OvercastClouds': {'speed': 0.93, 'spacing': 1.10, 'name': '☁️ Overcast'},
+    'Fog': {'speed': 0.75, 'spacing': 1.30, 'name': '🌫️ Fog'},
+    'Mist': {'speed': 0.85, 'spacing': 1.20, 'name': '🌁 Mist'},
+    'LightRain': {'speed': 0.88, 'spacing': 1.18, 'name': '🌦️ Light Rain'},
+    'Rain': {'speed': 0.80, 'spacing': 1.28, 'name': '🌧️ Rain'},
+    'HeavyRain': {'speed': 0.70, 'spacing': 1.40, 'name': '⛈️ Heavy Rain'},
+    'Thunderstorm': {'speed': 0.65, 'spacing': 1.45, 'name': '⛈️ Thunderstorm'},
+    'LightSnow': {'speed': 0.75, 'spacing': 1.35, 'name': '🌨️ Light Snow'},
+    'Snow': {'speed': 0.65, 'spacing': 1.45, 'name': '❄️ Snow'},
+    'HeavySnow': {'speed': 0.55, 'spacing': 1.55, 'name': '❄️ Heavy Snow'},
+}
+
 def create_preset(name, emoji, hours, density, speed_mod, ai_count, spacing_mod, aggressive):
     """Generate preset with modifiers applied to base values"""
     return {
@@ -139,6 +157,44 @@ def log(msg):
         LOG_FILE.parent.mkdir(exist_ok=True)
         with open(LOG_FILE, 'a') as f: f.write(log_msg + '\n')
     except: pass
+
+def get_current_weather():
+    """Get current weather from AssettoServer API or config"""
+    try:
+        # Try to get from AssettoServer API
+        response = requests.get('http://127.0.0.1:8081/api/details', timeout=2)
+        if response.status_code == 200:
+            data = response.json()
+            # API returns weather in 'weather' field
+            weather_name = data.get('weather', 'Clear')
+            return weather_name
+    except:
+        pass
+    
+    # Fallback: read from server config
+    try:
+        cfg = load_config()
+        if cfg and 'WeatherFxParams' in cfg['main']:
+            # Get first weather type from config
+            weather_fx = cfg['main'].get('WeatherFxParams', {})
+            # This is a rough fallback
+            return 'Clear'
+    except:
+        pass
+    
+    return 'Clear'  # Default to clear
+
+def get_weather_multiplier():
+    """Get traffic behavior multipliers based on current weather"""
+    current_weather = get_current_weather()
+    
+    # Match weather name to multipliers (case-insensitive, partial match)
+    for weather_key, modifiers in WEATHER_MULTIPLIERS.items():
+        if weather_key.lower() in current_weather.lower() or current_weather.lower() in weather_key.lower():
+            return modifiers
+    
+    # Default to clear weather
+    return WEATHER_MULTIPLIERS['Clear']
 
 # ============================================================================
 # Player Count Auto-Scaling Functions
@@ -692,7 +748,7 @@ def backup_config():
     except: return False
 
 def apply_preset(preset_key, preset_data):
-    """Apply traffic preset to config"""
+    """Apply traffic preset to config with weather-reactive adjustments"""
     log(f"{'='*70}\n{preset_data['name']} (Applying)\n{'='*70}")
     
     if not backup_config():
@@ -704,9 +760,34 @@ def apply_preset(preset_key, preset_data):
         log("✗ Config load failed")
         return False
     
-    # Apply settings
+    # WEATHER-REACTIVE TRAFFIC (Subtle Wow Factor!)
+    weather_mod = get_weather_multiplier()
+    if weather_mod['speed'] != 1.0 or weather_mod['spacing'] != 1.0:
+        log(f"🌦️ Weather: {weather_mod['name']} (Speed: {weather_mod['speed']:.0%}, Spacing: {weather_mod['spacing']:.0%})")
+    
+    # Apply settings with weather modifiers
     changes = 0
     for k, v in preset_data['settings'].items():
+        # Apply weather multipliers to speed/spacing settings
+        if k == 'MaxSpeedKph':
+            v = int(v * weather_mod['speed'])
+        elif k == 'RightLaneOffsetKph':
+            v = int(v * weather_mod['speed'])
+        elif k in ['MinAiSafetyDistanceMeters', 'MaxAiSafetyDistanceMeters']:
+            v = int(v * weather_mod['spacing'])
+        elif k == 'LaneCountSpecificOverrides':
+            # Apply weather to lane-specific overrides
+            v = {
+                lane: {
+                    **params,
+                    'MaxSpeedKph': int(params.get('MaxSpeedKph', 100) * weather_mod['speed']),
+                    'RightLaneOffsetKph': int(params.get('RightLaneOffsetKph', 20) * weather_mod['speed']),
+                    'MinAiSafetyDistanceMeters': int(params.get('MinAiSafetyDistanceMeters', 30) * weather_mod['spacing']),
+                    'MaxAiSafetyDistanceMeters': int(params.get('MaxAiSafetyDistanceMeters', 80) * weather_mod['spacing']),
+                }
+                for lane, params in v.items()
+            }
+        
         if cfg['main']['AiParams'].get(k) != v:
             cfg['main']['AiParams'][k] = v
             changes += 1

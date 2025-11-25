@@ -16,7 +16,8 @@ from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 
 # Load environment variables from .env file
-env_path = Path('/home/acserver/server/.env')
+ROOT_DIR = Path(__file__).resolve().parent
+env_path = ROOT_DIR / '.env'
 if env_path.exists():
     try:
         with open(env_path, 'r', encoding='utf-8') as f:
@@ -37,8 +38,9 @@ else:
     print("⚠ Warning: .env file not found, using environment variables only")
 
 # Configuration
-LOG_DIR = Path("/home/acserver/server/logs")
-STATS_FILE = Path("/home/acserver/server/player_stats.json")
+# Configuration
+LOG_DIR = ROOT_DIR / "logs"
+STATS_FILE = ROOT_DIR / "player_stats.json"
 DISCORD_STATS_WEBHOOK = os.getenv('DISCORD_STATS_WEBHOOK')
 CHECK_INTERVAL = 1.0
 LEADERBOARD_TIME = "23:59"  # Post leaderboard at 11:59 PM
@@ -753,7 +755,7 @@ def generate_leaderboard():
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     # Traffic Poll Results
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    votes_file = Path("/home/acserver/server/traffic_votes.json")
+    votes_file = ROOT_DIR / "traffic_votes.json"
     if votes_file.exists():
         try:
             import json

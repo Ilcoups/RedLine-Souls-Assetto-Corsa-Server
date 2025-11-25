@@ -17,7 +17,8 @@ from datetime import datetime, timezone
 import os
 
 # Load environment variables from .env file (fallback loader - no dependencies)
-env_path = Path('/home/acserver/server/.env')
+ROOT_DIR = Path(__file__).resolve().parent
+env_path = ROOT_DIR / '.env'
 if env_path.exists():
     try:
         with open(env_path, 'r', encoding='utf-8') as f:
@@ -38,7 +39,7 @@ else:
     print("⚠ Warning: .env file not found at {env_path}")
 
 # Configuration
-LOG_DIR = Path("/home/acserver/server/logs")
+LOG_DIR = ROOT_DIR / "logs"
 DISCORD_WEBHOOK = os.getenv('DISCORD_WEBHOOK')
 DISCORD_CHAT_WEBHOOK = os.getenv('DISCORD_CHAT_WEBHOOK')
 UDP_PLUGIN_HOST = os.getenv('UDP_PLUGIN_HOST', "127.0.0.1")
@@ -72,7 +73,7 @@ checksum_failures = {}
 # Ask at different milestones: 10min, 30min, 90min (1.5hr), 180min (3hr)
 # This gives more weight to longer sessions without being annoying
 POLL_MILESTONES = [10, 30, 90, 180]  # minutes
-VOTES_FILE = Path("/home/acserver/server/traffic_votes.json")
+VOTES_FILE = ROOT_DIR / "traffic_votes.json"
 
 # ============================================================================
 # UDP Plugin Interface - Chat Messages
@@ -159,7 +160,7 @@ def get_traffic_period():
 def is_regular_player(steam_id):
     """Check if player is a 'regular' (has stats from player_stats.py)"""
     try:
-        stats_file = Path("/home/acserver/server/player_stats.json")
+        stats_file = ROOT_DIR / "player_stats.json"
         if not stats_file.exists():
             return False
         

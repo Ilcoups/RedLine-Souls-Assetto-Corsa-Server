@@ -101,10 +101,11 @@ __pycache__/
 traffic_votes.json
 
 
-# Honeypot system (NEVER commit - exposes trap!)
-honeypot*.py
-logs/honeypot*.log
-logs/honeypot*.json
-*honeypot_data.json
 HONEYPOT*.md
 _archive/docs_cleanup_2025/OLD_WEBHOOK_BACKUP.md
+
+# Temporary monitoring scripts
+monitor_*.py
+*_webhook_*.py
+*_monitor_*.sh
+hub/AssettoServer.Hub

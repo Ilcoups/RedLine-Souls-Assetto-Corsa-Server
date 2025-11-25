@@ -83,6 +83,7 @@ def _build_embed_description(entries: List[Tuple[int, int, str, int, str, int, s
     medals = {1: "🥇", 2: "🥈", 3: "🥉"}
     
     for rank, steam_id, name, score, last_run, duration, car_name in entries:
+        # Escape markdown special characters
         safe_name = name.replace("*", r"\*").replace("_", r"\_")
         
         # Truncate long names to keep formatting clean
@@ -140,8 +141,8 @@ def _build_embed_description(entries: List[Tuple[int, int, str, int, str, int, s
         else:
             # Clean list style
             lines.append(
-                f"**{rank}.** [{safe_name}](https://steamcommunity.com/profiles/{steam_id}) "
-                f"· **{score:,}** pts · {time_str}"
+                f"\u202D**{rank}.** [{safe_name}](https://steamcommunity.com/profiles/{steam_id}) "
+                f"· **{score:,}** pts · {time_str}\u202C"
             )
     
     lines.extend([

@@ -1,0 +1,66 @@
+# Port that the hub will listen for server (gRPC) connections
+GrpcPort: 5085
+# Port that the hub will listen on for the web interface
+HttpPort: 8000
+# Filename of main logo in wwwroot/images
+MainLogoFile: logo.svg
+# Filename of logo shown in nav bar in wwwroot/images
+NavbarLogoFile: logo.svg
+# Name of the hub, will be shown in web page titles
+HubName: AssettoServer Hub
+# Minimum client security level for lap times to be considered valid
+MinimumClientSecurityLevel: 0
+# List of keys that are allowed to connect to the hub. Do not share these keys with other people!
+Keys:
+- Key: Dty0fS7cN2up39XQ5of2oy29LajeUKm+phtNM9N6B0o=
+  Name: default
+# Discord Client ID
+DiscordClientId: 
+# Discord Client Secret
+DiscordClientSecret: 
+# Discord Bot Token
+DiscordBotToken: 
+# List of Discord overtake leaderboard templates
+DiscordOvertakeLeaderboardTemplates:
+# List of Discord race challenge leaderboard templates
+DiscordRaceChallengeLeaderboardTemplates:
+# List of Discord timing leaderboard templates
+DiscordTimingLeaderboardTemplates:
+# List of Discord timing points leaderboard templates
+DiscordTimingPointsLeaderboardTemplates:
+# List of Discord timing stage leaderboard templates
+DiscordTimingStageLeaderboardTemplates:
+# List of Discord server status templates
+DiscordServerStatusTemplates:
+# List of Discord server status widgets
+DiscordServerStatus:
+  redline-tokyo:
+    ChannelId: 1303722929732603955
+    MessageId: 1303722995650117702
+    ServerId: 2
+# List of file-based user groups
+FileBasedUserGroups:
+- Name: blacklist
+  Path: blacklist.txt
+- Name: whitelist
+  Path: whitelist.txt
+# List of ranks for PatreonSafetyRatingPlugin
+SafetyRatingRanks:
+- Name: A
+  Color: '#00FF00'
+  MinimumRating: 3
+  UserGroupName: 
+- Name: B
+  Color: 
+  MinimumRating: 1
+  UserGroupName: 
+- Name: C
+  Color: '#FF0000'
+  MinimumRating: 0
+  UserGroupName: 
+# List of user groups based on the overtake leaderboard
+OvertakeUserGroups: []
+# List of user groups based on the timing leaderboard
+TimingUserGroups: []
+# List of extra columns shown on the timing leaderboard
+TimingLeaderboardExtraColumns: []

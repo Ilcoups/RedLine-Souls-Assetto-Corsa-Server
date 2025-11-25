@@ -2,7 +2,7 @@
 # AssettoServer Startup Script
 # Unified announcer is managed by systemd (systemctl --user status unified-announcer.service)
 
-cd /home/acserver/server
+cd "$(dirname "$0")"
 
 echo "🏁 Starting RedLine Souls Server..."
 

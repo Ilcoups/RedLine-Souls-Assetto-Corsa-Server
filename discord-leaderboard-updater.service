@@ -1,0 +1,13 @@
+[Unit]
+Description=Discord Overtake Leaderboard Updater Timer
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/acserver/server
+ExecStart=/usr/bin/python3 /home/acserver/server/_utils/update_discord_overtake_manual.py
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

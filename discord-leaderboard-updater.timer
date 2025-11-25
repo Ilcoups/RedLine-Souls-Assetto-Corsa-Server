@@ -1,0 +1,11 @@
+[Unit]
+Description=Update Discord Overtake Leaderboard Every Minute
+Requires=discord-leaderboard-updater.service
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

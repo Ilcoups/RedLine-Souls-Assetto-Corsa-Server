@@ -17,7 +17,7 @@ check_file "cfg/extra_cfg.yml" "Extra config"
 
 # Verify optimizations applied
 if [ -f "cfg/extra_cfg.yml" ]; then
-    check_in_file "AiBehaviorUpdateIntervalHz: 42" "cfg/extra_cfg.yml" "AI Behavior refresh rate: 42 Hz ✨"
+    check_in_file "AiBehaviorUpdateIntervalHz: 60" "cfg/extra_cfg.yml" "AI Behavior refresh rate: 60 Hz ✨"
     check_in_file "OutsideNetworkBubbleRefreshRateHz: 25" "cfg/extra_cfg.yml" "Distant player refresh rate: 25 Hz ✨"
     
     # Check critical plugins enabled

@@ -1,4 +1,114 @@
 {
-  "violations": [],
-  "last_updated": null
+  "violations": [
+    {
+      "timestamp": "2025-11-24T08:15:23",
+      "driver": "TurHubie",
+      "speed": "185",
+      "limit": "80",
+      "over_limit": "105",
+      "camera": "#100-001"
+    },
+    {
+      "timestamp": "2025-11-24T08:22:45",
+      "driver": "il",
+      "speed": "165",
+      "limit": "80",
+      "over_limit": "85",
+      "camera": "#100-002"
+    },
+    {
+      "timestamp": "2025-11-24T08:35:12",
+      "driver": "TurHubie",
+      "speed": "175",
+      "limit": "80",
+      "over_limit": "95",
+      "camera": "#100-003"
+    },
+    {
+      "timestamp": "2025-11-24T09:05:34",
+      "driver": "SpeedDemon",
+      "speed": "195",
+      "limit": "80",
+      "over_limit": "115",
+      "camera": "#100-001"
+    },
+    {
+      "timestamp": "2025-11-24T09:15:56",
+      "driver": "il",
+      "speed": "155",
+      "limit": "80",
+      "over_limit": "75",
+      "camera": "#100-005"
+    },
+    {
+      "timestamp": "2025-11-24T09:28:10",
+      "driver": "RecklessR",
+      "speed": "180",
+      "limit": "80",
+      "over_limit": "100",
+      "camera": "#100-002"
+    },
+    {
+      "timestamp": "2025-11-24T09:45:22",
+      "driver": "TurHubie",
+      "speed": "190",
+      "limit": "80",
+      "over_limit": "110",
+      "camera": "#100-004"
+    },
+    {
+      "timestamp": "2025-11-24T10:05:33",
+      "driver": "FastAndFurious",
+      "speed": "170",
+      "limit": "80",
+      "over_limit": "90",
+      "camera": "#100-001"
+    },
+    {
+      "timestamp": "2025-11-24T10:18:44",
+      "driver": "SpeedDemon",
+      "speed": "200",
+      "limit": "80",
+      "over_limit": "120",
+      "camera": "#100-003"
+    },
+    {
+      "timestamp": "2025-11-24T10:25:15",
+      "driver": "il",
+      "speed": "160",
+      "limit": "80",
+      "over_limit": "80",
+      "camera": "#100-002"
+    },
+    {
+      "timestamp": "2025-11-24T10:32:28",
+      "driver": "RecklessR",
+      "speed": "175",
+      "limit": "80",
+      "over_limit": "95",
+      "camera": "#100-005"
+    },
+    {
+      "timestamp": "2025-11-24T10:40:39",
+      "driver": "TurHubie",
+      "speed": "183",
+      "limit": "80",
+      "over_limit": "103",
+      "camera": "#100-001"
+    },
+    {
+      "timestamp": "2025-11-24T11:07:50.149126",
+      "raw_content": "**\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501**\n\ud83d\ude93 **SPEED VIOLATION DETECTED** \ud83d\ude93\n**\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501**\n\n\ud83d\udcf8 **Camera:** `#100-005`\n\ud83d\udc64 **Driver:** `TestDriver`\n\u26a1 **Speed:** `150 km/h`\n\u26a0\ufe0f **Limit:** `80 km/h`\n\ud83d\udcca **Over Limit:** `70 km/h`\n\n\ud83d\udcb8 *You have been fined for reckless driving*",
+      "camera": "#100-005",
+      "driver": "TestDriver",
+      "speed": "150",
+      "limit": "80",
+      "over_limit": "70"
+    },
+    {
+      "timestamp": "2025-11-24T22:39:28.922787",
+      "raw_content": "\ud83d\udd12 **Security Test**: This is a test from the newly secured speed trap proxy! The old leaked webhook has been replaced."
+    }
+  ],
+  "last_updated": "2025-11-24T22:39:28.923958"
 }

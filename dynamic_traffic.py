@@ -61,10 +61,10 @@ LOAD_CONFIG = {
     'memory_critical': 3.5,   # GB - emergency reduction
     'memory_recovery': 2.0,   # GB - safe to restore traffic
     
-    # System Load Average (1-min avg on 4-core system)
-    'load_warning': 3.0,      # Load avg > 3.0 on 4-core = 75% util
-    'load_critical': 3.5,     # Load avg > 3.5 on 4-core = 87.5% util
-    'load_recovery': 2.5,     # Load avg < 2.5 on 4-core = 62.5% util
+    # System Load Average (1-min avg on 2-core system - CORRECTED)
+    'load_warning': 1.5,      # Load avg > 1.5 on 2-core = 75% util
+    'load_critical': 1.75,    # Load avg > 1.75 on 2-core = 87.5% util
+    'load_recovery': 1.25,    # Load avg < 1.25 on 2-core = 62.5% util
     
     # Player Spike Detection
     'spike_threshold': 5,     # If players increase by 5+ in 5 min
@@ -159,30 +159,21 @@ def log(msg):
     except: pass
 
 def get_current_weather():
-    """Get current weather from AssettoServer API or config"""
+    """Get current weather from AssettoServer API"""
     try:
-        # Try to get from AssettoServer API
         response = requests.get('http://127.0.0.1:8081/api/details', timeout=2)
         if response.status_code == 200:
             data = response.json()
-            # API returns weather in 'weather' field
-            weather_name = data.get('weather', 'Clear')
+            # FIX: API returns 'currentWeatherId' not 'weather'
+            weather_name = data.get('currentWeatherId', 'Clear')
             return weather_name
-    except:
-        pass
+    except Exception as e:
+        log(f"⚠️ Weather API failed: {e}")
     
-    # Fallback: read from server config
-    try:
-        cfg = load_config()
-        if cfg and 'WeatherFxParams' in cfg['main']:
-            # Get first weather type from config
-            weather_fx = cfg['main'].get('WeatherFxParams', {})
-            # This is a rough fallback
-            return 'Clear'
-    except:
-        pass
-    
-    return 'Clear'  # Default to clear
+    return 'Clear'  # Safe default
+
+# Cache last weather to avoid redundant updates
+_LAST_WEATHER = {'name': None, 'modifiers': None}
 
 def get_weather_multiplier():
     """Get traffic behavior multipliers based on current weather"""
@@ -191,10 +182,18 @@ def get_weather_multiplier():
     # Match weather name to multipliers (case-insensitive, partial match)
     for weather_key, modifiers in WEATHER_MULTIPLIERS.items():
         if weather_key.lower() in current_weather.lower() or current_weather.lower() in weather_key.lower():
+            # Cache for comparison
+            _LAST_WEATHER['name'] = current_weather
+            _LAST_WEATHER['modifiers'] = modifiers
             return modifiers
     
     # Default to clear weather
-    return WEATHER_MULTIPLIERS['Clear']
+    default = WEATHER_MULTIPLIERS['Clear']
+    _LAST_WEATHER['name'] = current_weather
+    _LAST_WEATHER['modifiers'] = default
+    return default
+
+# Weather cache is maintained in get_weather_multiplier() - no separate check needed
 
 # ============================================================================
 # Player Count Auto-Scaling Functions
@@ -246,28 +245,8 @@ def apply_player_scaling(preset_key, preset_data, player_count):
         log("✗ Config load failed")
         return False
     
-    # Special handling for 0 players - use idle traffic
-    if player_count == 0 and SCALING_CONFIG.get('idle_traffic_enabled', False):
-        idle_ai = SCALING_CONFIG['idle_ai_count']
-        
-        # For idle traffic, we use MinAiTargetCount to force AI spawn even with 0 players
-        # Keep AiPerPlayerTargetCount at preset value (ready when players join)
-        base_ai = preset_data['settings']['AiPerPlayerTargetCount']
-        old_min_ai = cfg['main']['AiParams'].get('MinAiTargetCount', 0)
-        
-        if old_min_ai != idle_ai:
-            # Keep AiPerPlayerTargetCount at preset value
-            cfg['main']['AiParams']['AiPerPlayerTargetCount'] = base_ai
-            # Set MinAiTargetCount to force idle traffic spawning
-            cfg['main']['AiParams']['MinAiTargetCount'] = idle_ai
-            # Reset MaxAiTargetCount to normal
-            cfg['main']['AiParams']['MaxAiTargetCount'] = base_ai * 24
-            
-            if save_config(cfg):
-                log(f"🌙 Idle Traffic: MinAI {old_min_ai} → {idle_ai} (keeps {idle_ai} AI spawned)")
-                os.utime(CONFIG_FILE, None)  # Trigger hot-reload
-                return True
-        return False
+    # Idle traffic disabled (AssettoServer doesn't spawn AI with 0 players anyway)
+    # Skip scaling for empty server - no changes needed
     
     # Normal player-based scaling (1+ players)
     base_ai = preset_data['settings']['AiPerPlayerTargetCount']
@@ -538,6 +517,7 @@ def monitor_server_load():
             if LOAD_CONFIG['consecutive_warnings'] >= LOAD_CONFIG['min_checks_before_action']:
                 log(f"⚠️ Server load elevated: {', '.join(status['issues'])}")
                 LOAD_CONFIG['state'] = 'warning'
+                LOAD_CONFIG['last_emergency_time'] = time.time()  # Track warning time for recovery
         # Stay in warning or critical, don't escalate/de-escalate yet
     
     else:  # severity == 'normal'
@@ -739,13 +719,26 @@ def save_config(cfg):
         return False
 
 def backup_config():
-    """Backup current config"""
+    """Backup current config with rolling cleanup (for rapid development)"""
     try:
         BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        
+        # Timestamped backup (frequent saves for rapid dev)
         ts = datetime.now(AMSTERDAM_TZ).strftime("%Y%m%d_%H%M%S")
-        shutil.copy2(CONFIG_FILE, BACKUP_DIR / f"backup_{ts}.yml")
+        backup_file = BACKUP_DIR / f"backup_{ts}.yml"
+        shutil.copy2(CONFIG_FILE, backup_file)
+        
+        # AUTO-CLEANUP: Keep only last 20 backups (rolling window)
+        backups = sorted(BACKUP_DIR.glob("backup_*.yml"), key=lambda p: p.stat().st_mtime, reverse=True)
+        if len(backups) > 20:
+            for old_backup in backups[20:]:
+                old_backup.unlink()
+                log(f"🗑️ Cleaned old backup: {old_backup.name}")
+        
         return True
-    except: return False
+    except Exception as e:
+        log(f"⚠️ Backup failed: {e}")
+        return False
 
 def apply_preset(preset_key, preset_data):
     """Apply traffic preset to config with weather-reactive adjustments"""
@@ -762,8 +755,11 @@ def apply_preset(preset_key, preset_data):
     
     # WEATHER-REACTIVE TRAFFIC (Subtle Wow Factor!)
     weather_mod = get_weather_multiplier()
+    # Always log weather detection (helps debugging)
     if weather_mod['speed'] != 1.0 or weather_mod['spacing'] != 1.0:
-        log(f"🌦️ Weather: {weather_mod['name']} (Speed: {weather_mod['speed']:.0%}, Spacing: {weather_mod['spacing']:.0%})")
+        log(f"🌦️ Weather: {weather_mod['name']} → Speed {weather_mod['speed']:.0%}, Spacing {weather_mod['spacing']:.0%}")
+    else:
+        log(f"☀️ Weather: {weather_mod['name']} (normal conditions)")
     
     # Apply settings with weather modifiers
     changes = 0

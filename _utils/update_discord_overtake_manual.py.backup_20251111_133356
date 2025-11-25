@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""Manual Discord overtake leaderboard updater.
+
+Reads the latest overtake scores from Hub.db and edits the configured
+Discord leaderboard message directly using the bot token. This is a
+stop-gap until the Hub resumes updating the message automatically.
+"""
+
+import json
+import os
+import sqlite3
+import urllib.error
+import urllib.request
+from pathlib import Path
+from typing import List, Tuple
+
+ROOT = Path(__file__).resolve().parent.parent
+HUB_DB = ROOT / "hub" / "Hub.db"
+CONFIG_PATH = ROOT / "hub" / "configuration.yml"
+CHANNEL_ID = "1436335034868170754"
+MESSAGE_ID = "1437597005823213619"
+LEADERBOARD_NAME = "RedLine Souls"
+OVERTAKE_N_LEADERBOARD_ID = 1
+MAX_ROWS = 15
+
+
+def _extract_bot_token() -> str:
+    """Pull the Discord bot token from configuration.yml."""
+    with CONFIG_PATH.open("r", encoding="utf-8") as cfg:
+        for line in cfg:
+            if line.strip().startswith("DiscordBotToken:"):
+                # Line format: DiscordBotToken: TOKEN
+                return line.split(":", 1)[1].strip().strip('"')
+    raise RuntimeError("DiscordBotToken not found in configuration.yml")
+
+
+def _fetch_leaderboard_rows(conn: sqlite3.Connection) -> List[Tuple[int, int, str]]:
+    """Return (ranked) leaderboard entries ordered by score desc."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT e.score, e.player_id, COALESCE(p.name, 'Player') AS player_name, 
+               e.updated_at, e.duration, COALESCE(c.model, 'Unknown Car')
+        FROM overtake_n_leaderboard_entries AS e
+        LEFT JOIN players AS p ON p.player_id = e.player_id
+        LEFT JOIN cars AS c ON e.car_id = c.car_id
+        WHERE e.overtake_n_leaderboard_id = ?
+        ORDER BY e.score DESC, e.overtake_n_leaderboard_entry_id ASC
+        LIMIT ?
+        """,
+        (OVERTAKE_N_LEADERBOARD_ID, MAX_ROWS),
+    )
+    rows = cursor.fetchall()
+    if not rows:
+        raise RuntimeError("No overtake leaderboard entries found in Hub.db")
+
+    formatted: List[Tuple[int, int, str, int, str, int, str]] = []
+    for idx, (score, steam_id, name, updated_at, duration, car) in enumerate(rows, start=1):
+        formatted.append((idx, int(steam_id), name or "Player", int(score), updated_at, duration or 0, car or "Unknown"))
+    return formatted
+
+
+def _build_embed_description(entries: List[Tuple[int, int, str, int, str, int, str]]) -> str:
+    """Render the embed description body for Discord."""
+    from datetime import datetime, timezone
+    
+    now = datetime.now(timezone.utc).strftime("%b %d, %Y • %H:%M UTC")
+    
+    # Calculate total points and time across all drivers
+    total_points = sum(score for _, _, _, score, _, _, _ in entries)
+    total_hours = sum(duration for _, _, _, _, _, duration, _ in entries) // 3600
+    
+    lines = [
+        "",
+        "# 🏁 OVERTAKE CHAMPIONSHIP",
+        "",
+        f"**{len(entries)} DRIVERS** ┃ **{total_points:,}** POINTS ┃ **{total_hours:,}H** DRIVEN",
+        f"*Last updated: {now}*",
+        "",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    ]
+    
+    medals = {1: "🥇", 2: "🥈", 3: "🥉"}
+    
+    for rank, steam_id, name, score, last_run, duration, car_name in entries:
+        safe_name = name.replace("*", r"\*").replace("_", r"\_")
+        
+        # Truncate long names to keep formatting clean
+        if len(safe_name) > 20:
+            safe_name = safe_name[:17] + "..."
+        
+        # Clean up car name for display
+        # Remove common prefixes and make readable
+        clean_car = car_name.replace("_", " ").replace("ks ", "").replace("s3", "S3").replace("bc", "BC")
+        # Title case each word
+        clean_car = " ".join(word.capitalize() for word in clean_car.split())
+        # Fix common abbreviations that should be uppercase
+        clean_car = clean_car.replace("F40", "F40").replace("Bc", "BC").replace("S3", "S3")
+        if len(clean_car) > 25:
+            clean_car = clean_car[:22] + "..."
+        
+        # Parse and format the last run date
+        try:
+            last_run_dt = datetime.strptime(last_run, "%Y-%m-%d %H:%M:%S")
+            days_ago = (datetime.now() - last_run_dt).days
+            if days_ago == 0:
+                time_str = "🟢 Today"
+            elif days_ago == 1:
+                time_str = "🟡 Yesterday"
+            elif days_ago <= 7:
+                time_str = f"🟠 {days_ago}d ago"
+            else:
+                time_str = f"⚪ {last_run_dt.strftime('%b %d')}"
+        except:
+            time_str = "⚪ N/A"
+        
+        if rank <= 3:
+            # Top 3 - Clean minimal design with breathing room
+            medal = medals[rank]
+            leader_score = entries[0][3]
+            percentage = int((score / leader_score) * 100) if rank > 1 else 100
+            hours_driven = duration // 3600
+            
+            # Minimalist podium - Apple style
+            lines.append("")
+            lines.append(f"## {medal} #{rank} · [{safe_name}](https://steamcommunity.com/profiles/{steam_id})")
+            lines.append(f"> 🏎️ *{clean_car}*")
+            lines.append(f"> **{score:,}** points · {percentage}% · {hours_driven}h driven")
+            lines.append(f"> {time_str}")
+            
+        elif rank == 4:
+            # Elegant separator
+            lines.append("")
+            lines.append("─────────────────────────────────")
+            lines.append("")
+            lines.append(
+                f"**{rank}.** [{safe_name}](https://steamcommunity.com/profiles/{steam_id}) "
+                f"· **{score:,}** pts · {time_str}"
+            )
+        else:
+            # Clean list style
+            lines.append(
+                f"**{rank}.** [{safe_name}](https://steamcommunity.com/profiles/{steam_id}) "
+                f"· **{score:,}** pts · {time_str}"
+            )
+    
+    lines.extend([
+        "",
+        "─────────────────────────────────",
+        "",
+        "*Click names for Steam profiles • Updates every 60s*"
+    ])
+    
+    description = "\n".join(lines)
+    if len(description) > 4000:
+        raise RuntimeError("Generated Discord embed exceeds 4096 characters")
+    return description
+
+
+def _patch_discord_message(token: str, description: str) -> None:
+    """Send a PATCH request to Discord API to edit the embed description."""
+    url = f"https://discord.com/api/v10/channels/{CHANNEL_ID}/messages/{MESSAGE_ID}"
+    payload = json.dumps(
+        {
+            "content": "",
+            "embeds": [
+                {
+                    "type": "rich",
+                    "title": LEADERBOARD_NAME,
+                    "description": description,
+                }
+            ],
+        }
+    ).encode("utf-8")
+    request = urllib.request.Request(url, data=payload, method="PATCH")
+    request.add_header("Authorization", f"Bot {token}")
+    request.add_header("Content-Type", "application/json")
+    request.add_header(
+        "User-Agent",
+        "RedLineSoulsHub/1.0 (+https://discord.gg/redlinesouls)"
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            if response.status // 100 != 2:
+                raise RuntimeError(f"Discord API returned status {response.status}")
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"Discord API error {exc.code}: {body}") from exc
+
+
+def main() -> None:
+    if not HUB_DB.exists():
+        raise FileNotFoundError(f"Hub database not found: {HUB_DB}")
+    token = _extract_bot_token()
+    with sqlite3.connect(HUB_DB) as conn:
+        entries = _fetch_leaderboard_rows(conn)
+    description = _build_embed_description(entries)
+    _patch_discord_message(token, description)
+    print(f"Updated Discord message {MESSAGE_ID} with {len(entries)} entries")
+
+
+if __name__ == "__main__":
+    main()

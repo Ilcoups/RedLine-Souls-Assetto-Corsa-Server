@@ -2,10 +2,8 @@
 -- Plays server theme when player spawns in pits
 -- Server-delivered CSP Lua script
 
-local AUDIO_URL = "http://188.245.183.146:8082/audio/RedLineSoulsIntro.ogg"
-    -- Use server's public IP/hostname so clients can fetch the audio. Updated automatically by the server manager.
-    AUDIO_URL = "http://188.245.183.146:8082/audio/RedLineSoulsIntro.ogg"
-local AUDIO_VOLUME = 1.0 -- Volume (0.0 to 1.0)
+local AUDIO_URL = "https://red-line.live/audio/RedLineSoulsIntro.ogg"
+local AUDIO_VOLUME = 0.8 -- Volume (0.0 to 1.0)
 
 -- State tracking
 local hasPlayed = false

@@ -766,8 +766,14 @@ def process_line(line):
             # Send HIDDEN audio trigger if first time today
             # Format: __SPAWN_AUDIO__|steamId|playerName (matches Lua script expectation)
             if steam_id not in triggered_players:
-                send_chat(f"__SPAWN_AUDIO__|{steam_id}|{player_name}", hidden=True)
+                result = send_chat(f"__SPAWN_AUDIO__|{steam_id}|{player_name}", hidden=True)
+                if result:
+                    print(f"🎵 Audio trigger sent to: {player_name}")
+                else:
+                    print(f"✗ Failed to send audio trigger to: {player_name}")
                 triggered_players.add(steam_id)
+            else:
+                print(f"ℹ Audio trigger skipped (already triggered today): {player_name}")
     
     # Player disconnection
     elif " has disconnected" in line and "[INF]" in line:

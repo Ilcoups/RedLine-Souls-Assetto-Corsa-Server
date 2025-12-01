@@ -14,7 +14,7 @@
 -- ============================================================
 
 -- Configuration
-local AUDIO_URL = "http://188.245.183.146:8082/audio/RedLineSoulsIntro.ogg"
+local AUDIO_URL = "https://red-line.live/audio/RedLineSoulsIntro.ogg"
 local SPAWN_DELAY = 2.0   -- Seconds to wait after spawn before playing
 local AUDIO_VOLUME = 0.8  -- Volume (0.0 to 1.0)
 

@@ -95,18 +95,13 @@ if [ -f "speed_trap_proxy.py" ]; then
             warn "Speed trap proxy NOT listening on port 8083"
         fi
         
-        # Check configuration file
-        if [ -f "speed_trap_proxy.conf" ]; then
-            pass "Speed trap proxy configuration exists"
-            
-            # Check if webhook URL is configured
-            if grep -q "https://discord.com/api/webhooks/" speed_trap_proxy.conf 2>/dev/null; then
-                pass "Discord webhook configured in proxy"
-            else
-                warn "Webhook URL not found in proxy config"
-            fi
+        # Check configuration (now uses .env instead of conf file)
+        if grep -q "SPEED_TRAP_WEBHOOK" .env 2>/dev/null; then
+            pass "Speed trap webhook configured in .env"
+        elif [ -f "speed_trap_proxy.conf" ]; then
+            pass "Speed trap proxy configuration exists (legacy conf)"
         else
-            warn "Speed trap proxy configuration missing"
+            warn "Speed trap webhook not configured in .env"
         fi
     else
         warn "Speed trap proxy service NOT running"

@@ -755,18 +755,18 @@ def process_line(line):
                     print(f"✗ Discord join error: {e}")
                 del checksum_failures[player_name]
             else:
-                # Normal join (no previous failures)
-                message_id = send_discord_event("join", player_name, steam_id=steam_id, car=car_display)
-                if message_id:
-                    active_sessions[steam_id]['discord_message_id'] = message_id
+                # Normal join - DO NOT post to Discord yet, wait to see if session is meaningful
+                # We'll post on disconnect if session >= 3 minutes
+                # Just store the session info for now
                 if player_name in checksum_failures:
                     del checksum_failures[player_name]
             
             print(f"✓ Session started: {player_name} ({steam_id})")
             
             # Send HIDDEN audio trigger if first time today
+            # Format: __SPAWN_AUDIO__|steamId|playerName (matches Lua script expectation)
             if steam_id not in triggered_players:
-                send_chat(f"SPAWN_AUDIO|{steam_id}", hidden=True)
+                send_chat(f"__SPAWN_AUDIO__|{steam_id}|{player_name}", hidden=True)
                 triggered_players.add(steam_id)
     
     # Player disconnection
@@ -792,41 +792,55 @@ def process_line(line):
             leave_time = datetime.now(timezone.utc)
             
             if session_info and steam_id:
-                # Try to edit the original join message instead of posting new one
-                message_id = session_info.get('discord_message_id')
+                # Calculate session duration
+                join_time = session_info['join_time']
+                duration_seconds = (leave_time - join_time).total_seconds()
                 
-                if message_id:
-                    # Edit the existing join message with session completion info
-                    success = edit_discord_message(
-                        message_id, 
-                        player_name,
-                        steam_id=steam_id,
-                        car=session_info['car'],
-                        join_time=session_info['join_time'],
-                        leave_time=leave_time
-                    )
+                # FILTER: Only post to Discord if session >= 3 minutes (180 seconds)
+                # This prevents spam from loading failures, quick checks, etc.
+                MIN_SESSION_FOR_DISCORD = 180  # 3 minutes
+                
+                if duration_seconds >= MIN_SESSION_FOR_DISCORD:
+                    # Meaningful session - post to Discord
+                    message_id = session_info.get('discord_message_id')
                     
-                    if not success:
-                        # If editing failed, fall back to posting new message
-                        print(f"⚠ Edit failed, posting new message for {player_name}")
+                    if message_id:
+                        # We had posted a join message (e.g. for checksum recovery), edit it
+                        success = edit_discord_message(
+                            message_id, 
+                            player_name,
+                            steam_id=steam_id,
+                            car=session_info['car'],
+                            join_time=session_info['join_time'],
+                            leave_time=leave_time
+                        )
+                        
+                        if not success:
+                            # If editing failed, fall back to posting new message
+                            print(f"⚠ Edit failed, posting new message for {player_name}")
+                            send_discord_event("session_complete", player_name,
+                                             steam_id=steam_id,
+                                             car=session_info['car'],
+                                             join_time=session_info['join_time'],
+                                             leave_time=leave_time)
+                    else:
+                        # No message ID stored, post session completion message
                         send_discord_event("session_complete", player_name,
                                          steam_id=steam_id,
                                          car=session_info['car'],
                                          join_time=session_info['join_time'],
                                          leave_time=leave_time)
+                    
+                    print(f"✓ Session completed: {player_name} ({steam_id}) - {duration_seconds:.0f}s (posted to Discord)")
                 else:
-                    # No message ID stored, post new message
-                    send_discord_event("session_complete", player_name,
-                                     steam_id=steam_id,
-                                     car=session_info['car'],
-                                     join_time=session_info['join_time'],
-                                     leave_time=leave_time)
+                    # Short session - skip Discord notification
+                    print(f"✓ Session completed: {player_name} ({steam_id}) - {duration_seconds:.0f}s (too short, skipped Discord)")
                 
                 # Remove from active sessions
                 del active_sessions[steam_id]
-                print(f"✓ Session completed: {player_name} ({steam_id})")
             else:
                 # Fallback: player left without proper join record (server restart, etc.)
+                # Only post if we don't have session info (can't check duration)
                 send_discord_event("leave", player_name)
                 print(f"⚠ Session incomplete: {player_name} (no join record found)")
             

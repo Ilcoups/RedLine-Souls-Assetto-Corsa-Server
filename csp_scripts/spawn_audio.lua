@@ -16,8 +16,8 @@ local audioPlayer = nil
 -- Chat message handler for spawn trigger
 function script.chatMessage(message, senderCarIndex, senderSessionId)
     -- Check if this is our spawn audio trigger message
-    -- Format: $CSP$SPAWN_AUDIO|steamid OR SPAWN_AUDIO|steamid (hidden by server)
-    if type(message) == "string" and message:find("SPAWN_AUDIO") then
+    -- Format: __SPAWN_AUDIO__|steamId|playerName (sent by unified_announcer.py)
+    if type(message) == "string" and message:find("__SPAWN_AUDIO__") then
         if not hasPlayed then
             ac.log("Spawn audio trigger received!")
             spawnTimer = 0  -- Start countdown

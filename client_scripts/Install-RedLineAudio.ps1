@@ -1,5 +1,5 @@
 #Requires -Version 5.1
-# RedLine Souls Audio Installer v3.1
+# RedLine Souls Audio Installer v3.2
 
 $AudioUrl = "https://red-line.live/audio/RedLineSoulsIntro.ogg"
 $MonitorUrl = "https://raw.githubusercontent.com/Ilcoups/RedLine-Souls-Assetto-Corsa-Server/main/client_scripts/RedLineAudioMonitor.ps1"
@@ -11,7 +11,7 @@ $StartupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\RedLi
 Clear-Host
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Red
-Write-Host "   REDLINE SOULS AUDIO INSTALLER v3.1" -ForegroundColor Red
+Write-Host "   REDLINE SOULS AUDIO INSTALLER v3.2" -ForegroundColor Red
 Write-Host "==========================================" -ForegroundColor Red
 Write-Host ""
 

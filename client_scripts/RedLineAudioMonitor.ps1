@@ -1,9 +1,8 @@
-# RedLine Souls Audio Monitor v2.2
-# Plays audio when you connect to the server
+# RedLine Souls Audio Monitor v2.3
+# Plays audio when you connect to the server WITH ASSETTO CORSA RUNNING
 
 param(
-    [string]$ServerIP = "188.245.183.146",
-    [int]$ServerPort = 9600
+    [string]$ServerIP = "188.245.183.146"
 )
 
 $InstallDir = "$env:USERPROFILE\Documents\RedLineSouls"
@@ -12,11 +11,10 @@ $AudioFile = "$InstallDir\RedLineSoulsIntro.ogg"
 Clear-Host
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Red
-Write-Host "   RedLine Souls Audio Monitor v2.2" -ForegroundColor Red  
+Write-Host "   RedLine Souls Audio Monitor v2.3" -ForegroundColor Red  
 Write-Host "==========================================" -ForegroundColor Red
 Write-Host ""
 Write-Host "  Server: $ServerIP" -ForegroundColor Gray
-Write-Host "  Port:   $ServerPort" -ForegroundColor Gray
 Write-Host "  Audio:  $AudioFile" -ForegroundColor Gray
 Write-Host ""
 
@@ -32,113 +30,121 @@ if (Test-Path $AudioFile) {
     exit 1
 }
 
-# Test audio playback now
-Write-Host ""
-Write-Host "  Testing audio playback..." -ForegroundColor Cyan
-try {
-    Add-Type -AssemblyName presentationCore
-    $testPlayer = New-Object System.Windows.Media.MediaPlayer
-    $testPlayer.Open([Uri]$AudioFile)
-    Start-Sleep -Milliseconds 500
-    if ($testPlayer.HasAudio) {
-        Write-Host "  [OK] Audio can be played" -ForegroundColor Green
-    } else {
-        Write-Host "  [?] Audio loaded but HasAudio=false (might still work)" -ForegroundColor Yellow
-    }
-    $testPlayer.Close()
-} catch {
-    Write-Host "  [X] Audio test failed: $_" -ForegroundColor Red
-}
-
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "  Waiting for you to join the server..." -ForegroundColor Cyan
+Write-Host "  Waiting for Assetto Corsa + Server..." -ForegroundColor Cyan
 Write-Host "  (Keep this window open while playing)" -ForegroundColor Gray
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
 $hasPlayed = $false
-$wasConnected = $false
+$wasInGame = $false
 $checkCount = 0
+
+function Is-ACRunning {
+    # Check if Assetto Corsa game process is running
+    $acProcess = Get-Process -Name "acs" -ErrorAction SilentlyContinue
+    return ($null -ne $acProcess)
+}
+
+function Is-ConnectedToServer {
+    param([string]$IP)
+    try {
+        $netstat = netstat -n 2>$null | Where-Object { $_ -match $IP -and $_ -match "ESTABLISHED" }
+        return ($null -ne $netstat -and $netstat.Count -gt 0)
+    } catch {
+        return $false
+    }
+}
+
+function Play-AudioFile {
+    param([string]$FilePath)
+    
+    Write-Host "$(Get-Date -Format 'HH:mm:ss') Playing audio..." -ForegroundColor Magenta
+    
+    # Method 1: Try Windows Media Player COM (works with most formats if codecs installed)
+    try {
+        $wmp = New-Object -ComObject WMPlayer.OCX
+        $wmp.settings.volume = 80
+        $wmp.URL = $FilePath
+        $wmp.controls.play()
+        
+        # Wait for it to start
+        Start-Sleep -Seconds 1
+        
+        # Wait while playing (max 15 seconds)
+        $waited = 0
+        while ($wmp.playState -eq 3 -and $waited -lt 15) {
+            Start-Sleep -Milliseconds 500
+            $waited += 0.5
+        }
+        
+        $wmp.controls.stop()
+        $wmp.close()
+        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($wmp) | Out-Null
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') Audio finished!" -ForegroundColor Green
+        return $true
+    } catch {
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') WMP failed: $_" -ForegroundColor Yellow
+    }
+    
+    # Method 2: Open with default application
+    try {
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') Opening with default player..." -ForegroundColor Yellow
+        Start-Process -FilePath $FilePath
+        Start-Sleep -Seconds 10
+        return $true
+    } catch {
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') Default player failed: $_" -ForegroundColor Red
+    }
+    
+    return $false
+}
 
 while ($true) {
     $checkCount++
     
-    # Check for connection using netstat
-    $connected = $false
-    try {
-        $netstatOutput = netstat -n 2>$null
-        if ($netstatOutput -match "$ServerIP" -and $netstatOutput -match "ESTABLISHED") {
-            # More specific check
-            foreach ($line in $netstatOutput) {
-                if ($line -match $ServerIP -and $line -match "ESTABLISHED") {
-                    $connected = $true
-                    break
-                }
-            }
-        }
-    } catch {
-        # Silently continue
-    }
+    $acRunning = Is-ACRunning
+    $serverConnected = Is-ConnectedToServer -IP $ServerIP
     
-    # Show periodic status (every 30 seconds)
+    # We consider "in game on server" when BOTH AC is running AND connected to server
+    $inGame = $acRunning -and $serverConnected
+    
+    # Show status every 30 seconds
     if ($checkCount % 15 -eq 0) {
-        if ($connected) {
-            Write-Host "$(Get-Date -Format 'HH:mm:ss') Still connected..." -ForegroundColor Green
-        } else {
-            Write-Host "$(Get-Date -Format 'HH:mm:ss') Waiting for connection... (join the server!)" -ForegroundColor Gray
-        }
+        $acStatus = if ($acRunning) { "Running" } else { "Not running" }
+        $serverStatus = if ($serverConnected) { "Connected" } else { "Not connected" }
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') AC: $acStatus | Server: $serverStatus" -ForegroundColor Gray
     }
     
-    # Connection state change detection
-    if ($connected -and -not $wasConnected) {
+    # Detect joining server
+    if ($inGame -and -not $wasInGame) {
         Write-Host ""
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') === CONNECTED TO SERVER! ===" -ForegroundColor Green
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
+        Write-Host "$(Get-Date -Format 'HH:mm:ss')  JOINED REDLINE SOULS SERVER!" -ForegroundColor Green
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
         
         if (-not $hasPlayed) {
-            Write-Host "$(Get-Date -Format 'HH:mm:ss') Waiting 6 seconds for game to fully load..." -ForegroundColor Yellow
-            Start-Sleep -Seconds 6
+            Write-Host "$(Get-Date -Format 'HH:mm:ss') Waiting 8 seconds for game to load..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 8
             
-            Write-Host "$(Get-Date -Format 'HH:mm:ss') Playing RedLine Souls intro..." -ForegroundColor Magenta
-            
-            try {
-                Add-Type -AssemblyName presentationCore
-                $player = New-Object System.Windows.Media.MediaPlayer
-                $player.Volume = 1.0
-                $player.Open([Uri]$AudioFile)
-                Start-Sleep -Milliseconds 300
-                $player.Play()
-                
-                Write-Host "$(Get-Date -Format 'HH:mm:ss') Audio playing!" -ForegroundColor Green
-                
-                # Wait for playback
-                Start-Sleep -Seconds 10
-                
-                $player.Stop()
-                $player.Close()
-                $hasPlayed = $true
-                Write-Host "$(Get-Date -Format 'HH:mm:ss') Done!" -ForegroundColor Green
-            } catch {
-                Write-Host "$(Get-Date -Format 'HH:mm:ss') Error playing audio: $_" -ForegroundColor Red
-                # Fallback: open with default app
-                Write-Host "$(Get-Date -Format 'HH:mm:ss') Trying fallback (default player)..." -ForegroundColor Yellow
-                try {
-                    Start-Process $AudioFile
-                    $hasPlayed = $true
-                } catch {
-                    Write-Host "$(Get-Date -Format 'HH:mm:ss') Fallback also failed: $_" -ForegroundColor Red
-                }
+            # Double check still in game
+            if ((Is-ACRunning) -and (Is-ConnectedToServer -IP $ServerIP)) {
+                $result = Play-AudioFile -FilePath $AudioFile
+                $hasPlayed = $result
+            } else {
+                Write-Host "$(Get-Date -Format 'HH:mm:ss') Lost connection, skipping audio" -ForegroundColor Yellow
             }
         }
         Write-Host ""
     }
     
-    if (-not $connected -and $wasConnected) {
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') Disconnected from server" -ForegroundColor Yellow
+    # Detect leaving server
+    if (-not $inGame -and $wasInGame) {
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') Left server or closed game" -ForegroundColor Yellow
         $hasPlayed = $false
-        Write-Host ""
     }
     
-    $wasConnected = $connected
+    $wasInGame = $inGame
     Start-Sleep -Seconds 2
 }

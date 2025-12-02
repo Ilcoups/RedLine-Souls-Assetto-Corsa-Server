@@ -14,6 +14,71 @@ ui.registerOnlineExtra(ui.Icons.CarFront, "Overtake Run", nil, nil, function (ok
   config.showUI = not config.showUI
 end)
 
+-- ============================================================
+-- RedLine Souls Spawn Audio
+-- ============================================================
+local AUDIO_URL = "https://red-line.live/audio/RedLineSoulsIntro.ogg"
+local AUDIO_LOCAL = "C:/Users/Public/RedLineSouls/RedLineSoulsIntro.mp3"
+local spawnAudioPlayed = false
+local spawnAudioTimer = 0
+local spawnAudioDelay = 3.0  -- seconds after spawn to play
+local spawnAudioPlayer = nil
+
+local function playSpawnAudio()
+    if spawnAudioPlayed then return end
+    spawnAudioPlayed = true
+    
+    ac.log("[RedLine] Attempting to play spawn audio...")
+    
+    -- Method 1: ac.AudioEvent.fromFile with local file
+    local success1 = pcall(function()
+        -- Try to play from Documents folder where CSP can access
+        local docsPath = ac.getFolder(ac.FolderID.Documents)
+        local localFile = docsPath .. "/RedLineSoulsIntro.ogg"
+        
+        spawnAudioPlayer = ac.AudioEvent.fromFile({
+            filename = localFile,
+            use3D = false,
+            loop = false
+        })
+        if spawnAudioPlayer and spawnAudioPlayer.isValid and spawnAudioPlayer:isValid() then
+            spawnAudioPlayer.volume = 0.8
+            spawnAudioPlayer:start()
+            ac.log("[RedLine] Audio playing from local file!")
+            return
+        end
+    end)
+    
+    -- Method 2: Try URL directly with ac.AudioEvent.fromFile
+    if not success1 or not (spawnAudioPlayer and spawnAudioPlayer:isValid()) then
+        pcall(function()
+            spawnAudioPlayer = ac.AudioEvent.fromFile({
+                filename = AUDIO_URL,
+                use3D = false,
+                loop = false
+            })
+            if spawnAudioPlayer and spawnAudioPlayer:isValid() then
+                spawnAudioPlayer.volume = 0.8
+                spawnAudioPlayer:start()
+                ac.log("[RedLine] Audio playing from URL!")
+            end
+        end)
+    end
+    
+    -- Method 3: Try ui.MediaPlayer
+    if not spawnAudioPlayer or not spawnAudioPlayer:isValid() then
+        pcall(function()
+            local player = ui.MediaPlayer(AUDIO_URL)
+            if player then
+                player:setVolume(0.8)
+                player:setAutoPlay(true)
+                ac.log("[RedLine] Audio playing via ui.MediaPlayer!")
+            end
+        end)
+    end
+end
+-- ============================================================
+
 -- Event state:
 local timePassed = 0
 local totalScore = 0
@@ -104,6 +169,14 @@ end)
 local pbInitialized = false
 
 function script.update(dt)
+  -- Spawn audio timer (plays 3 seconds after joining)
+  if not spawnAudioPlayed then
+    spawnAudioTimer = spawnAudioTimer + dt
+    if spawnAudioTimer >= spawnAudioDelay then
+      playSpawnAudio()
+    end
+  end
+
   -- Initialize PB on first update (when ac.getSteamID() is safe to call)
   if not pbInitialized then
     local myId = tostring(ac.getSteamID())

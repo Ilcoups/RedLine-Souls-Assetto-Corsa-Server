@@ -36,11 +36,15 @@ $ErrorActionPreference = "Stop"
 # ============================================================
 # Configuration
 # ============================================================
-$ScriptVersion = "1.0.0"
+$ScriptVersion = "1.1.0"
 $GitHubRepo = "Ilcoups/RedLine-Souls-Assetto-Corsa-Server"
 $GitHubBranch = "main"
 $LuaScriptPath = "client_scripts/redline_spawn_audio.lua"
 $TargetFileName = "redline_spawn_audio.lua"
+
+# Audio file URL
+$AudioFileUrl = "https://red-line.live/audio/RedLineSoulsIntro.ogg"
+$AudioFileName = "RedLineSoulsIntro.ogg"
 
 # GitHub raw URL for the Lua script
 $LuaScriptUrl = "https://raw.githubusercontent.com/$GitHubRepo/$GitHubBranch/$LuaScriptPath"
@@ -258,6 +262,19 @@ function Install-SpawnAudioScript {
     catch {
         Write-Error2 "Failed to save script: $_"
         return $false
+    }
+    
+    # Download the audio file to Documents folder
+    Write-Step "Downloading audio file..."
+    $audioTargetPath = Join-Path $documentsPath $AudioFileName
+    try {
+        $webClient = New-Object System.Net.WebClient
+        $webClient.Headers.Add("User-Agent", "RedLine-Souls-Installer")
+        $webClient.DownloadFile($AudioFileUrl, $audioTargetPath)
+        Write-Success "Audio file saved to: $audioTargetPath"
+    }
+    catch {
+        Write-Warning2 "Could not download audio file (non-critical): $_"
     }
     
     return $true

@@ -127,12 +127,13 @@ while ($true) {
     if ($inGame -and -not $wasInGame) {
         Write-Host ""
         Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
-        Write-Host "$(Get-Date -Format 'HH:mm:ss')  JOINED REDLINE SOULS!" -ForegroundColor Green
+        Write-Host "$(Get-Date -Format 'HH:mm:ss')  CONNECTED TO REDLINE SOULS!" -ForegroundColor Green
         Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
         
         if (-not $hasPlayed) {
-            Write-Host "$(Get-Date -Format 'HH:mm:ss') Waiting 8 seconds..." -ForegroundColor Yellow
-            Start-Sleep -Seconds 8
+            # Wait 20 seconds for game to fully load (loading screen -> pits)
+            Write-Host "$(Get-Date -Format 'HH:mm:ss') Waiting 20 seconds for you to spawn in pits..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 20
             
             if ((Is-ACRunning) -and (Is-ConnectedToServer -IP $ServerIP)) {
                 $hasPlayed = Play-WithVLC -VLC $VlcPath -File $AudioFile

@@ -1,5 +1,5 @@
-# RedLine Souls Audio Monitor v2.3
-# Plays audio when you connect to the server WITH ASSETTO CORSA RUNNING
+# RedLine Souls Audio Monitor v2.4
+# Plays audio using VLC when you join the server
 
 param(
     [string]$ServerIP = "188.245.183.146"
@@ -8,32 +8,53 @@ param(
 $InstallDir = "$env:USERPROFILE\Documents\RedLineSouls"
 $AudioFile = "$InstallDir\RedLineSoulsIntro.ogg"
 
+# Find VLC
+$VlcPaths = @(
+    "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe",
+    "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe",
+    "$env:LOCALAPPDATA\Programs\VideoLAN\VLC\vlc.exe"
+)
+
+$VlcPath = $null
+foreach ($path in $VlcPaths) {
+    if (Test-Path $path) {
+        $VlcPath = $path
+        break
+    }
+}
+
 Clear-Host
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Red
-Write-Host "   RedLine Souls Audio Monitor v2.3" -ForegroundColor Red  
+Write-Host "   RedLine Souls Audio Monitor v2.4" -ForegroundColor Red  
 Write-Host "==========================================" -ForegroundColor Red
 Write-Host ""
 Write-Host "  Server: $ServerIP" -ForegroundColor Gray
 Write-Host "  Audio:  $AudioFile" -ForegroundColor Gray
-Write-Host ""
 
-# Check audio file
-if (Test-Path $AudioFile) {
-    Write-Host "  [OK] Audio file exists" -ForegroundColor Green
+if ($VlcPath) {
+    Write-Host "  VLC:    $VlcPath" -ForegroundColor Green
 } else {
-    Write-Host "  [X] Audio file NOT FOUND!" -ForegroundColor Red
+    Write-Host "  VLC:    NOT FOUND!" -ForegroundColor Red
     Write-Host ""
-    Write-Host "  Reinstall with:" -ForegroundColor Yellow
-    Write-Host '  irm https://raw.githubusercontent.com/Ilcoups/RedLine-Souls-Assetto-Corsa-Server/main/client_scripts/Install-RedLineAudio.ps1 | iex' -ForegroundColor Cyan
+    Write-Host "  Please install VLC from https://www.videolan.org/vlc/" -ForegroundColor Yellow
     Read-Host "Press Enter to exit"
     exit 1
 }
 
+# Check audio file
+if (-not (Test-Path $AudioFile)) {
+    Write-Host ""
+    Write-Host "  ERROR: Audio file not found!" -ForegroundColor Red
+    Write-Host "  Run installer: irm https://raw.githubusercontent.com/Ilcoups/RedLine-Souls-Assetto-Corsa-Server/main/client_scripts/Install-RedLineAudio.ps1 | iex" -ForegroundColor Yellow
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+Write-Host "  Audio:  File exists" -ForegroundColor Green
+
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "  Waiting for Assetto Corsa + Server..." -ForegroundColor Cyan
-Write-Host "  (Keep this window open while playing)" -ForegroundColor Gray
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -42,106 +63,87 @@ $wasInGame = $false
 $checkCount = 0
 
 function Is-ACRunning {
-    # Check if Assetto Corsa game process is running
-    $acProcess = Get-Process -Name "acs" -ErrorAction SilentlyContinue
-    return ($null -ne $acProcess)
+    $proc = Get-Process -Name "acs" -ErrorAction SilentlyContinue
+    return ($null -ne $proc)
 }
 
 function Is-ConnectedToServer {
     param([string]$IP)
     try {
-        $netstat = netstat -n 2>$null | Where-Object { $_ -match $IP -and $_ -match "ESTABLISHED" }
-        return ($null -ne $netstat -and $netstat.Count -gt 0)
+        $result = netstat -n 2>$null | Select-String $IP | Select-String "ESTABLISHED"
+        return ($null -ne $result)
     } catch {
         return $false
     }
 }
 
-function Play-AudioFile {
-    param([string]$FilePath)
+function Play-WithVLC {
+    param([string]$VLC, [string]$File)
     
-    Write-Host "$(Get-Date -Format 'HH:mm:ss') Playing audio..." -ForegroundColor Magenta
+    Write-Host "$(Get-Date -Format 'HH:mm:ss') Playing audio with VLC..." -ForegroundColor Magenta
     
-    # Method 1: Try Windows Media Player COM (works with most formats if codecs installed)
     try {
-        $wmp = New-Object -ComObject WMPlayer.OCX
-        $wmp.settings.volume = 80
-        $wmp.URL = $FilePath
-        $wmp.controls.play()
+        # VLC command: play file, then quit after
+        # --play-and-exit: quit after playing
+        # --qt-start-minimized: don't show window (Qt interface)
+        # --intf dummy: no interface
+        $vlcArgs = "--play-and-exit --intf dummy `"$File`""
         
-        # Wait for it to start
-        Start-Sleep -Seconds 1
+        $process = Start-Process -FilePath $VLC -ArgumentList $vlcArgs -PassThru -WindowStyle Hidden
         
-        # Wait while playing (max 15 seconds)
-        $waited = 0
-        while ($wmp.playState -eq 3 -and $waited -lt 15) {
-            Start-Sleep -Milliseconds 500
-            $waited += 0.5
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') VLC started (PID: $($process.Id))" -ForegroundColor Green
+        
+        # Wait for VLC to finish (max 20 seconds)
+        $process | Wait-Process -Timeout 20 -ErrorAction SilentlyContinue
+        
+        if (-not $process.HasExited) {
+            $process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
         
-        $wmp.controls.stop()
-        $wmp.close()
-        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($wmp) | Out-Null
         Write-Host "$(Get-Date -Format 'HH:mm:ss') Audio finished!" -ForegroundColor Green
         return $true
     } catch {
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') WMP failed: $_" -ForegroundColor Yellow
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') VLC error: $_" -ForegroundColor Red
+        return $false
     }
-    
-    # Method 2: Open with default application
-    try {
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') Opening with default player..." -ForegroundColor Yellow
-        Start-Process -FilePath $FilePath
-        Start-Sleep -Seconds 10
-        return $true
-    } catch {
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') Default player failed: $_" -ForegroundColor Red
-    }
-    
-    return $false
 }
 
+# Main loop
 while ($true) {
     $checkCount++
     
     $acRunning = Is-ACRunning
     $serverConnected = Is-ConnectedToServer -IP $ServerIP
-    
-    # We consider "in game on server" when BOTH AC is running AND connected to server
     $inGame = $acRunning -and $serverConnected
     
-    # Show status every 30 seconds
+    # Status every 30 seconds
     if ($checkCount % 15 -eq 0) {
-        $acStatus = if ($acRunning) { "Running" } else { "Not running" }
-        $serverStatus = if ($serverConnected) { "Connected" } else { "Not connected" }
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') AC: $acStatus | Server: $serverStatus" -ForegroundColor Gray
+        $acStatus = if ($acRunning) { "Yes" } else { "No" }
+        $srvStatus = if ($serverConnected) { "Yes" } else { "No" }
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') AC Running: $acStatus | Connected: $srvStatus" -ForegroundColor Gray
     }
     
-    # Detect joining server
+    # Joined server
     if ($inGame -and -not $wasInGame) {
         Write-Host ""
         Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
-        Write-Host "$(Get-Date -Format 'HH:mm:ss')  JOINED REDLINE SOULS SERVER!" -ForegroundColor Green
+        Write-Host "$(Get-Date -Format 'HH:mm:ss')  JOINED REDLINE SOULS!" -ForegroundColor Green
         Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
         
         if (-not $hasPlayed) {
-            Write-Host "$(Get-Date -Format 'HH:mm:ss') Waiting 8 seconds for game to load..." -ForegroundColor Yellow
+            Write-Host "$(Get-Date -Format 'HH:mm:ss') Waiting 8 seconds..." -ForegroundColor Yellow
             Start-Sleep -Seconds 8
             
-            # Double check still in game
             if ((Is-ACRunning) -and (Is-ConnectedToServer -IP $ServerIP)) {
-                $result = Play-AudioFile -FilePath $AudioFile
-                $hasPlayed = $result
-            } else {
-                Write-Host "$(Get-Date -Format 'HH:mm:ss') Lost connection, skipping audio" -ForegroundColor Yellow
+                $hasPlayed = Play-WithVLC -VLC $VlcPath -File $AudioFile
             }
         }
         Write-Host ""
     }
     
-    # Detect leaving server
+    # Left server
     if (-not $inGame -and $wasInGame) {
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') Left server or closed game" -ForegroundColor Yellow
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') Left server" -ForegroundColor Yellow
         $hasPlayed = $false
     }
     

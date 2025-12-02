@@ -1,5 +1,5 @@
-# RedLine Souls Audio Monitor v2.4
-# Plays audio using VLC when you join the server
+# RedLine Souls Audio Monitor v2.6
+# Plays audio using VLC when you SPAWN in the server (not just connect)
 
 param(
     [string]$ServerIP = "188.245.183.146"
@@ -7,6 +7,9 @@ param(
 
 $InstallDir = "$env:USERPROFILE\Documents\RedLineSouls"
 $AudioFile = "$InstallDir\RedLineSoulsIntro.ogg"
+
+# AC Log file location
+$ACLogPath = "$env:USERPROFILE\Documents\Assetto Corsa\logs\log.txt"
 
 # Find VLC
 $VlcPaths = @(
@@ -26,40 +29,38 @@ foreach ($path in $VlcPaths) {
 Clear-Host
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Red
-Write-Host "   RedLine Souls Audio Monitor v2.4" -ForegroundColor Red  
+Write-Host "   RedLine Souls Audio Monitor v2.6" -ForegroundColor Red  
 Write-Host "==========================================" -ForegroundColor Red
 Write-Host ""
 Write-Host "  Server: $ServerIP" -ForegroundColor Gray
 Write-Host "  Audio:  $AudioFile" -ForegroundColor Gray
 
 if ($VlcPath) {
-    Write-Host "  VLC:    $VlcPath" -ForegroundColor Green
+    Write-Host "  VLC:    Found" -ForegroundColor Green
 } else {
     Write-Host "  VLC:    NOT FOUND!" -ForegroundColor Red
     Write-Host ""
-    Write-Host "  Please install VLC from https://www.videolan.org/vlc/" -ForegroundColor Yellow
+    Write-Host "  Install VLC: https://www.videolan.org/vlc/" -ForegroundColor Yellow
     Read-Host "Press Enter to exit"
     exit 1
 }
 
-# Check audio file
 if (-not (Test-Path $AudioFile)) {
-    Write-Host ""
-    Write-Host "  ERROR: Audio file not found!" -ForegroundColor Red
-    Write-Host "  Run installer: irm https://raw.githubusercontent.com/Ilcoups/RedLine-Souls-Assetto-Corsa-Server/main/client_scripts/Install-RedLineAudio.ps1 | iex" -ForegroundColor Yellow
+    Write-Host "  Audio:  NOT FOUND!" -ForegroundColor Red
     Read-Host "Press Enter to exit"
     exit 1
 }
-Write-Host "  Audio:  File exists" -ForegroundColor Green
+Write-Host "  Audio:  Found" -ForegroundColor Green
 
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "  Waiting for Assetto Corsa + Server..." -ForegroundColor Cyan
+Write-Host "  Waiting for you to spawn on server..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
 $hasPlayed = $false
-$wasInGame = $false
+$wasConnected = $false
+$lastLogSize = 0
 $checkCount = 0
 
 function Is-ACRunning {
@@ -77,21 +78,56 @@ function Is-ConnectedToServer {
     }
 }
 
+function Check-Spawned {
+    # Check AC log for spawn indicators
+    # When you spawn, the log shows things like "SENDING SPAWN" or car loading complete
+    param([string]$LogPath, [ref]$LastSize)
+    
+    if (-not (Test-Path $LogPath)) {
+        return $false
+    }
+    
+    try {
+        $file = Get-Item $LogPath
+        $currentSize = $file.Length
+        
+        # If log grew, check new content
+        if ($currentSize -gt $LastSize.Value) {
+            $stream = [System.IO.File]::Open($LogPath, 'Open', 'Read', 'ReadWrite')
+            $reader = New-Object System.IO.StreamReader($stream)
+            
+            # Seek to where we last read
+            if ($LastSize.Value -gt 0) {
+                $stream.Seek($LastSize.Value, 'Begin') | Out-Null
+            }
+            
+            $newContent = $reader.ReadToEnd()
+            $reader.Close()
+            $stream.Close()
+            
+            $LastSize.Value = $currentSize
+            
+            # Look for spawn indicators in the new log content
+            # "CAR_spawn" or "ksPhysics" loading or going on track
+            if ($newContent -match "SESSION_INFO" -or $newContent -match "SPAWN" -or $newContent -match "Going to") {
+                return $true
+            }
+        }
+    } catch {
+        # Ignore errors reading log
+    }
+    
+    return $false
+}
+
 function Play-WithVLC {
     param([string]$VLC, [string]$File)
     
-    Write-Host "$(Get-Date -Format 'HH:mm:ss') Playing audio with VLC..." -ForegroundColor Magenta
+    Write-Host "$(Get-Date -Format 'HH:mm:ss') Playing audio..." -ForegroundColor Magenta
     
     try {
-        # VLC command: play file, then quit after
-        # --play-and-exit: quit after playing
-        # --qt-start-minimized: don't show window (Qt interface)
-        # --intf dummy: no interface
         $vlcArgs = "--play-and-exit --intf dummy `"$File`""
-        
         $process = Start-Process -FilePath $VLC -ArgumentList $vlcArgs -PassThru -WindowStyle Hidden
-        
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') VLC started (PID: $($process.Id))" -ForegroundColor Green
         
         # Wait for VLC to finish (max 20 seconds)
         $process | Wait-Process -Timeout 20 -ErrorAction SilentlyContinue
@@ -120,34 +156,45 @@ while ($true) {
     if ($checkCount % 15 -eq 0) {
         $acStatus = if ($acRunning) { "Yes" } else { "No" }
         $srvStatus = if ($serverConnected) { "Yes" } else { "No" }
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') AC Running: $acStatus | Connected: $srvStatus" -ForegroundColor Gray
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') AC: $acStatus | Server: $srvStatus" -ForegroundColor Gray
     }
     
-    # Joined server
-    if ($inGame -and -not $wasInGame) {
+    # Just connected to server
+    if ($inGame -and -not $wasConnected) {
         Write-Host ""
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
-        Write-Host "$(Get-Date -Format 'HH:mm:ss')  CONNECTED TO REDLINE SOULS!" -ForegroundColor Green
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') Connected! Waiting for spawn..." -ForegroundColor Yellow
         
-        if (-not $hasPlayed) {
-            # Wait 20 seconds for game to fully load (loading screen -> pits)
-            Write-Host "$(Get-Date -Format 'HH:mm:ss') Waiting 20 seconds for you to spawn in pits..." -ForegroundColor Yellow
-            Start-Sleep -Seconds 20
-            
-            if ((Is-ACRunning) -and (Is-ConnectedToServer -IP $ServerIP)) {
-                $hasPlayed = Play-WithVLC -VLC $VlcPath -File $AudioFile
-            }
+        # Reset log position to current
+        if (Test-Path $ACLogPath) {
+            $lastLogSize = (Get-Item $ACLogPath).Length
         }
-        Write-Host ""
     }
     
-    # Left server
-    if (-not $inGame -and $wasInGame) {
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') Left server" -ForegroundColor Yellow
+    # While connected, check if spawned
+    if ($inGame -and -not $hasPlayed) {
+        $spawned = Check-Spawned -LogPath $ACLogPath -LastSize ([ref]$lastLogSize)
+        
+        if ($spawned) {
+            Write-Host ""
+            Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
+            Write-Host "$(Get-Date -Format 'HH:mm:ss')  SPAWNED IN REDLINE SOULS!" -ForegroundColor Green
+            Write-Host "$(Get-Date -Format 'HH:mm:ss') =====================================" -ForegroundColor Green
+            
+            # Small delay to make sure audio system is ready
+            Start-Sleep -Seconds 2
+            
+            $hasPlayed = Play-WithVLC -VLC $VlcPath -File $AudioFile
+            Write-Host ""
+        }
+    }
+    
+    # Left server - reset
+    if (-not $inGame -and $wasConnected) {
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') Disconnected" -ForegroundColor Yellow
         $hasPlayed = $false
+        $lastLogSize = 0
     }
     
-    $wasInGame = $inGame
-    Start-Sleep -Seconds 2
+    $wasConnected = $inGame
+    Start-Sleep -Seconds 1
 }

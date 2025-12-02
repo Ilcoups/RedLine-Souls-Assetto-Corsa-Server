@@ -1,13 +1,18 @@
-# RedLine Souls Audio v3.0
-# Run this BEFORE joining the server
-# It will detect when you're IN PITS and play audio, then close
+#Requires -Version 5.1
+# RedLine Souls Audio Monitor v3.1 - Simple 40 second delay
 
-param(
-    [string]$ServerIP = "188.245.183.146"
-)
+$ServerIP = "188.245.183.146"
+$AudioFile = "$env:USERPROFILE\Documents\RedLineSouls\RedLineSoulsIntro.ogg"
 
-$InstallDir = "$env:USERPROFILE\Documents\RedLineSouls"
-$AudioFile = "$InstallDir\RedLineSoulsIntro.ogg"
+Clear-Host
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Red
+Write-Host "   REDLINE SOULS AUDIO v3.1" -ForegroundColor Red
+Write-Host "==========================================" -ForegroundColor Red
+Write-Host ""
+Write-Host "  Waiting for you to join the server..." -ForegroundColor Cyan
+Write-Host "  (Press Ctrl+C to cancel)" -ForegroundColor Gray
+Write-Host ""
 
 # Find VLC
 $VlcPath = @(
@@ -15,82 +20,57 @@ $VlcPath = @(
     "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 
-Clear-Host
-Write-Host ""
-Write-Host "==========================================" -ForegroundColor Red
-Write-Host "   REDLINE SOULS AUDIO" -ForegroundColor Red
-Write-Host "==========================================" -ForegroundColor Red
-Write-Host ""
-
 if (-not $VlcPath) {
-    Write-Host "  VLC not found! Install from videolan.org" -ForegroundColor Red
-    Start-Sleep -Seconds 5
+    Write-Host "  ERROR: VLC not found!" -ForegroundColor Red
+    Write-Host "  Install from videolan.org" -ForegroundColor Yellow
+    Read-Host "  Press Enter to exit"
     exit 1
 }
 
 if (-not (Test-Path $AudioFile)) {
-    Write-Host "  Audio file not found! Run installer first." -ForegroundColor Red
-    Start-Sleep -Seconds 5
+    Write-Host "  ERROR: Audio file not found!" -ForegroundColor Red
+    Write-Host "  Run installer again" -ForegroundColor Yellow
+    Read-Host "  Press Enter to exit"
     exit 1
 }
 
-Write-Host "  VLC:   OK" -ForegroundColor Green
-Write-Host "  Audio: OK" -ForegroundColor Green
-Write-Host ""
-Write-Host "  Now join RedLine Souls server!" -ForegroundColor Cyan
-Write-Host "  Audio will play when you spawn in pits." -ForegroundColor Gray
-Write-Host "  This window will close automatically." -ForegroundColor Gray
-Write-Host ""
-
-# Wait for AC to start and connect
-$maxWait = 180  # 3 minutes max
-$waited = 0
+# Wait for connection to RedLine server
 $connected = $false
+$timeout = 180  # 3 minutes to connect
 
-while ($waited -lt $maxWait) {
-    $acProc = Get-Process -Name "acs" -ErrorAction SilentlyContinue
-    $netConn = netstat -n 2>$null | Select-String $ServerIP | Select-String "ESTABLISHED"
-    
-    if ($acProc -and $netConn) {
-        if (-not $connected) {
-            Write-Host "  Connected to server! Loading..." -ForegroundColor Yellow
-            $connected = $true
-        }
-        
-        # Check if car is actually loaded by looking at AC memory usage
-        # When loading: ~500MB, When in pits with car: ~1.5GB+
-        $memoryMB = [math]::Round($acProc.WorkingSet64 / 1MB)
-        
-        if ($memoryMB -gt 1200) {
-            # Memory is high = car is loaded, you're in pits!
-            Write-Host "  Car loaded! ($memoryMB MB)" -ForegroundColor Green
-            Write-Host ""
-            Write-Host "  ========================================" -ForegroundColor Magenta
-            Write-Host "   WELCOME TO REDLINE SOULS!" -ForegroundColor Magenta
-            Write-Host "  ========================================" -ForegroundColor Magenta
-            Write-Host ""
-            
-            # Small delay then play
-            Start-Sleep -Seconds 2
-            
-            Write-Host "  Playing audio..." -ForegroundColor Cyan
-            $vlcProc = Start-Process -FilePath $VlcPath -ArgumentList "--play-and-exit --intf dummy `"$AudioFile`"" -WindowStyle Hidden -PassThru
-            $vlcProc | Wait-Process -Timeout 20 -ErrorAction SilentlyContinue
-            
-            Write-Host "  Done! Enjoy your drive!" -ForegroundColor Green
-            Start-Sleep -Seconds 2
-            exit 0
-        }
-    } else {
-        if ($waited % 10 -eq 0) {
-            Write-Host "  Waiting for you to join server... ($waited sec)" -ForegroundColor Gray
-        }
+for ($i = 0; $i -lt $timeout; $i++) {
+    $connections = Get-NetTCPConnection -RemoteAddress $ServerIP -ErrorAction SilentlyContinue
+    if ($connections) {
+        $connected = $true
+        break
     }
-    
-    Start-Sleep -Seconds 2
-    $waited += 2
+    Start-Sleep -Seconds 1
 }
 
-Write-Host "  Timeout - no connection detected" -ForegroundColor Yellow
-Start-Sleep -Seconds 3
-exit 0
+if (-not $connected) {
+    Write-Host "  Timeout - no connection detected" -ForegroundColor Yellow
+    exit 0
+}
+
+Write-Host "  Connected! Waiting 40 seconds to load..." -ForegroundColor Green
+Write-Host ""
+
+# Countdown
+for ($i = 40; $i -gt 0; $i--) {
+    Write-Host "`r  Spawning in $i seconds...  " -NoNewline -ForegroundColor Yellow
+    Start-Sleep -Seconds 1
+}
+
+Write-Host "`r                                    " -NoNewline
+Write-Host "`r  WELCOME TO REDLINE SOULS!" -ForegroundColor Red
+Write-Host ""
+
+# Play audio
+Start-Process -FilePath $VlcPath -ArgumentList "--play-and-exit", "--intf", "dummy", "`"$AudioFile`"" -WindowStyle Hidden
+
+# Wait for audio to finish (about 10 seconds)
+Start-Sleep -Seconds 12
+
+Write-Host "  Done! Enjoy your drive." -ForegroundColor Green
+Write-Host ""
+Start-Sleep -Seconds 2

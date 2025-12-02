@@ -1,16 +1,15 @@
 #Requires -Version 5.1
-# RedLine Souls Audio Monitor v3.1 - Simple 40 second delay
+# RedLine Souls Audio Monitor v3.2 - Process detection
 
-$ServerIP = "188.245.183.146"
 $AudioFile = "$env:USERPROFILE\Documents\RedLineSouls\RedLineSoulsIntro.ogg"
 
 Clear-Host
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Red
-Write-Host "   REDLINE SOULS AUDIO v3.1" -ForegroundColor Red
+Write-Host "   REDLINE SOULS AUDIO v3.2" -ForegroundColor Red
 Write-Host "==========================================" -ForegroundColor Red
 Write-Host ""
-Write-Host "  Waiting for you to join the server..." -ForegroundColor Cyan
+Write-Host "  Waiting for Assetto Corsa to start..." -ForegroundColor Cyan
 Write-Host "  (Press Ctrl+C to cancel)" -ForegroundColor Gray
 Write-Host ""
 
@@ -22,37 +21,35 @@ $VlcPath = @(
 
 if (-not $VlcPath) {
     Write-Host "  ERROR: VLC not found!" -ForegroundColor Red
-    Write-Host "  Install from videolan.org" -ForegroundColor Yellow
     Read-Host "  Press Enter to exit"
     exit 1
 }
 
 if (-not (Test-Path $AudioFile)) {
     Write-Host "  ERROR: Audio file not found!" -ForegroundColor Red
-    Write-Host "  Run installer again" -ForegroundColor Yellow
     Read-Host "  Press Enter to exit"
     exit 1
 }
 
-# Wait for connection to RedLine server
-$connected = $false
-$timeout = 180  # 3 minutes to connect
+# Wait for acs.exe (the actual game process)
+$found = $false
+$timeout = 300  # 5 minutes
 
 for ($i = 0; $i -lt $timeout; $i++) {
-    $connections = Get-NetTCPConnection -RemoteAddress $ServerIP -ErrorAction SilentlyContinue
-    if ($connections) {
-        $connected = $true
+    $acProcess = Get-Process -Name "acs" -ErrorAction SilentlyContinue
+    if ($acProcess) {
+        $found = $true
         break
     }
     Start-Sleep -Seconds 1
 }
 
-if (-not $connected) {
-    Write-Host "  Timeout - no connection detected" -ForegroundColor Yellow
+if (-not $found) {
+    Write-Host "  Timeout - Assetto Corsa not detected" -ForegroundColor Yellow
     exit 0
 }
 
-Write-Host "  Connected! Waiting 40 seconds to load..." -ForegroundColor Green
+Write-Host "  Assetto Corsa started! Waiting 40 seconds..." -ForegroundColor Green
 Write-Host ""
 
 # Countdown
@@ -68,9 +65,6 @@ Write-Host ""
 # Play audio
 Start-Process -FilePath $VlcPath -ArgumentList "--play-and-exit", "--intf", "dummy", "`"$AudioFile`"" -WindowStyle Hidden
 
-# Wait for audio to finish (about 10 seconds)
 Start-Sleep -Seconds 12
-
 Write-Host "  Done! Enjoy your drive." -ForegroundColor Green
-Write-Host ""
 Start-Sleep -Seconds 2

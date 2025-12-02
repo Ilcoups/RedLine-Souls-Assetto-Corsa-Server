@@ -60,7 +60,7 @@ if ($VlcPath) {
 
 # Create desktop shortcut
 $desktopPath = [Environment]::GetFolderPath("Desktop")
-$shortcutFile = "$desktopPath\RedLine Audio.lnk"
+$shortcutFile = "$desktopPath\RedLine Souls - Join Server.lnk"
 
 try {
     $WshShell = New-Object -ComObject WScript.Shell
@@ -82,10 +82,10 @@ Write-Host "==========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  HOW TO USE:" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  1. Double-click 'RedLine Audio' on your Desktop" -ForegroundColor White
-Write-Host "  2. Join RedLine Souls server" -ForegroundColor White
-Write-Host "  3. Audio plays when you spawn" -ForegroundColor White
+Write-Host "  1. Double-click 'RedLine Souls - Join Server' on Desktop" -ForegroundColor White
+Write-Host "  2. Join server in Content Manager" -ForegroundColor White
+Write-Host "  3. Audio plays when you spawn in pits" -ForegroundColor White
 Write-Host ""
-Write-Host "  That's it! Shortcut waits for you to connect." -ForegroundColor Gray
+Write-Host "  The shortcut waits for your connection, then plays audio." -ForegroundColor Gray
 Write-Host ""
 Read-Host "  Press Enter to close"

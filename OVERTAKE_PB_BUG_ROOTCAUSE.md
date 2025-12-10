@@ -8,7 +8,7 @@
 
 ### What's in the Database ✅
 ```
-Player: il (SteamID: 76561199185532445)  
+Player: il (SteamID: YOUR_STEAM64_ID)  
 Best Score: 152,384 pts
 Recorded: 2025-11-07 12:37:41
 Rank: 2nd place (1st is 265,519 pts)

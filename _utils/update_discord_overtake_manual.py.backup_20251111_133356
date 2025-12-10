@@ -17,8 +17,8 @@ from typing import List, Tuple
 ROOT = Path(__file__).resolve().parent.parent
 HUB_DB = ROOT / "hub" / "Hub.db"
 CONFIG_PATH = ROOT / "hub" / "configuration.yml"
-CHANNEL_ID = "1436335034868170754"
-MESSAGE_ID = "1437597005823213619"
+CHANNEL_ID = "YOUR_DISCORD_CHANNEL_ID"
+MESSAGE_ID = "YOUR_DISCORD_MESSAGE_ID"
 LEADERBOARD_NAME = "RedLine Souls"
 OVERTAKE_N_LEADERBOARD_ID = 1
 MAX_ROWS = 15

@@ -1,0 +1,17 @@
+GrpcPort: 5085
+HttpPort: 8000
+MainLogoFile: logo.svg
+NavbarLogoFile: logo.svg
+HubName: AssettoServer Hub
+MinimumClientSecurityLevel: 0
+Keys:
+- Key: uZTdl8aPQwuaOdhPWpA89p8xzfyLMXUuGGP2x0i5iXM=
+  Name: default
+DiscordClientId: 
+DiscordClientSecret: 
+DiscordBotToken: 
+FileBasedUserGroups:
+- Name: blacklist
+  Path: blacklist.txt
+- Name: whitelist
+  Path: whitelist.txt

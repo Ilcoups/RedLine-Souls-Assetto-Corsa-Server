@@ -1,0 +1,138 @@
+# Port that the hub will listen for server (gRPC) connections
+GrpcPort: 5085
+# Port that the hub will listen on for the web interface
+HttpPort: 8000
+# Filename of main logo in wwwroot/images
+MainLogoFile: logo.svg
+# Filename of logo shown in nav bar in wwwroot/images
+NavbarLogoFile: logo.svg
+# Name of the hub, will be shown in web page titles
+HubName: RedLine Souls Hub
+# Minimum client security level for lap times to be considered valid
+MinimumClientSecurityLevel: 0
+# List of keys that are allowed to connect to the hub. Do not share these keys with other people!
+Keys:
+- Key: YOUR_HUB_KEY_HERE
+  Name: redline-server
+# Discord Client ID
+DiscordClientId: 
+# Discord Client Secret
+DiscordClientSecret: 
+# Discord Bot Token
+DiscordBotToken: YOUR_DISCORD_BOT_TOKEN_HERE
+# List of Discord overtake leaderboard templates
+DiscordOvertakeLeaderboardTemplates:
+  default: |
+    **🏆 OVERTAKE POINTS LEADERBOARD - RedLine Souls**
+    {{ if entries.size > 0 }}
+    **Total: {{ entries.size }} players**{{ if entries.size > 15 }} • Showing top 15{{ end }}
+    {{ idx = 0 }}
+    {{ for entry in entries }}
+    {{ idx = idx + 1 }}
+    {{ if idx <= 15 }}
+    {{ sid = entry.steamId | default entry.steam_id | default entry.guid | default entry.clientGuid | default "" }}
+    {{ name = entry.name | default entry.playerName | default "Player" }}
+    {{ rank = entry.rank | default entry.position | default idx }}
+    {{ pts = entry.points | default entry.point | default entry.score | default 0 }}
+    {{ overtakes = entry.overtakes | default entry.overtakeCount | default 0 }}
+    {{ multiplier = entry.multiplier | default entry.combo | default 0 }}
+    **#{{ rank }}** [{{ name }}](https://steamcommunity.com/profiles/{{ sid }}) - **{{ pts }} pts**
+      └─ Overtakes: {{ overtakes }} • Multiplier: {{ multiplier }}x
+    {{ end }}
+    {{ end }}
+    {{ if entries.size > 15 }}
+    **... and {{ entries.size - 15 }} more players**
+    {{ end }}
+    💡 **Click player names to view Steam profile!**
+    ⏱️ Updated every minute
+    {{ end }}
+# List of Discord race challenge leaderboard templates
+DiscordRaceChallengeLeaderboardTemplates: {}
+# List of Discord timing leaderboard templates
+DiscordTimingLeaderboardTemplates: {}
+# List of Discord timing points leaderboard templates
+DiscordTimingPointsLeaderboardTemplates:
+  default: |
+    **🏆 TIMING POINTS LEADERBOARD - RedLine Souls (ENHANCED)**
+    
+    {{ if entries.size > 0 }}
+    **Total: {{ entries.size }} players**{{ if entries.size > 15 }} • Showing top 15{{ end }}
+    
+    {{ 
+      idx = 0
+      for entry in entries
+        idx = idx + 1
+        if idx <= 15
+          # Try to get Steam ID - test multiple variable names
+          sid = entry.steamId | default entry.steam_id | default entry.guid | default entry.clientGuid | default ""
+          name = entry.name | default entry.playerName | default "Player"
+          rank = entry.rank | default entry.position | default idx
+          pts = entry.points | default entry.point | default 0
+          time = entry.bestTime | default entry.best_time | default entry.fastestLap | default "N/A"
+          laps = entry.lapCount | default entry.laps | default entry.totalLaps | default 0
+    }}
+    **#{{ rank }}** [{{ name }}](https://steamcommunity.com/profiles/{{ sid }}) - **{{ pts }} pts**
+      └─ Best: {{ time }} • Laps: {{ laps }}
+    {{ 
+          end
+        end
+      end
+    }}
+    
+    {{ if entries.size > 15 }}
+    **... and {{ entries.size - 15 }} more players**
+    {{ end }}
+    
+    💡 **Click names for Steam profile!** • ⏱️ Updates every minute
+    {{ else }}
+    No timing points data yet.
+    {{ end }}
+# List of Discord timing stage leaderboard templates
+DiscordTimingStageLeaderboardTemplates: {}
+# List of Discord server status templates
+DiscordServerStatusTemplates:
+  default: |
+    {{ for server in servers }}
+    **{{ server.alias }}**
+    {{ if server.online -}}
+      :green_circle: Online · Players: `{{ server.clients | string.pad_left 2 }}/{{ server.max_clients | string.pad_left 2 }}` · Time: `{{ server.time }}` · **[Join]({{ server.invite }})**
+    {{- else -}}
+      :red_circle: Offline
+    {{- end }}
+    {{ end }}
+# List of Discord server status widgets
+DiscordServerStatus:
+  redline-tokyo:
+    Title: "🎌 RedLine Souls - Tokyo Highway"
+    ThumbnailUrl: "https://flagcdn.com/w160/jp.png"
+    Template: default
+    Color: "#FF4500"
+    Servers:
+      - Name: "Tokyo Highway Cruise"
+        Address: "188.245.183.146:8081"
+# List of file-based user groups
+FileBasedUserGroups:
+- Name: blacklist
+  Path: blacklist.txt
+- Name: whitelist
+  Path: whitelist.txt
+# List of ranks for PatreonSafetyRatingPlugin
+SafetyRatingRanks:
+- Name: A
+  Color: '#00FF00'
+  MinimumRating: 3
+  UserGroupName: 
+- Name: B
+  Color: 
+  MinimumRating: 1
+  UserGroupName: 
+- Name: C
+  Color: '#FF0000'
+  MinimumRating: 0
+  UserGroupName: 
+# List of user groups based on the overtake leaderboard
+OvertakeUserGroups: []
+# List of user groups based on the timing leaderboard
+TimingUserGroups: []
+# List of extra columns shown on the timing leaderboard. Possible values: InputMethod, Weather, TrackGrip, TrackTemperature, AmbientTemperature, Tyre, GameTime, Sectors, CarChecksum, Shifter
+TimingLeaderboardExtraColumns: []

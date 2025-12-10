@@ -1,0 +1,6 @@
+# RedLine Souls - Server Admins
+# Format: Steam64 ID (one per line)
+
+# Add your Steam64 ID here
+# YOUR_STEAM64_ID
+

@@ -1,0 +1,34 @@
+# RedLine Souls Robots.txt
+# Optimized for AI Crawlers and Search Engines
+
+User-agent: *
+Allow: /
+Allow: /faq.html
+Allow: /enhanced_stats.json
+Allow: /status.json
+
+# AI Search Engine Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Traditional Search Engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap
+Sitemap: https://red-line.live/sitemap.xml

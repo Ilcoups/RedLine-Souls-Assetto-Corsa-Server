@@ -1,0 +1,376 @@
+#!/usr/bin/env bash
+# Production Readiness Test Suite
+# Runs comprehensive checks after server startup
+
+set -euo pipefail
+
+BASE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$BASE_DIR"
+
+ERRORS=0
+WARNINGS=0
+
+echo "========================================"
+echo "  PRODUCTION READINESS TEST SUITE"
+echo "========================================"
+echo ""
+echo "Starting comprehensive checks..."
+echo ""
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+pass() {
+    echo -e "${GREEN}✅ PASS${NC}: $1"
+}
+
+fail() {
+    echo -e "${RED}❌ FAIL${NC}: $1"
+    ERRORS=$((ERRORS + 1))
+}
+
+warn() {
+    echo -e "${YELLOW}⚠️  WARN${NC}: $1"
+    WARNINGS=$((WARNINGS + 1))
+}
+
+info() {
+    echo "ℹ️  INFO: $1"
+}
+
+# ====================
+# TEST 1: Process Checks
+# ====================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "TEST 1: Process Health Checks"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Check Game Server
+if pgrep -f "AssettoServer$" >/dev/null 2>&1; then
+    GAME_PID=$(pgrep -f "AssettoServer$")
+    pass "Game Server running (PID: $GAME_PID)"
+    
+    # Check CPU usage
+    CPU_USAGE=$(ps -p "$GAME_PID" -o %cpu --no-headers | xargs)
+    if (( $(echo "$CPU_USAGE > 90" | bc -l) )); then
+        warn "Game Server CPU usage high: ${CPU_USAGE}%"
+    else
+        info "Game Server CPU: ${CPU_USAGE}%"
+    fi
+    
+    # Check memory usage
+    MEM_USAGE=$(ps -p "$GAME_PID" -o %mem --no-headers | xargs)
+    info "Game Server Memory: ${MEM_USAGE}%"
+else
+    fail "Game Server NOT running"
+fi
+
+# Check Hub
+if pgrep -f "AssettoServer.Hub" >/dev/null 2>&1; then
+    HUB_PID=$(pgrep -f "AssettoServer.Hub")
+    pass "Hub running (PID: $HUB_PID)"
+else
+    fail "Hub NOT running"
+fi
+
+# Check Player Stats
+if pgrep -f "player_stats.py" >/dev/null 2>&1; then
+    pass "Player Stats running"
+else
+    fail "Player Stats NOT running"
+fi
+
+# Check Audio Server
+if pgrep -f "http.server 8082" >/dev/null 2>&1; then
+    pass "Audio Server running"
+else
+    fail "Audio Server NOT running"
+fi
+
+# Check Announcer
+if systemctl --user is-active --quiet unified-announcer.service 2>/dev/null; then
+    pass "Announcer Service active"
+else
+    fail "Announcer Service NOT active"
+fi
+
+echo ""
+
+# ====================
+# TEST 2: Network/Port Checks
+# ====================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "TEST 2: Network & Port Checks"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Check game port (TCP 9600)
+if netstat -tln 2>/dev/null | grep -q ":9600 " || ss -tln 2>/dev/null | grep -q ":9600 "; then
+    pass "Game port 9600 (TCP) listening"
+else
+    fail "Game port 9600 (TCP) NOT listening"
+fi
+
+# Check HTTP port (TCP 8081)
+if netstat -tln 2>/dev/null | grep -q ":8081 " || ss -tln 2>/dev/null | grep -q ":8081 "; then
+    pass "HTTP port 8081 (TCP) listening"
+else
+    fail "HTTP port 8081 (TCP) NOT listening"
+fi
+
+# Check Hub gRPC port (5085)
+if netstat -tln 2>/dev/null | grep -q ":5085 " || ss -tln 2>/dev/null | grep -q ":5085 "; then
+    pass "Hub gRPC port 5085 listening"
+else
+    fail "Hub gRPC port 5085 NOT listening"
+fi
+
+# Check Hub web interface (8000)
+if netstat -tln 2>/dev/null | grep -q ":8000 " || ss -tln 2>/dev/null | grep -q ":8000 "; then
+    pass "Hub Web Interface port 8000 listening"
+else
+    fail "Hub Web Interface port 8000 NOT listening"
+fi
+
+# Check Audio Server (8082)
+if netstat -tln 2>/dev/null | grep -q ":8082 " || ss -tln 2>/dev/null | grep -q ":8082 "; then
+    pass "Audio Server port 8082 listening"
+else
+    fail "Audio Server port 8082 NOT listening"
+fi
+
+echo ""
+
+# ====================
+# TEST 3: Hub Connection
+# ====================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "TEST 3: Hub Integration Checks"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Check if server connected to Hub
+if tail -50 logs/log-$(date +%Y%m%d).txt 2>/dev/null | grep -q "Connected to AssettoServer Hub"; then
+    pass "Game Server connected to Hub"
+else
+    fail "Game Server NOT connected to Hub"
+fi
+
+# Check Hub Discord connection
+if tail -50 hub/hub.log 2>/dev/null | grep -q "Discord:Gateway.*Ready"; then
+    pass "Hub connected to Discord"
+else
+    warn "Hub Discord connection status unclear"
+fi
+
+# Check Hub database
+if [ -f "hub/Hub.db" ]; then
+    DB_SIZE=$(du -h hub/Hub.db | cut -f1)
+    pass "Hub database exists (${DB_SIZE})"
+else
+    fail "Hub database NOT found"
+fi
+
+echo ""
+
+# ====================
+# TEST 4: Configuration Checks
+# ====================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "TEST 4: Configuration Validation"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Check environment variables
+if [ -f ".env" ]; then
+    pass ".env file exists"
+    
+    if grep -q "DISCORD_WEBHOOK=" .env 2>/dev/null; then
+        pass "Discord webhooks configured"
+    else
+        warn "Discord webhooks may not be configured"
+    fi
+else
+    fail ".env file NOT found"
+fi
+
+# Check server config
+if [ -f "cfg/server_cfg.ini" ]; then
+    pass "Server config exists"
+else
+    fail "Server config NOT found"
+fi
+
+# Check extra config
+if [ -f "cfg/extra_cfg.yml" ]; then
+    pass "Extra config exists"
+    
+    # Verify our recent changes
+    if grep -q "AiBehaviorUpdateIntervalHz: 42" cfg/extra_cfg.yml; then
+        pass "AI Behavior refresh rate: 42 Hz ✨"
+    else
+        warn "AI Behavior refresh rate not optimized"
+    fi
+    
+    if grep -q "OutsideNetworkBubbleRefreshRateHz: 25" cfg/extra_cfg.yml; then
+        pass "Distant player refresh rate: 25 Hz ✨"
+    else
+        warn "Distant player refresh rate not optimized"
+    fi
+else
+    fail "Extra config NOT found"
+fi
+
+echo ""
+
+# ====================
+# TEST 5: File System Checks
+# ====================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "TEST 5: File System & Permissions"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Check log directory
+if [ -d "logs" ] && [ -w "logs" ]; then
+    pass "Log directory writable"
+    
+    # Check current log file
+    TODAY_LOG="logs/log-$(date +%Y%m%d).txt"
+    if [ -f "$TODAY_LOG" ]; then
+        LOG_SIZE=$(du -h "$TODAY_LOG" | cut -f1)
+        pass "Today's log file exists (${LOG_SIZE})"
+    else
+        warn "Today's log file not created yet"
+    fi
+else
+    fail "Log directory not writable"
+fi
+
+# Check disk space
+DISK_AVAIL=$(df -h . | awk 'NR==2 {print $4}')
+DISK_USAGE=$(df -h . | awk 'NR==2 {print $5}' | tr -d '%')
+if [ "$DISK_USAGE" -lt 90 ]; then
+    pass "Disk space available: ${DISK_AVAIL}"
+else
+    warn "Disk space low: ${DISK_AVAIL} remaining"
+fi
+
+echo ""
+
+# ====================
+# TEST 6: Log Health Checks
+# ====================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "TEST 6: Log Health Analysis"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+TODAY_LOG="logs/log-$(date +%Y%m%d).txt"
+if [ -f "$TODAY_LOG" ]; then
+    # Check for errors in last 100 lines
+    ERROR_COUNT=$(tail -100 "$TODAY_LOG" 2>/dev/null | { grep -c "\[ERR\]" || true; })
+    if [ "$ERROR_COUNT" -eq 0 ]; then
+        pass "No errors in recent logs"
+    else
+        warn "Found ${ERROR_COUNT} errors in recent logs"
+    fi
+    
+    # Check for warnings
+    WARN_COUNT=$(tail -100 "$TODAY_LOG" 2>/dev/null | { grep -c "\[WRN\]" || true; })
+    if [ "$WARN_COUNT" -eq 0 ]; then
+        pass "No warnings in recent logs"
+    elif [ "$WARN_COUNT" -lt 5 ]; then
+        info "Found ${WARN_COUNT} warnings in recent logs (acceptable)"
+    else
+        warn "Found ${WARN_COUNT} warnings in recent logs"
+    fi
+fi
+
+echo ""
+
+# ====================
+# TEST 7: Performance Metrics
+# ====================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "TEST 7: System Performance"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Check system load
+LOAD_AVG=$(uptime | awk -F'load average:' '{print $2}' | awk '{print $1}' | tr -d ',')
+info "System load average: ${LOAD_AVG}"
+
+# Check available memory
+FREE_MEM=$(free -h | awk '/^Mem:/ {print $7}')
+info "Free memory: ${FREE_MEM}"
+
+# Check if any process is zombie
+ZOMBIE_COUNT=$(ps aux | { grep -c '<defunct>' || true; })
+if [ "$ZOMBIE_COUNT" -eq 0 ]; then
+    pass "No zombie processes"
+else
+    warn "Found ${ZOMBIE_COUNT} zombie processes"
+fi
+
+echo ""
+
+# ====================
+# TEST 8: Connectivity Tests
+# ====================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "TEST 8: External Connectivity"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Test localhost connectivity
+if curl -s -m 5 http://localhost:8000 >/dev/null 2>&1; then
+    pass "Hub web interface accessible"
+else
+    warn "Hub web interface not accessible (may still be starting)"
+fi
+
+# Test DNS resolution
+if host discord.com >/dev/null 2>&1; then
+    pass "DNS resolution working"
+else
+    warn "DNS resolution issues detected"
+fi
+
+echo ""
+
+# ====================
+# FINAL REPORT
+# ====================
+echo "========================================"
+echo "  TEST RESULTS SUMMARY"
+echo "========================================"
+echo ""
+
+TOTAL_TESTS=$((ERRORS + WARNINGS))
+
+if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
+    echo -e "${GREEN}🎉 ALL TESTS PASSED!${NC}"
+    echo ""
+    echo "Server is PRODUCTION READY ✅"
+    EXIT_CODE=0
+elif [ $ERRORS -eq 0 ]; then
+    echo -e "${YELLOW}⚠️  TESTS PASSED WITH WARNINGS${NC}"
+    echo ""
+    echo "Warnings: $WARNINGS"
+    echo ""
+    echo "Server is operational but review warnings."
+    EXIT_CODE=0
+else
+    echo -e "${RED}❌ TESTS FAILED${NC}"
+    echo ""
+    echo "Errors: $ERRORS"
+    echo "Warnings: $WARNINGS"
+    echo ""
+    echo "Server is NOT ready for production!"
+    EXIT_CODE=1
+fi
+
+echo ""
+echo "========================================"
+echo "Test completed: $(date)"
+echo "========================================"
+
+exit $EXIT_CODE
+

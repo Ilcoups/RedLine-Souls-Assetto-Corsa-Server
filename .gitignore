@@ -1,111 +1,97 @@
-# Sensitive Files - DO NOT COMMIT
-admins.txt
-blacklist.txt
-whitelist.txt
-cfg/server_cfg.ini
-patreon.key
-.patreon
+# ===========================================
+# RedLine Souls AC Server - Git Ignore
+# ===========================================
 
-# Server Executables & Binaries
-acServer
-acServer.exe
-acServer.bat
-acServerManager.exe
-acServerManager.pdb
-*.so
-*.dll
-*.dylib
+# ----- Databases (player data) -----
+*.db
+*.db-shm
+*.db-wal
+hub/Hub.db*
+hub/backups/
 
-# Large Content Files
-content/
-AssettoServer/
-AssettoServer-linux-x64.tar.gz
-cache/
-*.kn5
-*.acd
-
-# Proton/Steam Files
-proton
-proton_3.7_tracked_files
-steam_appid.txt
-steampipe_fixups.json
-steampipe_fixups.py
-toolmanifest.vdf
-user_settings.sample.py
-version
-VERSIONS.txt
-mtree.txt.gz
-PATENTS.AV1
-filelock.py
-libcsp_xxhash3.so
-libsteam_api.so
-_v2-entry-point
-
-# Steam Directory
-steamapps/
-pressure-vessel/
-sniper_platform_3.0.20250826.159138/
-files/
-system/
-var/
-
-# Runtime Files
+# ----- Logs -----
 logs/
-results/
-setups/
 *.log
-*.txt
 
-# Backup Files
+# ----- Game Engine Binaries (huge, reinstall from Steam) -----
+files/
+*.exe
+*.dll
+*.so
+*.pdb
+libsteam_api.so
+libe_sqlite3.so
+hub/AssettoServer.Hub
+acServer
+cloudflared
+proton
+
+# ----- Steam Runtime (reinstall from Steam) -----
+sniper_platform*/
+pressure-vessel/
+var/
+steamapps/
+mtree.txt.gz
+steampipe_fixups.json
+
+# ----- Game Content (reinstall from Steam/mods) -----
+content/
+cache/
+
+# ----- Backups -----
+*.tar
+*.tar.gz
+_backup_*/
 *.backup
+*.backup_*
 *.bak
-*.old
+*.bak_*
+*.broken
+*.broken_*
+*.old_backup
+*.before_*
+*.after_*
 
-# Keep only config-related documentation
-!cfg/*.ini
-!cfg/*.yml
-!cfg/*.yaml
-!README.md
-!AUTOMATIC_WEATHER_WORKING.md
-!BEAUTIFUL_WEATHER_GUIDE.md
-!SERVER_MANAGEMENT.md
-!*.sh
+# ----- Runtime/PID files -----
+*.pid
 
-# Local environment file with secrets
-.env
-speed_trap_proxy.conf
-speed_trap_proxy.conf.old_leaked
-cfg/plugin_discord_audit_cfg.yml
+# ----- Archive (old data) -----
+_archive/
 
-# Configuration files with credentials
-cfg/server_cfg.ini
-cfg/extra_cfg.yml
-hub/configuration.yml
-hub/configuration.yml.*
-
-# Test files that may contain credentials
-_utils/test_*.py
-
-# Backup files
-cfg/traffic_presets/backup_*.yml
-*.backup
-*.bak
-*.old_leaked
-
-# Python cache
+# ----- Python cache -----
 __pycache__/
 *.pyc
 *.pyo
 
-# Traffic votes
-traffic_votes.json
+# ----- IDE -----
+.vscode/
+.idea/
 
+# ----- OS files -----
+.DS_Store
+Thumbs.db
 
-HONEYPOT*.md
-_archive/docs_cleanup_2025/OLD_WEBHOOK_BACKUP.md
+# ----- Temp files -----
+*.tmp
+*.temp
 
-# Temporary monitoring scripts
-monitor_*.py
-*_webhook_*.py
-*_monitor_*.sh
-hub/AssettoServer.Hub
+# ----- Runtime status (regenerated) -----
+wwwroot/status.json
+wwwroot/enhanced_stats.json
+
+# ----- Environment files -----
+.env
+
+# ----- Patreon key file -----
+hub/patreon.key
+*.log.old
+patreon.key
+tests/results/
+_utils/speed_trap_stats.json
+player_stats.json
+__pycache__/
+vips.txt
+cfg/pb_data_backups/
+_archive/
+redline_souls_logs.json
+overtake_pb_data.lua

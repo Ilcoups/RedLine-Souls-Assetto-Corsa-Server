@@ -81,5 +81,5 @@ class OvertakePBHandler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     server = HTTPServer(('127.0.0.1', 8085), OvertakePBHandler)
     print("Overtake PB API listening on http://127.0.0.1:8085")
-    print("Usage: GET /overtake-pb?steamId=76561199185532445")
+    print("Usage: GET /overtake-pb?steamId=YOUR_STEAM64_ID")
     server.serve_forever()

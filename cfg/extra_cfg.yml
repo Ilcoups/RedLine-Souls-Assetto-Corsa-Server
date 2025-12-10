@@ -98,8 +98,8 @@ AiParams:
   MaxPlayerDistanceToAiSplineMeters: 7
   MinSpawnDistancePoints: 150
   MaxSpawnDistancePoints: 1200
-  MinAiSafetyDistanceMeters: 29
-  MaxAiSafetyDistanceMeters: 72
+  MinAiSafetyDistanceMeters: 31
+  MaxAiSafetyDistanceMeters: 77
   StateSpawnDistanceMeters: 900
   MinStateDistanceMeters: 50
   SpawnSafetyDistanceToPlayerMeters: 250
@@ -107,16 +107,16 @@ AiParams:
   MaxSpawnProtectionTimeSeconds: 35
   MinCollisionStopTimeSeconds: 1
   MaxCollisionStopTimeSeconds: 2
-  MaxSpeedKph: 107
-  RightLaneOffsetKph: 28
-  MaxSpeedVariationPercent: 0.25
+  MaxSpeedKph: 101
+  RightLaneOffsetKph: 26
+  MaxSpeedVariationPercent: 0.2
   MaxPlayerCount: 35
   HideAiCars: true
   LaneWidthMeters: 2.5
   TwoWayTraffic: true
   WrongWayTraffic: true
   NamePrefix: Traffic
-  IgnoreObstaclesAfterSeconds: 1
+  IgnoreObstaclesAfterSeconds: 2
   IgnoreStationaryPlayers: true
   HourlyTrafficDensity:
   - 0.6
@@ -147,25 +147,28 @@ AiParams:
   Debug: false
   AiBehaviorUpdateIntervalHz: 60
   IgnorePlayerObstacleSpheres:
-  - X: 1735.0
-    Z: -1670.0
-    Radius: 150.0
+  - X: -235.0
+    Z: 1354.0
+    Radius: 100.0
+  - X: -95.0
+    Z: 1575.0
+    Radius: 100.0
   LaneCountSpecificOverrides:
     1:
-      MinAiSafetyDistanceMeters: 32
-      MaxAiSafetyDistanceMeters: 78
-      MaxSpeedKph: 102
-      RightLaneOffsetKph: 18
-    2:
       MinAiSafetyDistanceMeters: 34
-      MaxAiSafetyDistanceMeters: 82
-      MaxSpeedKph: 111
-      RightLaneOffsetKph: 21
-    3:
-      MinAiSafetyDistanceMeters: 37
+      MaxAiSafetyDistanceMeters: 84
+      MaxSpeedKph: 96
+      RightLaneOffsetKph: 17
+    2:
+      MinAiSafetyDistanceMeters: 36
       MaxAiSafetyDistanceMeters: 88
-      MaxSpeedKph: 127
-      RightLaneOffsetKph: 24
+      MaxSpeedKph: 105
+      RightLaneOffsetKph: 19
+    3:
+      MinAiSafetyDistanceMeters: 39
+      MaxAiSafetyDistanceMeters: 95
+      MaxSpeedKph: 120
+      RightLaneOffsetKph: 22
       MinSpawnProtectionTimeSeconds: 22
       MaxSpawnProtectionTimeSeconds: 38
   CarSpecificOverrides:
@@ -251,7 +254,7 @@ MinTransitionDurationSeconds: 180
 ---
 !PatreonHubConfiguration
 Address: http://localhost:5085
-Key: uZTdl8aPQwuaOdhPWpA89p8xzfyLMXUuGGP2x0i5iXM=
+Key: YOUR_HUB_KEY_HERE
 
 ---
 !PatreonOvertakeConfiguration

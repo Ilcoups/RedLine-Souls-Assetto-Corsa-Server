@@ -6,6 +6,7 @@ set -euo pipefail
 
 DRYRUN=0
 SKIP_TESTS=0
+FORCE_RESTART=0
 
 for arg in "$@"; do
   case "$arg" in
@@ -15,10 +16,14 @@ for arg in "$@"; do
     --skip-tests)
       SKIP_TESTS=1
       ;;
+    --force|-f)
+      FORCE_RESTART=1
+      ;;
     --help|-h)
-      echo "Usage: $0 [--dry-run] [--skip-tests]"
+      echo "Usage: $0 [--dry-run] [--skip-tests] [--force]"
       echo "  --dry-run, -n     print actions without executing them"
       echo "  --skip-tests      skip production readiness tests"
+      echo "  --force, -f       restart immediately without waiting for players"
       exit 0
       ;;
   esac
@@ -74,6 +79,70 @@ fi
 
 echo "✅ Pre-flight checks passed"
 echo ""
+
+# ============================================================================
+# PLAYER COUNT CHECK - Wait for 0 players before restart
+# ============================================================================
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "👥 CHECKING FOR ACTIVE PLAYERS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+get_player_count() {
+    curl -s http://127.0.0.1:8081/api/details 2>/dev/null | grep -o '"clients":[0-9]*' | grep -o '[0-9]*' || echo "0"
+}
+
+if [ "$DRYRUN" -eq 0 ]; then
+    PLAYER_COUNT=$(get_player_count)
+    
+    if [ "$FORCE_RESTART" -eq 1 ] && [ "$PLAYER_COUNT" -gt 0 ]; then
+        echo "⚠️  Found $PLAYER_COUNT player(s) online, but --force flag used"
+        echo "⚠️  Proceeding with restart immediately..."
+    elif [ "$PLAYER_COUNT" -gt 0 ]; then
+        echo "⚠️  Found $PLAYER_COUNT player(s) online!"
+        echo ""
+        echo "Waiting for all players to leave before restart..."
+        echo "(Press Ctrl+C to cancel and restart immediately with --force)"
+        echo ""
+        
+        WAIT_START=$(date +%s)
+        MAX_WAIT=3600  # Maximum 1 hour wait
+        
+        while [ "$PLAYER_COUNT" -gt 0 ]; do
+            ELAPSED=$(($(date +%s) - WAIT_START))
+            
+            if [ "$ELAPSED" -ge "$MAX_WAIT" ]; then
+                echo ""
+                echo "⚠️  Maximum wait time (1 hour) exceeded!"
+                echo "❓ Restart anyway? (y/n): "
+                read -t 30 FORCE_RESTART || FORCE_RESTART="n"
+                
+                if [ "$FORCE_RESTART" != "y" ]; then
+                    echo "❌ Restart cancelled"
+                    exit 1
+                fi
+                echo "⚠️  Force restarting with $PLAYER_COUNT player(s)..."
+                break
+            fi
+            
+            # Show status every 30 seconds
+            MINS=$((ELAPSED / 60))
+            SECS=$((ELAPSED % 60))
+            printf "\r⏳ Waiting... %d player(s) online | Time elapsed: %02d:%02d | Press Ctrl+C to cancel" "$PLAYER_COUNT" "$MINS" "$SECS"
+            
+            sleep 10
+            PLAYER_COUNT=$(get_player_count)
+        done
+        
+        echo ""
+        echo "✅ All players have left! Proceeding with restart..."
+        echo ""
+    else
+        echo "✅ No players online - safe to restart"
+    fi
+else
+    echo "DRYRUN: would check player count and wait if needed"
+fi
 
 echo ""
 echo ""

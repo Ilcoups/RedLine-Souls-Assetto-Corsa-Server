@@ -160,15 +160,14 @@ class WebhookProxyHandler(BaseHTTPRequestHandler):
             content_type = self.headers.get('Content-Type', '')
             
             if 'multipart/form-data' in content_type:
-                # Handle file upload (speed trap image)
-                form = cgi.FieldStorage(
-                    fp=self.rfile,
-                    headers=self.headers,
-                    environ={
-                        'REQUEST_METHOD': 'POST',
-                        'CONTENT_TYPE': content_type
-                    }
-                )
+                # Handle file upload (speed trap image) using email parser (cgi is deprecated)
+                content_length = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(content_length)
+                
+                # Construct a message from headers and body
+                # We need to prepend headers to make it a valid email-like message
+                msg_data = f"Content-Type: {content_type}\r\n\r\n".encode() + body
+                msg = email.message_from_bytes(msg_data)
                 
                 # Extract JSON data and file
                 webhook_data = {
@@ -178,18 +177,27 @@ class WebhookProxyHandler(BaseHTTPRequestHandler):
                     'receive_time': receive_time
                 }
                 
-                for key in form.keys():
-                    item = form[key]
-                    if item.filename:
-                        # It's a file
-                        webhook_data['files'][key] = (
-                            item.filename,
-                            item.file.read(),
-                            item.type
-                        )
-                    else:
-                        # It's form data
-                        webhook_data['data'][key] = item.value
+                if msg.is_multipart():
+                    for part in msg.get_payload():
+                        # Get field name from Content-Disposition
+                        # Content-Disposition: form-data; name="payload_json"
+                        cd = part.get('Content-Disposition', '')
+                        name = None
+                        if 'name="' in cd:
+                            name = cd.split('name="')[1].split('"')[0]
+                        
+                        filename = part.get_filename()
+                        
+                        if filename and name:
+                            # It's a file
+                            webhook_data['files'][name] = (
+                                filename,
+                                part.get_payload(decode=True),
+                                part.get_content_type()
+                            )
+                        elif name:
+                            # It's form data
+                            webhook_data['data'][name] = part.get_payload(decode=True).decode('utf-8')
                 
             else:
                 # Handle JSON webhook

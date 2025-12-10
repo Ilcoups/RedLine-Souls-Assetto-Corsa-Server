@@ -21,7 +21,7 @@ local comboMeter = 1
 local comboColor = 0
 local currentRank = 0
 
-local personalBest = 316092  -- HARDCODED for player 'il' (76561199185532445) - WORKS!
+local personalBest = 316092  -- HARDCODED for player 'il' (YOUR_STEAM64_ID) - WORKS!
 local ownRank = 1
 
 local messages = {}

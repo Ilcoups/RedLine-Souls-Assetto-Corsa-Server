@@ -86,7 +86,7 @@ local comboMeter = 1
 local comboColor = 0
 local currentRank = 0
 
-local personalBest = 316092  -- HARDCODED for player 'il' (76561199185532445) - WORKS!
+local personalBest = 316092  -- HARDCODED for player 'il' (YOUR_STEAM64_ID) - WORKS!
 local ownRank = 1
 
 local messages = {}
@@ -182,25 +182,25 @@ function script.update(dt)
     local myId = tostring(ac.getSteamID())
     
     -- Hardcoded PBs for top 10 players (auto-updated)
-    if myId == "76561199185532445" then
+    if myId == "YOUR_STEAM64_ID" then
       personalBest, ownRank = 316092, 1  -- il
-    elseif myId == "76561198167417502" then
+    elseif myId == "VIP_STEAM64_ID" then
       personalBest, ownRank = 265519, 2  -- N7
-    elseif myId == "76561198869680466" then
+    elseif myId == "PLAYER_STEAM64_ID_3" then
       personalBest, ownRank = 109609, 3  -- Kidontheplane
-    elseif myId == "76561199508708233" then
+    elseif myId == "PLAYER_STEAM64_ID_4" then
       personalBest, ownRank = 102925, 4  -- izvini_no_net
-    elseif myId == "76561197976013665" then
+    elseif myId == "PLAYER_STEAM64_ID_5" then
       personalBest, ownRank = 54572, 5  -- Uzuki
-    elseif myId == "76561199052281779" then
+    elseif myId == "PLAYER_STEAM64_ID_6" then
       personalBest, ownRank = 53864, 6  -- KIRAKATO
-    elseif myId == "76561199119327776" then
+    elseif myId == "PLAYER_STEAM64_ID_7" then
       personalBest, ownRank = 45327, 7  -- Alex99official
-    elseif myId == "76561199150503554" then
+    elseif myId == "PLAYER_STEAM64_ID_8" then
       personalBest, ownRank = 31853, 8  -- roland
-    elseif myId == "76561198872959129" then
+    elseif myId == "PLAYER_STEAM64_ID_9" then
       personalBest, ownRank = 28792, 9  -- gozdni joža
-    elseif myId == "76561199775697833" then
+    elseif myId == "PLAYER_STEAM64_ID_10" then
       personalBest, ownRank = 24684, 10  -- Player
     else
       personalBest, ownRank = 0, 0       -- Not in top 10

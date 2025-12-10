@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-25T21:53:01.226829+00:00",
+  "timestamp": "2025-12-10T21:27:47.664355+00:00",
   "server": {
     "name": "RedLine Souls",
     "status": "online",
@@ -11,7 +11,7 @@
     "players": []
   },
   "today": {
-    "unique_players": 10,
-    "total_crashes": 28
+    "unique_players": 6,
+    "total_crashes": 0
   }
 }

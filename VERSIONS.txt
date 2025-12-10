@@ -1,0 +1,5 @@
+#Name	Version		Runtime	Runtime_Version	Comment
+depot	3.0.20250826.159138			# Overall version number
+pressure-vessel	0.20250820.0	scout		# pressure-vessel-bin.tar.gz
+scripts	0.20250820.0			# from steam-runtime-tools
+sniper	3.0.20250826.159138	sniper	3.0.20250826.159138	# sniper_platform_3.0.20250826.159138/

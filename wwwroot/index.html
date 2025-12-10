@@ -1,157 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RedLine Souls - Live Status</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #eee;
-            padding: 20px;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZC5JQ5KHE"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-DZC5JQ5KHE');
+    </script>
+
+    <!-- SEO Meta Tags -->
+    <title>RedLine Souls - #1 Free Assetto Corsa Traffic Server | Shutoko Revival Project</title>
+    <meta http-equiv="last-modified" content="Sun, 30 Nov 2025 12:00:00 GMT">
+    <meta name="description"
+        content="Join RedLine Souls, the ultimate Assetto Corsa traffic server. Experience high-speed Euro supercar racing, Shutoko Revival Project, and a vibrant racing community. Live server status, leaderboards, and statistics.">
+    <meta name="keywords"
+        content="Assetto Corsa, Traffic Server, RedLine Souls, Racing, Sim Racing, SRP, Shutoko Revival Project, Online Racing, Drift, Street Racing, Custom Cars, AC Server, Racing Community, Multiplayer Racing">
+    <meta name="author" content="RedLine Souls">
+    <meta name="robots" content="index, follow">
+    <meta name="google-site-verification" content="umVQU7E6KuwNgLde9tLJ_v4wDJwbtuQPCNNROfaUe9Q" />
+    <link rel="canonical" href="https://red-line.live">
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RedLine Souls">
+    <meta property="og:title" content="RedLine Souls - Premium Euro Supercar Traffic Server">
+    <meta property="og:description"
+        content="Join 217+ monthly players on the ultimate Shutoko Revival Project traffic server. Free to play, Euro supercars, realistic traffic, and ranked leaderboards.">
+    <meta property="og:url" content="https://red-line.live">
+    <meta property="og:image" content="https://red-line.live/social-preview-v2-1200.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="RedLine Souls - Tokyo Traffic Server">
+    <meta name="twitter:description"
+        content="Race Euro supercars on Tokyo's Shutoko Expressway. Free Assetto Corsa server with active traffic and leaderboards.">
+    <meta name="twitter:image" content="https://red-line.live/social-preview-v2-1200.jpg">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="css/animations.css">
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+        "@type": "Organization",
+            "name": "RedLine Souls",
+            "url": "https://red-line.live",
+            "description": "Premium Assetto Corsa traffic server community focused on realistic traffic simulations and the Shutoko Revival Project.",
+      "sameAs": [
+        "https://discord.gg/kDnP3RAS"
+      ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "RedLine Souls",
+      "url": "https://red-line.live",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://red-line.live/#search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+        "@type": "GameServer",
+            "name": "RedLine Souls Assetto Corsa Server",
+            "description": "Free Assetto Corsa traffic server featuring Shutoko Revival Project with 217 monthly active players, 50+ custom cars, and Tokyo highway racing",
+      "game": {
+        "@type": "VideoGame",
+        "name": "Assetto Corsa",
+        "gamePlatform": "PC",
+        "genre": ["Racing", "Simulation", "Open World"]
+      },
+      "serverStatus": "https://red-line.live/status.json",
+      "url": "https://red-line.live",
+      "playersOnline": 7,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "geo": {
+        "@type": "Place",
+        "name": "Europe (Global Players Welcome)"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "OnlineBusiness",
+      "name": "RedLine Souls Community",
+      "url": "https://red-line.live",
+      "logo": "https://red-line.live/logo.png",
+      "sameAs": [
+        "https://discord.gg/kDnP3RAS"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "url": "https://discord.gg/kDnP3RAS"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      "name": "RedLine Souls Overtake Championship",
+      "description": "Ongoing monthly overtake challenge on the Shutoko Revival Project map. Compete for the highest overtake score.",
+      "startDate": "2025-11-01",
+      "endDate": "2025-12-31",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+      "location": {
+        "@type": "VirtualLocation",
+        "url": "https://red-line.live"
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": "RedLine Souls",
+        "url": "https://red-line.live"
+      }
+    }
+    </script>
+
+    <!-- HowTo Schema for Joining Server -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to Join RedLine Souls Assetto Corsa Server",
+      "description": "Step-by-step guide to join RedLine Souls traffic server",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Install Content Manager",
+          "text": "Download and install Assetto Corsa Content Manager (free mod manager for Assetto Corsa)",
+          "url": "https://assettocorsa.club/content-manager.html"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Open Multiplayer",
+          "text": "Open Content Manager and navigate to Online > Server Browser"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Find Server",
+          "text": "Search for 'RedLine Souls' or paste server IP: 188.245.183.146:8081"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Auto-Download Mods",
+          "text": "Content Manager will automatically download required cars and track (5-10 minutes first time)"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Join and Race",
+          "text": "Once mods are installed, click Join to enter the server and start racing"
         }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { 
-            color: #ff4500;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-        }
-        .status-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-        }
-        .status-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #0f0;
-            box-shadow: 0 0 10px #0f0;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .player-count {
-            font-size: 3em;
-            font-weight: bold;
-            color: #ff4500;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .player-list {
-            display: grid;
-            gap: 10px;
-        }
-        .player {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 12px 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .car { 
-            color: #aaa;
-            font-size: 0.9em;
-        }
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .stat-label { color: #aaa; }
-        .stat-value { 
-            color: #ff4500;
-            font-weight: bold;
-        }
-        .updated {
-            text-align: center;
-            color: #666;
-            margin-top: 20px;
-            font-size: 0.9em;
-        }
-    </style>
+      ],
+      "totalTime": "PT10M"
+    }
+    </script>
+
 </head>
+
 <body>
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-brand">
+            RedLine <span>Souls</span>
+        </div>
+        <div class="nav-links">
+            <a href="#home" class="nav-link active" data-page="home">Home</a>
+            <a href="#stats" class="nav-link" data-page="stats">Statistics</a>
+            <a href="#players" class="nav-link" data-page="players">Players</a>
+        </div>
+    </nav>
+
     <div class="container">
-        <h1>🏁 RedLine Souls</h1>
-        
-        <div class="status-card">
-            <div class="status-header">
-                <h2>Server Status</h2>
-                <div class="status-dot" id="status"></div>
-            </div>
-            <div class="player-count" id="count">-</div>
-            <div style="text-align: center; color: #aaa;">Players Online</div>
+        <!-- HOME PAGE -->
+        <div id="home-page" class="page-content">
+            <!-- Hero Section -->
+            <header class="hero">
+                <h1>RedLine <span>Souls</span></h1>
+                <p>The Ultimate Assetto Corsa Traffic Experience. High Speed. No Limits.</p>
+                <div class="hero-status">
+                    <div class="status-box">
+                        <div id="status-indicator" class="status-indicator online"></div>
+                        <span id="status-text">ONLINE</span>
+                    </div>
+                    <div class="player-count-hero">
+                        <span id="player-count">0</span> <span class="player-count-label">players racing</span>
+                    </div>
+                </div>
+                <div class="cta-buttons">
+                    <a href="https://acstuff.ru/s/q:race/online/join?ip=188.245.183.146&httpPort=8081"
+                        class="btn-cta hover-lift">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"
+                            style="vertical-align: middle; margin-right: 8px;">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                        Join Server
+                    </a>
+                    <a href="https://discord.gg/kDnP3RAS" class="btn-cta btn-secondary hover-lift">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"
+                            style="vertical-align: middle; margin-right: 8px;">
+                            <path
+                                d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1569 2.419zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419z" />
+                        </svg>
+                        Discord
+                    </a>
+                </div>
+            </header>
+
+            <!-- Features Section -->
+            <section class="features">
+                <div class="feature-card animate-on-scroll hover-lift">
+                    <div class="feature-icon">🏎️</div>
+                    <h3>Exotic Supercars & Street Legends</h3>
+                    <p>Master a fleet of Ferrari, Porsche, BMW, and more on the highway.</p>
+                </div>
+                <div class="feature-card animate-on-scroll hover-lift">
+                    <div class="feature-icon">🌃</div>
+                    <h3>Shutoko Revival</h3>
+                    <p>High-speed traffic racing on Tokyo's iconic highway network</p>
+                </div>
+                <div class="feature-card animate-on-scroll hover-lift">
+                    <div class="feature-icon">👥</div>
+                    <h3>Active Community</h3>
+                    <p>Join racers worldwide with live voice chat and Discord integration</p>
+                </div>
+            </section>
+
+            <!-- Live Status Section -->
+            <section class="live-status">
+                <h2 class="section-title animate-on-scroll">Live Server Status</h2>
+                <div class="status-grid">
+                    <div class="card animate-on-scroll hover-lift">
+                        <div class="card-header">
+                            <span class="card-title">Online Players</span>
+                        </div>
+                        <div id="player-list" class="player-list-container">
+                            <p class="no-players">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div class="card animate-on-scroll hover-lift">
+                        <div class="card-header">
+                            <span class="card-title">Monthly Activity</span>
+                        </div>
+                        <div class="stats-row">
+                            <div>
+                                <div class="stat-value counter-value" id="monthly-joins-hero" data-target="217">200+
+                                </div>
+                                <div class="stat-label">Active Players</div>
+                            </div>
+                            <div>
+                                <div class="stat-value counter-value" id="total-sessions-hero" data-target="937">900+
+                                </div>
+                                <div class="stat-label">Total Sessions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
-        <div class="status-card" id="players-card" style="display: none;">
-            <h2 style="margin-bottom: 15px;">Currently Racing</h2>
-            <div class="player-list" id="players"></div>
+        <!-- STATISTICS PAGE -->
+        <div id="stats-page" class="page-content" style="display: none;">
+            <header class="page-header animate-on-scroll">
+                <h1>📊 Server Statistics</h1>
+                <p>Data-driven insights from your racing community</p>
+            </header>
+
+            <section class="stats-overview">
+                <div class="stat-card animate-on-scroll hover-lift">
+                    <div class="stat-card-icon">👥</div>
+                    <div class="stat-card-value counter-value" data-target="0" id="monthly-joins">0</div>
+                    <div class="stat-card-label">Unique Drivers (30d)</div>
+                </div>
+                <div class="stat-card animate-on-scroll hover-lift">
+                    <div class="stat-card-icon">🏁</div>
+                    <div class="stat-card-value counter-value" data-target="0" id="total-sessions">0</div>
+                    <div class="stat-card-label">Total Sessions</div>
+                </div>
+                <div class="stat-card animate-on-scroll hover-lift">
+                    <div class="stat-card-icon">⏱️</div>
+                    <div class="stat-card-value counter-value" data-target="0" id="total-playtime">0</div>
+                    <div class="stat-card-label">Total Playtime (hrs)</div>
+                </div>
+                <div class="stat-card animate-on-scroll hover-lift">
+                    <div class="stat-card-icon">⭐</div>
+                    <div class="stat-card-value counter-value" data-target="0" id="avg-players">0</div>
+                    <div class="stat-card-label">Avg Players/Day</div>
+                </div>
+            </section>
+
+            <!-- Activity Chart -->
+            <section class="chart-section animate-on-scroll">
+                <h2 class="section-title">30-Day Activity Trend</h2>
+                <div class="card hover-lift">
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Two Column Charts -->
+            <section class="charts-grid">
+                <div class="card animate-on-scroll hover-lift">
+                    <h3 class="chart-title">⚡ Top Speeds</h3>
+                    <div class="chart-container">
+                        <canvas id="speedChart"></canvas>
+                    </div>
+                </div>
+                <div class="card animate-on-scroll hover-lift">
+                    <h3 class="chart-title">📊 Playtime Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="playtimeChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Community Insights -->
+            <section class="charts-grid">
+                <div class="card animate-on-scroll hover-lift">
+                    <h3 class="chart-title">🏎️ Most Popular Cars</h3>
+                    <div class="chart-container">
+                        <canvas id="carChart"></canvas>
+                    </div>
+                </div>
+                <div class="card animate-on-scroll hover-lift">
+                    <h3 class="chart-title">🚨 Speed Trap Hall of Shame</h3>
+                    <div id="hall-of-shame-list" class="leaderboard-list" style="min-height: auto;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
         </div>
 
-        <div class="status-card">
-            <h2 style="margin-bottom: 15px;">Today's Stats</h2>
-            <div class="stat-row">
-                <span class="stat-label">Unique Players</span>
-                <span class="stat-value" id="unique">-</span>
-            </div>
-            <div class="stat-row" style="border: none;">
-                <span class="stat-label">Total Crashes</span>
-                <span class="stat-value" id="crashes">-</span>
-            </div>
-        </div>
+        <!-- PLAYERS PAGE -->
+        <div id="players-page" class="page-content" style="display: none;">
+            <header class="page-header">
+                <h1>🏆 Overtake Championship</h1>
+                <p>Top drivers by overtake score</p>
+            </header>
 
-        <div class="updated" id="updated">Loading...</div>
+            <section class="leaderboard">
+                <div class="card animate-on-scroll">
+                    <div class="card-header">
+                        <span class="card-title">🏆 Top Players</span>
+                        <div class="leaderboard-search">
+                            <div class="search-wrapper">
+                                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                                <input type="text" id="leaderboard-search" placeholder="Search players..."
+                                    class="search-input"
+                                    style="background-color: #1a1a24 !important; background: #1a1a24 !important; color: #ffffff !important; border: 1.5px solid rgba(255, 255, 255, 0.08) !important;">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="leaderboard-list" class="leaderboard-list">
+                        <div class="loading-placeholder">
+                            <div class="loading-spinner"></div>
+                            <p>Loading leaderboard...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
 
-    <script>
-        async function updateStatus() {
-            try {
-                const res = await fetch('/status.json');
-                const data = await res.json();
-                
-                document.getElementById('count').textContent = data.online.count;
-                document.getElementById('unique').textContent = data.today.unique_players;
-                document.getElementById('crashes').textContent = data.today.total_crashes;
-                
-                const playersDiv = document.getElementById('players');
-                const playersCard = document.getElementById('players-card');
-                
-                if (data.online.count > 0) {
-                    playersCard.style.display = 'block';
-                    playersDiv.innerHTML = data.online.players.map(p => `
-                        <div class="player">
-                            <span>${p.name}</span>
-                            <span class="car">${p.car.replace(/_/g, ' ')}</span>
-                        </div>
-                    `).join('');
-                } else {
-                    playersCard.style.display = 'none';
-                }
-                
-                const time = new Date(data.timestamp).toLocaleTimeString();
-                document.getElementById('updated').textContent = `Last updated: ${time}`;
-            } catch (e) {
-                console.error('Failed to load status', e);
-            }
-        }
-        
-        updateStatus();
-        setInterval(updateStatus, 10000); // Update every 10 seconds
-    </script>
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2025 RedLine Souls | <a href="https://discord.gg/kDnP3RAS">Discord Community</a> | <a
+                href="/how-to-join.html">How to Join</a> | <a href="/faq.html">FAQ</a></p>
+        <p class="footer-note">Assetto Corsa™ is property of Kunos Simulazioni</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/main.js?v=21"></script>
 </body>
+
 </html>

@@ -1,0 +1,103 @@
+/* ===========================
+   ANIMATIONS & TRANSITIONS
+   =========================== */
+
+/* Simple fade in - smooth and performant */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Pulse animation for status indicator */
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Scroll-triggered animations - simple and fast */
+.animate-on-scroll {
+    opacity: 0;
+}
+
+.animate-on-scroll.visible {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Stagger animation delays for multiple elements */
+.animate-on-scroll:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.animate-on-scroll:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.animate-on-scroll:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.animate-on-scroll:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.animate-on-scroll:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+/* Page transitions - smooth and simple */
+.page-transition {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Enhanced hover effects - GPU accelerated */
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.hover-lift:hover {
+    transform: translateY(-3px);
+}
+
+/* Smooth transitions for interactive elements */
+a,
+button,
+.card,
+.stat-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Page enter/exit animations */
+.page-enter {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}

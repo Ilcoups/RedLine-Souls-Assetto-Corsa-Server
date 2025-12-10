@@ -28,8 +28,8 @@ if env_path.exists():
                     DISCORD_STATS_WEBHOOK = value.strip().strip('"\'')
 
 
-def load_violations_last_24h() -> List[Dict]:
-    """Load violations from last 24 hours"""
+def load_violations_all_time() -> List[Dict]:
+    """Load ALL violations (all-time leaderboard)"""
     if not STATS_FILE.exists():
         return []
     
@@ -37,28 +37,18 @@ def load_violations_last_24h() -> List[Dict]:
         data = json.load(f)
         all_violations = data.get('violations', [])
     
-    # Filter last 24 hours
-    cutoff = datetime.now() - timedelta(hours=24)
-    recent = []
-    
-    for v in all_violations:
-        try:
-            timestamp = datetime.fromisoformat(v['timestamp'])
-            if timestamp >= cutoff:
-                recent.append(v)
-        except (KeyError, ValueError):
-            continue
-    
-    return recent
+    return all_violations
 
 
-def aggregate_daily_stats(violations: List[Dict]) -> Dict:
-    """Aggregate violations into daily statistics"""
+def aggregate_all_time_stats(violations: List[Dict]) -> Dict:
+    """Aggregate violations into all-time statistics"""
     driver_stats = defaultdict(lambda: {
         'violations': 0,
         'total_over_limit': 0,
         'max_speed': 0,
-        'cameras': set()
+        'cameras': set(),
+        'first_violation': None,
+        'last_violation': None
     })
     
     all_cameras = set()
@@ -75,11 +65,17 @@ def aggregate_daily_stats(violations: List[Dict]) -> Dict:
             speed = int(v.get('speed', '0'))
             over_limit = int(v.get('over_limit', '0'))
             camera = v.get('camera', 'Unknown')
+            timestamp = v.get('timestamp', '')
             
             driver_stats[driver]['violations'] += 1
             driver_stats[driver]['total_over_limit'] += over_limit
             driver_stats[driver]['max_speed'] = max(driver_stats[driver]['max_speed'], speed)
             driver_stats[driver]['cameras'].add(camera)
+            
+            # Track first and last violation
+            if not driver_stats[driver]['first_violation']:
+                driver_stats[driver]['first_violation'] = timestamp
+            driver_stats[driver]['last_violation'] = timestamp
             
             all_cameras.add(camera)
             total_over_limit += over_limit
@@ -90,7 +86,8 @@ def aggregate_daily_stats(violations: List[Dict]) -> Dict:
                     'driver': driver,
                     'speed': speed,
                     'over_limit': over_limit,
-                    'camera': camera
+                    'camera': camera,
+                    'timestamp': timestamp
                 }
         except (ValueError, TypeError):
             continue
@@ -104,7 +101,7 @@ def aggregate_daily_stats(violations: List[Dict]) -> Dict:
     leaderboard.sort(key=lambda x: (-x[1], -x[2], -x[3]))
     
     return {
-        'leaderboard': leaderboard[:10],  # Top 10 for daily
+        'leaderboard': leaderboard[:10],  # Top 10
         'total_violations': len(violations),
         'total_drivers': len(driver_stats),
         'total_cameras': len(all_cameras),
@@ -114,13 +111,12 @@ def aggregate_daily_stats(violations: List[Dict]) -> Dict:
 
 
 def build_discord_embed(stats: Dict) -> Dict:
-    """Build Discord embed for daily summary"""
-    today = datetime.now().strftime("%B %d, %Y")
+    """Build Discord embed for all-time leaderboard"""
     
     if stats['total_violations'] == 0:
         return {
-            "title": f"🚨 Speed Trap Daily Summary - {today}",
-            "description": "**No violations recorded today!**\n\n✅ *Everyone drove safely!*",
+            "title": "🚨 Speed Trap Leaderboard",
+            "description": "**No violations recorded yet!**\n\n✅ *All clean records so far!*",
             "color": 0x00FF00,  # Green
             "footer": {"text": "RedLine Souls Speed Enforcement · Drive Safe"}
         }
@@ -129,7 +125,7 @@ def build_discord_embed(stats: Dict) -> Dict:
     worst = stats['worst_violation']
     
     # Build leaderboard section
-    leaderboard_lines = ["**🏆 TOP 10 MOST RECKLESS DRIVERS**\n"]
+    leaderboard_lines = ["**🏆 ALL-TIME MOST RECKLESS DRIVERS**\n"]
     medals = {1: "🥇", 2: "🥈", 3: "🥉"}
     
     for rank, (driver, violations, total_over, max_speed, cameras) in enumerate(leaderboard, 1):
@@ -147,7 +143,7 @@ def build_discord_embed(stats: Dict) -> Dict:
     # Build worst violation section
     worst_section = []
     if worst:
-        worst_section.append("\n**⚠️ WORST VIOLATION OF THE DAY**")
+        worst_section.append("\n**⚠️ WORST VIOLATION EVER**")
         worst_section.append(
             f"**{worst['driver']}** caught at **{worst['speed']} km/h** "
             f"(+{worst['over_limit']} km/h over limit)\n"
@@ -156,8 +152,8 @@ def build_discord_embed(stats: Dict) -> Dict:
     
     # Build summary stats
     stats_section = [
-        "\n**📊 DAILY STATISTICS**",
-        f"• Total Violations: **{stats['total_violations']}**",
+        "\n**📊 ALL-TIME STATISTICS**",
+        f"• Total Violations: **{stats['total_violations']:,}**",
         f"• Reckless Drivers: **{stats['total_drivers']}**",
         f"• Active Cameras: **{stats['total_cameras']}**",
         f"• Total km/h Over Limit: **{stats['total_over_limit']:,}**",
@@ -168,19 +164,21 @@ def build_discord_embed(stats: Dict) -> Dict:
         leaderboard_lines + 
         worst_section + 
         stats_section +
-        ["\n*Keep it under the limit! 🚗💨*"]
+        ["\n*Updated continuously · Keep it under the limit! 🚗💨*"]
     )
     
     return {
-        "title": f"🚨 Speed Trap Daily Summary - {today}",
+        "title": "🚨 Speed Trap Leaderboard - RedLine Souls",
         "description": description,
         "color": 0xFF6B00,  # Orange warning
-        "footer": {"text": "RedLine Souls Speed Enforcement · Drive Responsibly"}
+        "footer": {"text": f"RedLine Souls Speed Enforcement · Last updated: {datetime.now().strftime('%b %d, %H:%M UTC')}"}
     }
 
 
+MSG_ID_FILE = Path(__file__).parent / "speed_trap_msg.json"
+
 def post_to_discord(embed: Dict) -> bool:
-    """Post embed to Discord webhook"""
+    """Post or edit embed to Discord webhook"""
     if not DISCORD_STATS_WEBHOOK:
         print("⚠️  DISCORD_STATS_WEBHOOK not configured")
         return False
@@ -190,9 +188,54 @@ def post_to_discord(embed: Dict) -> bool:
         "embeds": [embed]
     }
     
+    # Try to edit existing message first
+    message_id = None
+    if MSG_ID_FILE.exists():
+        try:
+            with open(MSG_ID_FILE, 'r') as f:
+                data = json.load(f)
+                message_id = data.get('id')
+        except:
+            pass
+            
+    if message_id:
+        # Construct edit URL: webhook_url/messages/message_id
+        # Ensure webhook URL doesn't have query params for this part
+        base_url = DISCORD_STATS_WEBHOOK.split('?')[0]
+        edit_url = f"{base_url}/messages/{message_id}"
+        
+        try:
+            response = requests.patch(edit_url, json=payload, timeout=10)
+            if response.status_code in [200, 204]:
+                print(f"✅ Updated existing Discord message ({message_id})")
+                return True
+            elif response.status_code == 404:
+                print("ℹ️  Previous message not found, creating new one...")
+            else:
+                print(f"⚠️  Edit failed ({response.status_code}), creating new one...")
+        except Exception as e:
+            print(f"⚠️  Edit error: {e}")
+            
+    # Create new message if edit failed or no ID
     try:
-        response = requests.post(DISCORD_STATS_WEBHOOK, json=payload, timeout=10)
+        # Add wait=true to get message ID back
+        post_url = DISCORD_STATS_WEBHOOK
+        if '?' in post_url:
+            post_url += "&wait=true"
+        else:
+            post_url += "?wait=true"
+            
+        response = requests.post(post_url, json=payload, timeout=10)
         if response.status_code in [200, 204]:
+            try:
+                data = response.json()
+                new_id = data.get('id')
+                if new_id:
+                    with open(MSG_ID_FILE, 'w') as f:
+                        json.dump({'id': new_id, 'timestamp': datetime.now().isoformat()}, f)
+                    print(f"✅ Posted new Discord message ({new_id})")
+            except:
+                print("✅ Posted to Discord (could not save ID)")
             return True
         else:
             print(f"❌ Discord returned {response.status_code}: {response.text}")
@@ -204,14 +247,14 @@ def post_to_discord(embed: Dict) -> bool:
 
 def main():
     """Main execution"""
-    print("📊 Generating speed trap daily summary...")
+    print("📊 Generating speed trap leaderboard...")
     
-    # Load violations
-    violations = load_violations_last_24h()
-    print(f"   Found {len(violations)} violations in last 24 hours")
+    # Load ALL violations (all-time)
+    violations = load_violations_all_time()
+    print(f"   Found {len(violations)} total violations")
     
     # Aggregate stats
-    stats = aggregate_daily_stats(violations)
+    stats = aggregate_all_time_stats(violations)
     print(f"   {stats['total_drivers']} drivers, {stats['total_cameras']} cameras")
     
     # Build embed
@@ -219,8 +262,8 @@ def main():
     
     # Post to Discord
     if post_to_discord(embed):
-        print(f"✅ Posted speed trap summary to Discord")
-        print(f"   {stats['total_violations']} violations, {stats['total_drivers']} reckless drivers")
+        print(f"✅ Posted speed trap leaderboard to Discord")
+        print(f"   {stats['total_violations']} total violations, {stats['total_drivers']} reckless drivers")
         return 0
     else:
         print("❌ Failed to post to Discord")

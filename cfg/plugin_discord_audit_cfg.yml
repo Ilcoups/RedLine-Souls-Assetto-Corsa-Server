@@ -1,0 +1,9 @@
+---
+!DiscordAuditConfiguration
+AuditUrl: https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN
+AuditPlayerConnections: true
+AuditPlayerDisconnections: true
+AuditServerStatus: true
+EnablePlayerCountUpdates: true
+PlayerCountUpdateIntervalSeconds: 300
+

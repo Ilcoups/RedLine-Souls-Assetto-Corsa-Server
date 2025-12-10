@@ -1,0 +1,320 @@
+MinimumCSPVersion: 2651
+UseSteamAuth: true
+ValidateDlcOwnership: []
+MandatoryClientSecurityLevel: 0
+EnableAntiAfk: true
+MaxAfkTimeMinutes: 20
+AfkKickBehavior: PlayerInput
+MaxPing: 500
+MaxPingSeconds: 10
+KickPacketLoss: 15
+ForceLights: false
+NetworkBubbleDistance: 1000
+OutsideNetworkBubbleRefreshRateHz: 25
+EnableServerDetails: true
+ServerDescription: "\U0001F3CE REDLINE SOULS - TOKYO HIGHWAY CRUISE \U0001F38C\n\n\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \n\n\U0001F4E2 JOIN OUR COMMUNITY\n\u25B6 https://discord.gg/YJJEGAhf \u25C0\n\u2022\
+  \ Daily Leaderboards & Stats\n\u2022 Community Races & Events\n\u2022 Share Clips\
+  \ & Get Help\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\n\n\U0001F306 DYNAMIC TRAFFIC SYSTEM\nTraffic density changes\
+  \ automatically based on time of day:\n\n\U0001F319 Night (00:00-06:00) \u2192 Light\
+  \ Traffic (Chill)\n\u2600 Morning (06:00-12:00) \u2192 Rush Hour (Aggressive)\n\U0001F324\
+  \ Afternoon (12:00-18:00) \u2192 Balanced Flow\n\U0001F306 Evening (18:00-00:00)\
+  \ \u2192 Heavy Traffic (Intense)\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\n\n\u2728 SERVER FEATURES\n\u2022 \U0001F697\
+  \ 70+ AI cars (up to 250 total)\n\u2022 \U0001F324\uFE0F Dynamic Weather & Day/Night\
+  \ Cycle\n\u2022 \U0001F4CD 157 Teleport Locations\n\u2022 \U0001F4CA Daily Leaderboards\
+  \ (Speed, Playtime, Clean Driving)\n\u2022 \u26A1 High Performance (60 Hz)\n\n\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\
+  \n\U0001F4CB REQUIREMENTS\n\u2705 Shutoko Revival Project 0.9.3\n\u2705 Content\
+  \ Manager v0.8.2594+\n\u2705 CSP 0.2.0+ (CSP 0.1.78+ minimum)\n\n\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+  \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\n\u26A0\uFE0F\
+  \ TIPS & RULES\n\u2022 Disable pit limiter (CTRL+P)\n\u2022 Use teleports (ESC \u2192\
+  \ Teleports)\n\u2022 No intentional ramming or blocking\n\u2022 Respect the pit\
+  \ area (Heiwajima PA)\n\u2022 Have fun!\n\nSee you on the Wangan! \U0001F3C1\nKeep\
+  \ it sideways, keep it stylish \U0001F38C"
+EnableRealTime: false
+EnableWeatherFx: true
+LockServerDate: true
+RainTrackGripReductionPercent: 0
+EnableAi: true
+EnablePlugins:
+- RandomWeatherPlugin
+- PatreonHubPlugin
+- PatreonOvertakePlugin
+- PatreonSpeedTrapPlugin
+- PatreonTimingPlugin
+- DiscordAuditPlugin
+- PatreonAnalyticsPlugin
+IgnoreConfigurationErrors:
+  MissingCarChecksums: true
+  MissingTrackParams: true
+  WrongServerDetails: true
+  UnsafeAdminWhitelist: true
+IgnoreMissingCarData: true
+IgnoreCarPhysicsMismatch: true
+EnableClientMessages: true
+EnableUdpClientMessages: true
+DebugClientMessages: true
+EnableCustomUpdate: true
+PlayerLoadingTimeoutMinutes: 10
+PlayerChecksumTimeoutSeconds: 120
+RconPort: 27015
+DebugWelcomeMessage: false
+RedactIpAddresses: true
+ForceServerTrackParams: false
+EnableAlternativeCarChecksums: true
+EnableLegacyPluginInterface: true
+UDP_PLUGIN_ADDRESS: 127.0.0.1
+UDP_PLUGIN_LOCAL_PORT: 12000
+EnableUPnP: false
+LoadingImageUrl: null
+WelcomeMessagePath: cfg/welcome.txt
+UserGroups:
+  default_blacklist: blacklist.txt
+  default_whitelist: whitelist.txt
+  default_admins: admins.txt
+  vips: vips.txt
+BlacklistUserGroup: default_blacklist
+WhitelistUserGroup: default_whitelist
+AdminUserGroup: default_admins
+CorsAllowedOrigins: null
+UserGroupCommandPermissions: null
+AiParams:
+  PlayerRadiusMeters: 700
+  PlayerPositionOffsetMeters: 100
+  PlayerAfkTimeoutSeconds: 3
+  MaxPlayerDistanceToAiSplineMeters: 7
+  MinSpawnDistancePoints: 150
+  MaxSpawnDistancePoints: 1200
+  MinAiSafetyDistanceMeters: 32
+  MaxAiSafetyDistanceMeters: 79
+  StateSpawnDistanceMeters: 900
+  MinStateDistanceMeters: 50
+  SpawnSafetyDistanceToPlayerMeters: 250
+  MinSpawnProtectionTimeSeconds: 20
+  MaxSpawnProtectionTimeSeconds: 35
+  MinCollisionStopTimeSeconds: 1
+  MaxCollisionStopTimeSeconds: 2
+  MaxSpeedKph: 99
+  RightLaneOffsetKph: 27
+  MaxSpeedVariationPercent: 0.2
+  MaxPlayerCount: 35
+  HideAiCars: true
+  LaneWidthMeters: 2.5
+  TwoWayTraffic: true
+  WrongWayTraffic: true
+  NamePrefix: Traffic
+  IgnoreObstaclesAfterSeconds: 2
+  IgnoreStationaryPlayers: true
+  HourlyTrafficDensity:
+  - 0.6
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.6
+  - 0.9
+  - 1.2
+  - 1.5
+  - 1.3
+  - 1.2
+  - 1.1
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.1
+  - 1.3
+  - 1.5
+  - 1.4
+  - 1.2
+  - 1.0
+  - 0.9
+  - 0.7
+  - 0.6
+  SmoothCamber: true
+  Debug: false
+  AiBehaviorUpdateIntervalHz: 60
+  IgnorePlayerObstacleSpheres:
+  - X: -235.0
+    Z: 1354.0
+    Radius: 100.0
+  - X: -95.0
+    Z: 1575.0
+    Radius: 100.0
+  LaneCountSpecificOverrides:
+    1:
+      MinAiSafetyDistanceMeters: 33
+      MaxAiSafetyDistanceMeters: 81
+      MaxSpeedKph: 95
+      RightLaneOffsetKph: 17
+    2:
+      MinAiSafetyDistanceMeters: 35
+      MaxAiSafetyDistanceMeters: 86
+      MaxSpeedKph: 103
+      RightLaneOffsetKph: 20
+    3:
+      MinAiSafetyDistanceMeters: 38
+      MaxAiSafetyDistanceMeters: 92
+      MaxSpeedKph: 119
+      RightLaneOffsetKph: 23
+      MinSpawnProtectionTimeSeconds: 22
+      MaxSpawnProtectionTimeSeconds: 38
+  CarSpecificOverrides:
+  - Model: my_car_model
+    SplineHeightOffsetMeters: -0.15
+    EngineIdleRpm: 800
+    EngineMaxRpm: 3000
+    Acceleration: 1.8
+    Deceleration: 8.5
+    CorneringSpeedFactor: 0.5
+    CorneringBrakeDistanceFactor: 3
+    CorneringBrakeForceFactor: 0.5
+    TyreDiameterMeters: 0.65
+    MaxOverbooking: 1
+    MinSpawnProtectionTimeSeconds: 30
+    MaxSpawnProtectionTimeSeconds: 60
+    MinLaneCount: 1
+    MaxLaneCount: 2
+    MinCollisionStopTimeSeconds: 0
+    MaxCollisionStopTimeSeconds: 0
+    VehicleLengthPreMeters: 2
+    VehicleLengthPostMeters: 2
+    MinAiSafetyDistanceMeters: 18
+    MaxAiSafetyDistanceMeters: 65
+    AllowedLanes:
+    - Left
+    - Middle
+    - Right
+  DefaultDeceleration: 5.0
+  DefaultAcceleration: 4.5
+  MaxAiTargetCount: 1392
+  AiPerPlayerTargetCount: 58
+  SplineHeightOffsetMeters: 0.0
+  CorneringSpeedFactor: 0.85
+  CorneringBrakeDistanceFactor: 5
+  CorneringBrakeForceFactor: 0.3
+  TrafficDensity: 0.8
+  TyreDiameterMeters: 0.65
+  MinAiTargetCount: 0
+
+---
+!RandomWeatherConfiguration
+# Beautiful weather types - maximum visual variety with perfect conditions!
+WeatherWeights:
+  Clear: 2.0              # ☀️ Perfect sunny day - most common
+  FewClouds: 1.5          # 🌤️ Light clouds - beautiful contrast
+  ScatteredClouds: 1.5    # ⛅ Medium clouds - dynamic skies
+  BrokenClouds: 1.2       # 🌥️ Dramatic clouds - great lighting
+  OvercastClouds: 0.8     # ☁️ Soft diffused light - cinematic look
+  Windy: 1.0              # 💨 Clear + wind - adds movement to trees/flags
+  Cold: 0.6               # ❄️ Crisp clear air - sharper visibility
+  Hot: 0.8                # 🔥 Warm haze - golden hour enhanced
+  Haze: 0.4               # 🌫️ Light atmospheric haze - dreamy sunset look
+  # All bad weather disabled (rain, fog, snow, etc.)
+  Fog: 0.0
+  Mist: 0.0
+  LightThunderstorm: 0.0
+  Thunderstorm: 0.0
+  HeavyThunderstorm: 0.0
+  LightDrizzle: 0.0
+  Drizzle: 0.0
+  HeavyDrizzle: 0.0
+  LightRain: 0.0
+  Rain: 0.0
+  HeavyRain: 0.0
+  LightSnow: 0.0
+  Snow: 0.0
+  HeavySnow: 0.0
+  LightSleet: 0.0
+  Sleet: 0.0
+  HeavySleet: 0.0
+  Smoke: 0.0
+  Sand: 0.0
+  Dust: 0.0
+  Squalls: 0.0
+  Tornado: 0.0
+  Hurricane: 0.0
+  Hail: 0.0
+MinWeatherDurationMinutes: 8
+MaxWeatherDurationMinutes: 14
+MinTransitionDurationSeconds: 180
+
+---
+!PatreonHubConfiguration
+Address: http://localhost:5085
+Key: uZTdl8aPQwuaOdhPWpA89p8xzfyLMXUuGGP2x0i5iXM=
+
+---
+!PatreonOvertakeConfiguration
+LeaderboardName: RedLine Souls
+MinimumSpeedKph: 80
+TooSlowTimeoutSeconds: 3
+OvertakeDistanceMeters: 7
+CloseOvertakeDistanceMeters: 4
+EnableUIByDefault: true
+CollisionMessages:
+  - Wall tap L
+  - 300HP to guardrail
+  - Bodykit RIP
+OvertakeMessages:
+  - Styled on em
+  - Too easy
+  - Gapped
+CloseOvertakeMessages:
+  - Sent it
+  - Ballsy
+  - Paint trade
+
+---
+!PatreonSpeedTrapConfiguration
+# Speed camera settings
+NumberOffset: 100
+EnablePictures: true
+EnableOverlay: true
+Grayscale: false
+AllowDisablingPictureUpload: true
+Debug: false
+# Discord webhook - Using LOCAL PROXY to prevent game lag
+# The proxy (port 8083) buffers and forwards to Discord asynchronously
+DiscordWebhook:
+  Url: http://127.0.0.1:8083/webhook
+  Username: 🚨 RedLine Speed Enforcement 🚨
+  MessageTemplate: |
+    **━━━━━━━━━━━━━━━━━━━━━**
+    🚓 **SPEED VIOLATION DETECTED** 🚓
+    **━━━━━━━━━━━━━━━━━━━━━**
+    
+    📸 **Camera:** `#{{ SpeedTrapId | math.format "000" }}-{{ Counter | math.format "000" }}`
+    👤 **Driver:** `{{ Name }}`
+    ⚡ **Speed:** `{{ Speed | math.format "0" }} km/h`
+    ⚠️ **Limit:** `{{ AllowedSpeed }} km/h`
+    📊 **Over Limit:** `{{ Speed - AllowedSpeed | math.format "0" }} km/h`
+    
+    💸 *You have been fined for reckless driving*
+
+---
+!PatreonTimingConfiguration
+LeaderboardName: RedLine Souls
+
+---
+!PatreonAnalyticsConfiguration
+# Enable collection of client metrics (FPS, CPU occupancy, frame time)
+EnableClientMetrics: true
+# Update interval for client metrics (FPS, CPU occupancy)
+ClientMetricsUpdateIntervalSeconds: 10
+# Update interval for server metrics (collisions, car usage)
+ServerMetricsUpdateIntervalSeconds: 10
+# Minimum speed for collisions to be counted to metrics
+MinimumCollisionsSpeedKph: 10

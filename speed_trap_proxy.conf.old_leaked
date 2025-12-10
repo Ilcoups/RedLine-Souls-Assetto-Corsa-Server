@@ -1,0 +1,5 @@
+# Speed Trap Webhook Proxy Configuration
+# This stores the REAL Discord webhook URL
+# The extra_cfg.yml points to the local proxy (http://127.0.0.1:8083/webhook)
+
+REAL_DISCORD_WEBHOOK=https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN

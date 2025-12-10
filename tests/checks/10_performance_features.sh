@@ -96,7 +96,7 @@ if [ -f "speed_trap_proxy.py" ]; then
         fi
         
         # Check configuration (now uses .env instead of conf file)
-        if grep -q "SPEED_TRAP_WEBHOOK" .env 2>/dev/null; then
+        if grep -q "DISCORD_SPEED_TRAP_WEBHOOK" .env 2>/dev/null; then
             pass "Speed trap webhook configured in .env"
         elif [ -f "speed_trap_proxy.conf" ]; then
             pass "Speed trap proxy configuration exists (legacy conf)"

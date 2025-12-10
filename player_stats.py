@@ -329,7 +329,7 @@ def process_line(line):
     """Process a single log line and update stats"""
     
     # Player connection
-    # Example: [INF] il (76561199185532445, 26 (ferrari_f40_s3-02_black/ADAn)) has connected
+    # Example: [INF] il (YOUR_STEAM64_ID, 26 (ferrari_f40_s3-02_black/ADAn)) has connected
     match = re.search(r'\[INF\]\s+([\w\s\-_]+?)\s+\((\d{17}),.*?\)\s+has connected', line)
     if match:
         name = match.group(1).strip()

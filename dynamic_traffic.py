@@ -125,11 +125,11 @@ def create_preset(name, emoji, hours, density, speed_mod, ai_count, spacing_mod,
             "MaxAiSafetyDistanceMeters": int(85 * spacing_mod),
             "MaxSpeedKph": int(95 + speed_mod),
             "RightLaneOffsetKph": 22 if not aggressive else 28,
-            "MaxSpeedVariationPercent": 0.20 + (0.05 if aggressive else 0),
+            "MaxSpeedVariationPercent": 0.20,  # Fixed: Always 20% to prevent car trains (25% causes convoys)
             "TrafficDensity": density,
             "AiPerPlayerTargetCount": ai_count,
             "MaxAiTargetCount": ai_count * 24,
-            "IgnoreObstaclesAfterSeconds": 1 if aggressive else 2,
+            "IgnoreObstaclesAfterSeconds": 2,  # Fixed: Always 2 sec for safe merging (1 sec was too aggressive)
             "LaneCountSpecificOverrides": {
                 k: {**v, "MaxSpeedKph": int(v["MaxSpeedKph"] + speed_mod)} 
                 for k, v in BASE_LANE_OVERRIDES.items()

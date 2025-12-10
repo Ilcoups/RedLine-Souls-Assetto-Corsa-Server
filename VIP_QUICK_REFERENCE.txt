@@ -1,0 +1,27 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  REDLINE SOULS - VIP & ADMIN QUICK REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👑 ADMIN: YourName (YOUR_STEAM64_ID)
+   Tag: [ADMIN] in RED
+   File: cfg/admins.txt
+
+💎 VIP: VIPName (VIP_STEAM64_ID)  
+   Tag: [VIP] in GOLD
+   File: cfg/vips.txt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADDING MORE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Add admin:
+echo "STEAM64_ID" >> cfg/admins.txt
+
+# Add VIP:
+echo "STEAM64_ID" >> cfg/vips.txt
+
+# Restart:
+./stop_server.sh && ./start_server.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
